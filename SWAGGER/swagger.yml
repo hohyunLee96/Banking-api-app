@@ -1,0 +1,1039 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/682624/bank-2/1.0.0
+info:
+  description: An API for a banking application
+  version: "1.0.0"
+  title: Simple Banking API
+  contact:
+    email: 682623@student.inholland.nl
+  license:
+    name: Apache 2.0
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+tags:
+  - name: User
+    description: Operations available to all users
+  - name: Transaction
+    description: Transaction
+  - name: Account
+    description: Account
+
+paths:
+  /accounts:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Account
+      summary: Returns all accounts
+      operationId: getAccounts
+      description: |
+        By calling this request, you get all the accounts registered in the system
+      parameters:
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 50
+        - name: offset
+          in: query
+          description: The offset of the User to get total balance
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - in: query
+          name: name
+          description: name of the user
+          schema:
+            type: string
+             
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account_Get"
+                  examples:
+                   objectExample:
+                   $ref: '#/components/schemas/Account_Get'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Account
+      summary: Creates a new account
+      operationId: createAccount
+      description: Adds an account to the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Account_Post"
+        description: Account to create
+      responses:
+        "201":
+          description: account created
+        "400":
+            $ref: "#/components/responses/BadRequest"
+        "409":
+            $ref: "#/components/responses/Conflict"
+
+  /accounts/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Account
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the account to get
+          required: true
+          schema:
+            type: integer
+            format: int64
+      summary: Retrieves an account of specified ID
+      operationId: getAccount
+      description: retrieves an account on the system
+       
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account_Get"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Account_Get"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Account
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the account to disable or update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      summary: Updates an account of specified ID
+      operationId: updateAccount
+      description: updates or disables an account on the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Account_Put"
+        description: Account to update
+      responses:
+        "204":
+          description: account updated
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: account not found
+        "405":
+          description: invalid input
+  /users:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      summary: Retrieves all the users on the system
+      operationId: getUsers
+      description: |
+        By calling this request, you get all the user registered in the system
+      parameters:
+        - in: query
+          name: limit
+          description: maximum number of records to return
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 100
+        - name: firstName
+          in: query
+          description: The firstName of the User to get
+          schema:
+            type: string
+            format: string
+        - name: lastName
+          in: query
+          description: The lastName of the User to get
+          schema:
+            type: string
+            format: string
+        - name: offset
+          in: query
+          description: The offset of the list
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: hasAccount
+          in: query
+          description: Checks if the user has an account or not
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User_Get"
+                  examples:
+                   objectExample:
+                   $ref: '#/components/schemas/User_Get'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      summary: Creates a new user 
+      operationId: createuser
+      description: Adds an user to the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User_Post"
+        description: User to add
+      responses:
+        "201":
+          description: user created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /users/{UserId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      parameters:
+        - name: UserId
+          in: path
+          description: The UserId of the User to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: userHasAccount
+          in: query
+          description: Checks if the user has an account or not
+          schema:
+            type: boolean
+      summary: Deletes a User of specified ID
+      operationId: deleteUser
+      description: delete a User on the system
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User_Get"
+                  examples:
+                   objectExample:
+                   $ref: '#/components/schemas/User_Get'
+        "400":
+          $ref: "#/components/responses/BadRequest" 
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"  
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - User
+      parameters:
+        - name: UserId
+          in: path
+          description: The UserId of the User to get
+          required: true
+          schema:
+            type: integer
+            format: int64
+      summary: Retrieves a User of specified ID
+      operationId: getUser
+      description: retrieves a User on the system
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User_Get"
+                  examples:
+                   objectExample:
+                   $ref: '#/components/schemas/User_Get'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{id}:
+    put:
+      tags:
+        - User
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the User to get total balance
+          required: true
+          schema:
+            type: integer
+            format: int64
+      summary: Update an existing user
+      description: Update an existing user by Id
+      operationId: updateUser
+      requestBody:
+        description: Update an existent user in the system
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User_Post"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/User_Post"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/User_Post"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User_Post"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/User_Post"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+      security:
+        - bearerAuth: []
+
+  /transactions:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      summary: Creates a new transaction
+      operationId: createTransaction
+      description: Adds atransaction to the system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction_Post"
+        description: New transaction to add
+      responses:
+        "201":
+          description: transation created
+        "400":
+          description: invalid input, transaction invalid
+
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      summary: Get all transactions
+      description: This call provides transactions
+      parameters:
+        - in: query
+          name: dateFrom
+          description: to find a transaction from specific date
+          schema:
+            type: string
+        - in: query
+          name: dateTo
+          description: to find a transaction from specific date
+          schema:
+            type: string
+        - in: query
+          name: fromIBAN
+          description: from IBAN
+          schema:
+            type: string
+        - in: query
+          name: toIBAN
+          description: from IBAN
+          schema:
+            type: string
+        - in: query
+          name: equalBalance
+          description: balance
+          schema:
+            type: string
+        - in: query
+          name: equalBalance
+          description: balance
+          schema:
+            type: number
+        - in: query
+          name: moreBalance
+          description: more than specific balance
+          schema:
+            type: number
+        - in: query
+          name: lessBalance
+          description: less than specific balance
+          schema:
+            type: number
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction_Get"
+                  examples:
+                   objectExample:
+                   $ref: '#/components/schemas/Transaction_Get'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /transactions/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Transaction
+      summary: Returns a transaction of specified id
+      description: This call provides transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction_Get"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Transaction_Get"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login
+      description: Login
+      operationId: login
+      requestBody:
+        description: Login
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Login"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Login"
+        required: true
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Login"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/Login"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /auth/token:
+    put:
+      tags:
+        - Auth
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshToken"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/RefreshToken"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/RefreshToken"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+              examples:
+                success:
+                  value:
+                    access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                    token_type: "Bearer"
+                    expires_in: 3600
+                    refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+          headers:
+            Authorization:
+              description: The access token to use for subsequent API requests
+              schema:
+                type: string
+              examples:
+                bearerToken:
+                  value: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: The user's email address
+          example: "user@gmail.com"
+        password:
+          type: string
+          description: The user's password (hashed or encrypted)
+          example: "ThisIsAPassword!"
+    RefreshToken:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: The user's refresh token
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: The user's new access token
+        token_type:
+          type: string
+          enum: [Bearer]
+          description: The type of token
+        expires_in:
+          type: integer
+          description: The number of seconds until the access token expires
+        refresh_token:
+          type: string
+          description: The user's new refresh token
+    
+    User_Post:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: The user's email address
+          example: john.doe@example.com
+        password:
+          type: string
+          description: The user's password (hashed or encrypted)
+          example: ThisIsAPassword!
+        passwordConfirm:
+          type: string
+          description: The user's password (hashed or encrypted)
+          example: ThisIsAPassword!
+        firstName:
+          type: string
+          description: The user's first name
+          example: John
+        lastName:
+          type: string
+          description: The user's last name
+          example: Doe
+        birthdate:
+          type: string
+          format: date
+          description: The user's date of birth
+          example: 1990-01-01
+        postalCode:
+          type: string
+          description: The user's postal code
+          example: 1234AB
+        address:
+          type: string
+          description: The user's street address
+          example: Inholland 1
+        city:
+          type: string
+          description: The user's city of residence
+          example: Amsterdam
+        phoneNumber:
+          type: string
+          description: The user's phone number
+          example: 0687854333
+        role:
+          type: string
+          enum:
+            - Customer
+            - Employee
+          example: User
+          description: The user's role or type
+        dailyLimit:
+          type: number
+          format: double
+          description: The user's daily limit
+          example: 1000.00
+        transactionLimit:
+          type: number
+          format: double
+          description: The user's transaction limit
+          example: 1000.00
+        hasAccount:
+          type: boolean
+          description: Whether the user has an account
+          example: true
+      
+    User_Get:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: The user's email address
+          example: "johndoe@email.com"
+        id:
+          type: integer
+          description: The unique identifier for the user
+          example: 12345
+        firstName:
+          type: string
+          description: The user's first name
+          example: John
+        lastName:
+          type: string
+          description: The user's last name
+          example: Doe
+        birthdate:
+          type: string
+          format: date
+          description: The user's date of birth
+          example: 1990-01-01
+        postalCode:
+          type: string
+          description: The user's postal code
+          example: 1234AB
+        address:
+          type: string
+          description: The user's street address
+          example: Inholland 1
+        city:
+          type: string
+          description: The user's city of residence
+          example: Amsterdam
+        phoneNumber:
+          type: string
+          description: The user's phone number
+          example: 0687854333
+        role:
+          type: string
+          enum:
+            - Customer
+            - Employee
+          example: User
+          description: The user's role or type
+        dailyLimit:
+          type: number
+          format: double
+          description: The user's daily limit
+          example: 1000.00
+        transactionLimit:
+          type: number
+          format: double
+          description: The user's transaction limit
+          example: 1000.00
+        hasAccount:
+          type: boolean
+          description: Whether the user has an account
+          example: true
+   
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      required:
+        - code
+        - message
+    
+    Account_Get:
+      type: object
+      required:
+        - id
+        - IBAN
+        - balance
+        - UserId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        UserId:
+          type: integer
+          format: int64
+          example: 1
+        IBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        balance:
+          type: number
+          format: double
+          example: "123.30"
+        isActive:
+          type: boolean
+          format: boolean
+          description: Returns true if the account is active
+          example: true 
+
+    Account_Post:
+      type: object
+      required:
+        - IBAN
+        - UserId
+      properties:
+        UserId:
+          type: integer
+          format: int64
+          example: 1
+        IBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        isActive:
+          type: boolean
+          format: boolean
+          description: Returns true if the account is active
+          example: true 
+    
+    Account_Put:
+      type: object
+      required:
+        - IBAN
+        - UserId
+      properties:
+        UserId:
+          type: integer
+          format: int64
+          example: 1
+        isActive:
+          type: boolean
+          format: boolean
+          description: Returns true if the account is active
+          example: true
+
+    Transaction_Get:
+      type: object
+      required:
+        - transactionId
+        - fromIBAN
+        - toIBAN
+        - userPerformingId
+        - amount
+        - timestamp
+        - type
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          example: 1
+        fromIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        toIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000002
+        amount:
+          type: number
+          format: double
+          example: "123.30"
+        timestamp:
+          type: string
+          format: datetime
+          example: 2021-03-31T10:00:00.000Z
+        type:
+          type: string
+          enum:
+            - Deposit
+            - Withdrawal
+            - Payment
+            - AtmDeposit
+            - AtmWithdrawal
+          example: Deposit
+        userPerformingId:
+          type: integer
+          format: int64
+          example: 1
+
+    Transaction_Post:
+      type: object
+      required:
+        - fromIBAN
+        - toIBAN
+        - amount
+        - type
+      properties:
+        fromIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        toIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000002
+        amount:
+          type: number
+          format: double
+          example: "123.30"
+        type:
+          type: string
+          enum:
+            - Deposit
+            - Withdrawal
+            - Payment
+            - AtmDeposit
+            - AtmWithdrawal
+          example: Deposit
+    Withdraw:
+      type: object
+      required:
+        - fromIBAN
+        - amount
+      properties:
+        fromIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        amount:
+          type: number
+          format: double
+          example: "123.30"
+    Deposit:
+      type: object
+      required:
+        - toIBAN
+        - amount
+      properties:
+        toIBAN:
+          type: string
+          format: iban
+          example: NL01INHO0000000001
+        amount:
+          type: number
+          format: double
+          example: "123.30"
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Invalid request
+
+    InvalidValueError:
+      description: Value needed is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: Invalid request body
+
+    Conflict:
+      description: The request could not be completed due to a conflict with the current state of the target resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 409
+            message: The request could not be completed due to a conflict with the current state of the target resource.
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: Please provide a valid access token
+
+    Forbidden:
+      description: Action not allowed for authorized user.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 403
+            message: You do not have access to the requested resource
+
+    NotFound:
+      description: Requested value(s) could not be found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 404
+            message: The requested resource could not be found
+
+    InternalServerError:
+      description: The server encountered an unexpected condition which prevented it from fulfilling the request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: We ran into an unexpected server error
+
+    NoContent:
+      description: The request was successful but there is no content to send back
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 204
+            message: No content to send back
+            schema:
+                $ref: "#/components/schemas/User_Post"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/User_Post"
+              "400":
+                $ref: "#/components/responses/BadRequest"
+              "401":
+                $ref: "#/components/responses/UnauthorizedError"
+              "403":
+                $ref: "#/components/responses/Forbidden"
+              "404":
+                $ref: "#/components/responses/NotFound"
+   
