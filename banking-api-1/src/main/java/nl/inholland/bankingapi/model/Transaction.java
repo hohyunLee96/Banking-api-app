@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @NoArgsConstructor
+
 public class Transaction {
 
         @Id
@@ -19,14 +20,5 @@ public class Transaction {
         private double amount;
         private LocalDateTime timestamp;
         private TransactionType type;
-
-        public Transaction(String fromIban, String toIban, double amount, TransactionType type) {
-                this.fromIban = fromIban;
-                this.toIban = toIban;
-                this.amount = amount;
-                this.type = type;
-                this.timestamp = LocalDateTime.now();
-        }
-
 
 }
