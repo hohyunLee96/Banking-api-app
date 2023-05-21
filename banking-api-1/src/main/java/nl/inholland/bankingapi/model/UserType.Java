@@ -1,6 +1,6 @@
 package nl.inholland.bankingapi.model;
 
-enum UserType {
+public enum UserType {
     user,
     employee
 }
