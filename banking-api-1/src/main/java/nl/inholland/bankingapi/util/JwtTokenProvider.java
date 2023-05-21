@@ -1,14 +1,11 @@
 package nl.inholland.bankingapi.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import nl.inholland.bankingapi.service.UserDetailsService;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
-import org.h2.engine.Role;
+import io.jsonwebtoken.*;
+import nl.inholland.bankingapi.model.UserType;
+import nl.inholland.bankingapi.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -22,15 +19,15 @@ public class JwtTokenProvider {
 
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtKeyProvider jwtKeyProvider;
 
-    public JwtTokenProvider(UserDetailsService userDetailsService, JwtKeyProvider jwtKeyProvider) {
+    public JwtTokenProvider(UserDetailsServiceImpl userDetailsService, JwtKeyProvider jwtKeyProvider) {
         this.userDetailsService = userDetailsService;
         this.jwtKeyProvider = jwtKeyProvider;
     }
 
-    public String createToken(String username, List<Role> roles) throws JwtException {
+    public String createToken(String username, List<UserType> roles) throws JwtException {
 
         /* The token will look something like this
 
@@ -57,7 +54,7 @@ public class JwtTokenProvider {
         claims.put("auth",
                 roles
                         .stream()
-                        .map(Role::name)
+                        .map(UserType::name)
                         .toList());
 
         // We decide on an expiration date
