@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @Entity
@@ -24,4 +25,5 @@ public class User {
     private String city;
     private String phoneNumber;
     private UserType userType;
+    private Boolean hasAccount;
 }
