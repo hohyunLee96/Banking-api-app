@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.model.dto;
 
+//used to serialize the response object into JSON or another appropriate format
 public class LoginResponse_DTO {
     private String accessToken;
     private String refreshToken;

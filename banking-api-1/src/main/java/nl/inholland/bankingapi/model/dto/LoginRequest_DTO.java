@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.model.dto;
 
+//used to deserialize the incoming JSON or form data into an object
 public class LoginRequest_DTO {
     private String username;
     private String password;
