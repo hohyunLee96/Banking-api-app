@@ -6,8 +6,8 @@ import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -38,6 +38,7 @@ public class TransactionService {
         transaction.setToIban(transactionPOSTDto.toIban());
         transaction.setAmount(transactionPOSTDto.amount());
         transaction.setType(transactionPOSTDto.type());
+        transaction.setTimestamp(LocalDateTime.now());
 
         return transaction;
     }
