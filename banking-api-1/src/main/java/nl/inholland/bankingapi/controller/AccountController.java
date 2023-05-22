@@ -16,9 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-//@RequestMapping("accounts")
-@RequestMapping(value = "/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
-//@Log
+@RequestMapping("accounts")
+@Log
 public class AccountController {
     private AccountService accountService;
 
