@@ -19,7 +19,7 @@ public class WebSecurityConfiguration {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.authorizeHttpRequests()
-                .requestMatchers("/members/login").permitAll()
+                .requestMatchers("/auth/user/login").permitAll()
                 .anyRequest().authenticated();
 
         return httpSecurity.build();

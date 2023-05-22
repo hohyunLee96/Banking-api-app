@@ -3,9 +3,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Set;
-
 @Data
 @Entity
 @NoArgsConstructor
@@ -24,6 +21,7 @@ public class User {
     private String address;
     private String city;
     private String phoneNumber;
+    @Enumerated(EnumType.STRING)
     private UserType userType;
     private Boolean hasAccount;
 
