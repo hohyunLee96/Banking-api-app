@@ -26,5 +26,4 @@ public class User {
     private String phoneNumber;
     private UserType userType;
     private Boolean hasAccount;
-
 }

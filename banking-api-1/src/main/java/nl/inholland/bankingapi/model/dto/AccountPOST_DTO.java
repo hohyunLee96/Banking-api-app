@@ -1,8 +1,10 @@
 package nl.inholland.bankingapi.model.dto;
 
+import nl.inholland.bankingapi.model.User;
+
 public class AccountPOST_DTO {
 
-    private Long userId;
+    private User user;
 
     private String IBAN;
     private double balance;
@@ -12,19 +14,20 @@ public class AccountPOST_DTO {
     public AccountPOST_DTO(){
 
     }
-    public AccountPOST_DTO(String IBAN, String balance, String absoluteLimit, String accountType){
+    public AccountPOST_DTO(User user, String IBAN, String balance, String absoluteLimit, String accountType){
+        this.user = user;
         this.IBAN = IBAN;
         this.balance = Double.parseDouble(balance);
         this.absoluteLimit = Double.parseDouble(absoluteLimit);
         this.accountType = accountType;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getIBAN() {

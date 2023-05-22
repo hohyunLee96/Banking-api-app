@@ -1,16 +1,15 @@
 package nl.inholland.bankingapi.model;
 
 //import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
+
+import javax.persistence.*;
 
 @Data
 @Entity
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = {"user_id", "name"})})
 public class Account {
 
     @Id
@@ -18,16 +17,17 @@ public class Account {
     @SequenceGenerator(name="account_seq", initialValue = 1)
     private Long accountId;
 
-//    @ManyToOne
-//    @JsonIgnoreProperties({"accounts"})
-//    private Long userId;
+    @ManyToOne
+    @JsonIgnoreProperties({"accounts"})
+    private User user;
 
     private String IBAN;
     private double balance;
     private double absoluteLimit;
     private AccountType accountType;
 
-    public Account(String iban, double balance, double absoluteLimit, String accountType) {
+    public Account(User user, String iban, double balance, double absoluteLimit, String accountType) {
+        this.user = user;
         this.IBAN = iban;
         this.balance = balance;
         this.absoluteLimit = absoluteLimit;
@@ -44,13 +44,13 @@ public class Account {
         this.accountId = accountId;
     }
 
-//    public Long getUserId() {
-//        return userId;
-//    }
-//
-//    public void setUserId(Long userId) {
-//        this.userId = userId;
-//    }
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public String getIBAN() {
         return IBAN;
