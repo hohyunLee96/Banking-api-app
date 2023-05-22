@@ -20,7 +20,6 @@ public class TransactionService {
     }
 
     public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGET_dto) {
-
         Transaction transaction = new Transaction();
         transaction.setId(transactionGET_dto.transactionId());
         transaction.setFromIban(transactionGET_dto.fromIban());
@@ -36,17 +35,19 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setFromIban(transactionPOSTDto.fromIban());
         transaction.setToIban(transactionPOSTDto.toIban());
-        transaction.setAmount(transactionPOSTDto.amount());
+      transaction.setAmount(transactionPOSTDto.amount());
         transaction.setType(transactionPOSTDto.type());
         transaction.setTimestamp(LocalDateTime.now());
 
         return transaction;
+
     }
     public List<Transaction> getAllTransactions() {
         return (List<Transaction>) transactionRepository.findAll();
     }
 
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
-        return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+        System.out.println(transactionPOSTDto);
+        return transactionRepository.save(this.mapTransactionToPostDTO(transactionPOSTDto));
     }
 }
