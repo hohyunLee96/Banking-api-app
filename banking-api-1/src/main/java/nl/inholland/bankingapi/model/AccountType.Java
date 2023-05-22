@@ -1,6 +1,5 @@
 package nl.inholland.bankingapi.model;
-
-public enum AccountType{
+ enum AccountType {
     saving,
     current
 }
