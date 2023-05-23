@@ -4,3 +4,37 @@
 .idea/sonarlint/issuestore/9/f/9fe84ebb15faf917b7def6236dba604453cc61e0
 .idea/sonarlint/issuestore/9/1/9110f383d45193f9e1f9708a0bb54a744105c100
 .idea/sonarlint/issuestore/index.pb
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+.idea/sonarlint
