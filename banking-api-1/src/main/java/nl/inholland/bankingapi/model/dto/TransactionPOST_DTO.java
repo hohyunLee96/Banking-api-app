@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.model.dto;
 
+
 import nl.inholland.bankingapi.model.TransactionType;
 
 import jakarta.validation.constraints.NotBlank;
