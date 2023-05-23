@@ -78,6 +78,6 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.14.2" level="project" />
   <component name="AdditionalModuleElements">
     <content url="file://$MODULE_DIR$" />
-
+  </component>
   </component>
 </module>

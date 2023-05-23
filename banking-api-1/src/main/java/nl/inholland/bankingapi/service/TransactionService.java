@@ -5,7 +5,6 @@ import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.TransactionRepository;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +26,7 @@ public class TransactionService {
         transaction.setFromIban(transactionGET_dto.fromIban());
         transaction.setToIban(transactionGET_dto.toIban());
         transaction.setAmount(transactionGET_dto.amount());
+        transaction.setPerformingUser(transactionGET_dto.performingUser());
         transaction.setType(TransactionType.valueOf(transactionGET_dto.type()));
 
         return transaction;
@@ -41,6 +41,7 @@ public class TransactionService {
         transaction.setToIban(transactionPOSTDto.toIban());
         transaction.setAmount(transactionPOSTDto.amount());
         transaction.setType(transactionPOSTDto.type());
+        transaction.setPerformingUser(transactionPOSTDto.performingUser());
         transaction.setTimestamp(LocalDateTime.now());
 
         return transaction;

@@ -16,11 +16,25 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToOne
+    private Account fromIban;
+    @OneToOne
+    private Account toIban;
     @Column(unique = true)
-    private String fromIban;
-    private String toIban;
     private double amount;
     private LocalDateTime timestamp;
+    @OneToOne
+    private User performingUser;
     private TransactionType type;
+
+
+    public Transaction(Account fromIban, Account toIban, double amount, LocalDateTime timestamp, TransactionType type, User performingUser) {
+        this.fromIban = fromIban;
+        this.toIban = toIban;
+        this.amount = amount;
+        this.timestamp = timestamp;
+        this.type = type;
+        this.performingUser = performingUser;
+    }
 
 }
