@@ -5,6 +5,7 @@ import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.TransactionRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+//    private final JwtTokenProvider jwtTokenProvider;
 
     public TransactionService(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
@@ -32,10 +34,12 @@ public class TransactionService {
 
     public Transaction mapTransactionToPostDTO(TransactionPOST_DTO transactionPOSTDto) {
 
+//        Authentication authentication = jwtTokenProvider.getAuthentication(token);
+//        int userId = Integer.parseInt(authentication.getName());
         Transaction transaction = new Transaction();
         transaction.setFromIban(transactionPOSTDto.fromIban());
         transaction.setToIban(transactionPOSTDto.toIban());
-      transaction.setAmount(transactionPOSTDto.amount());
+        transaction.setAmount(transactionPOSTDto.amount());
         transaction.setType(transactionPOSTDto.type());
         transaction.setTimestamp(LocalDateTime.now());
 
@@ -47,7 +51,6 @@ public class TransactionService {
     }
 
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
-        System.out.println(transactionPOSTDto);
         return transactionRepository.save(this.mapTransactionToPostDTO(transactionPOSTDto));
     }
 }
