@@ -34,10 +34,15 @@ public class AccountService {
         return account;
     }
 //    public List<Account> getAllAccounts(){
-//        return accountRepository.getAllAccounts();
+//        return (List<Account>)accountRepository.getAllAccounts();
 //    }
 
-//    public Account createNewAccount(AccountPOST_DTO account){
+    public List<Account> getAllAccounts() {
+        return (List<Account>) accountRepository.findAll();
+    }
+
+
+    //    public Account createNewAccount(AccountPOST_DTO account){
 //        return accountRepository.save(new Account(userRepository.findUserById(account.getUserId()), account.getIBAN(), account.getBalance()));
 //    }
 //    public Account createNewAccount(AccountPOST_DTO account){
