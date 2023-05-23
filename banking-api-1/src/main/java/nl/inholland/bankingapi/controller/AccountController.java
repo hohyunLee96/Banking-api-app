@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("accounts")
 @Log
@@ -27,10 +29,12 @@ public class AccountController {
     }
 
 
-//    @GetMapping
-//    public ResponseEntity getAllAccounts() {
-//        return ResponseEntity.ok(accountService.getAllAccounts());
-//    }
+    @GetMapping
+    public ResponseEntity<Object> getAllAccounts() {
+//        List<Account> accounts = accountService.getAllAccounts();
+//        return ResponseEntity.ok(accounts);
+        return ResponseEntity.ok(accountService.getAllAccounts());
+    }
 
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {
