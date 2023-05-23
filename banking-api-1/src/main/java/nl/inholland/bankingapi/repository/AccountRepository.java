@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AccountRepository extends CrudRepository<Account,Long> {
-    List<Account> getAllAccounts();
+//    List<Account> getAllAccounts();
 }

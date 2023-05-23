@@ -24,14 +24,26 @@ public class AccountService {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
     }
-    public List<Account> getAllAccounts(){
-        return accountRepository.getAllAccounts();
+    private Account mapDtoToAccount(AccountPOST_DTO dto) {
+        Account account = new Account();
+        account.setUser(userRepository.findUserById(dto.user().getId()));
+        account.setIBAN(dto.IBAN());
+        account.setBalance(dto.balance());
+        account.setAbsoluteLimit(dto.absoluteLimit());
+        account.setAccountType(dto.accountType());
+        return account;
     }
+//    public List<Account> getAllAccounts(){
+//        return accountRepository.getAllAccounts();
+//    }
 
 //    public Account createNewAccount(AccountPOST_DTO account){
 //        return accountRepository.save(new Account(userRepository.findUserById(account.getUserId()), account.getIBAN(), account.getBalance()));
 //    }
-    public Account createNewAccount(AccountPOST_DTO account){
-        return accountRepository.save(new Account(userRepository.findUserById(account.getUser().getId()),account.getIBAN(), account.getBalance(), account.getAbsoluteLimit(),account.getAccountType()));
+//    public Account createNewAccount(AccountPOST_DTO account){
+//        return accountRepository.save(new AccountPOST_DTO(userRepository.findUserById(account.getUser().getId()),account.getIBAN(), account.getBalance(), account.getAbsoluteLimit(),account.getAccountType()));
+//    }
+    public Account addAccount(AccountPOST_DTO account){
+        return accountRepository.save(this.mapDtoToAccount(account));
     }
 }
