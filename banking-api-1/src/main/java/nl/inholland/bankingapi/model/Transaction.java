@@ -19,8 +19,11 @@ public class Transaction {
     private Account fromIban;
     @OneToOne
     private Account toIban;
+    @Column
     private double amount;
+    @Column
     private LocalDateTime timestamp;
+    @Column
     private TransactionType type;
     @OneToOne
     private User performingUser;
