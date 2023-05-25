@@ -1,9 +1,6 @@
 package nl.inholland.bankingapi.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,17 +16,25 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String fromIban;
-    private String toIban;
+    @OneToOne
+    private Account fromIban;
+    @OneToOne
+    private Account toIban;
+    @Column(unique = true)
     private double amount;
     private LocalDateTime timestamp;
+    @OneToOne
+    private User performingUser;
     private TransactionType type;
 
-    public Transaction(String fromIban, String toIban, double amount, LocalDateTime timestamp, TransactionType type, User user) {
+
+    public Transaction(Account fromIban, Account toIban, double amount, LocalDateTime timestamp, TransactionType type, User performingUser) {
         this.fromIban = fromIban;
         this.toIban = toIban;
         this.amount = amount;
+        this.timestamp = timestamp;
         this.type = type;
-        this.timestamp = LocalDateTime.now();
+        this.performingUser = performingUser;
     }
+
 }
