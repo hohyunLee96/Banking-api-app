@@ -25,4 +25,11 @@ public class Transaction {
     private LocalDateTime timestamp;
     private TransactionType type;
 
+    public Transaction(String fromIban, String toIban, double amount, LocalDateTime timestamp, TransactionType type, User user) {
+        this.fromIban = fromIban;
+        this.toIban = toIban;
+        this.amount = amount;
+        this.type = type;
+        this.timestamp = LocalDateTime.now();
+    }
 }
