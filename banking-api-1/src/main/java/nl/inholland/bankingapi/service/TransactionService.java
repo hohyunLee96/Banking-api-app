@@ -2,53 +2,45 @@ package nl.inholland.bankingapi.service;
 
 import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.TransactionType;
+import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.TransactionRepository;
+import nl.inholland.bankingapi.repository.UserRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Service
 public class TransactionService {
-
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, ModelMapper modelMapper) {
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
+        this.modelMapper = modelMapper;
     }
 
-    public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGET_dto) {
-
-        Transaction transaction = new Transaction();
-        transaction.setId(transactionGET_dto.transactionId());
-        transaction.setFromIban(transactionGET_dto.fromIban());
-        transaction.setToIban(transactionGET_dto.toIban());
-        transaction.setAmount(transactionGET_dto.amount());
-        transaction.setPerformingUser(transactionGET_dto.performingUser());
-        transaction.setType(TransactionType.valueOf(transactionGET_dto.type()));
-
-        return transaction;
-    }
-
-    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO transactionPOSTDto) {
-
-        Transaction transaction = new Transaction();
-        transaction.setFromIban(transactionPOSTDto.fromIban());
-        transaction.setToIban(transactionPOSTDto.toIban());
-        transaction.setAmount(transactionPOSTDto.amount());
-        transaction.setType(transactionPOSTDto.type());
-        transaction.setPerformingUser(transactionPOSTDto.performingUser());
-        transaction.setTimestamp(LocalDateTime.now());
-
-        return transaction;
-    }
     public List<Transaction> getAllTransactions() {
         return (List<Transaction>) transactionRepository.findAll();
     }
 
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
         return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+    }
+
+    public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGETDto) {
+        return modelMapper.map(transactionGETDto, Transaction.class);
+    }
+
+    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO transactionPOSTDto) {
+        return modelMapper.map(transactionPOSTDto, Transaction.class);
     }
 }
