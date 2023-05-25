@@ -26,6 +26,7 @@ public class TransactionService {
         transaction.setFromIban(transactionGET_dto.fromIban());
         transaction.setToIban(transactionGET_dto.toIban());
         transaction.setAmount(transactionGET_dto.amount());
+        transaction.setPerformingUser(transactionGET_dto.performingUser());
         transaction.setType(TransactionType.valueOf(transactionGET_dto.type()));
 
         return transaction;
@@ -38,6 +39,7 @@ public class TransactionService {
         transaction.setToIban(transactionPOSTDto.toIban());
         transaction.setAmount(transactionPOSTDto.amount());
         transaction.setType(transactionPOSTDto.type());
+        transaction.setPerformingUser(transactionPOSTDto.performingUser());
         transaction.setTimestamp(LocalDateTime.now());
 
         return transaction;
