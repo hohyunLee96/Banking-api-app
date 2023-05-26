@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.service;
 
-import nl.inholland.bankingapi.model.*;
+import nl.inholland.bankingapi.model.Transaction;
+import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -11,20 +12,21 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final AccountRepository accountRepository;
     private final ModelMapper modelMapper;
+    private final AccountRepository accountRepository;
+    private final AccountService accountService;
 
-    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, AccountRepository accountRepository, ModelMapper modelMapper) {
+    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, ModelMapper modelMapper, AccountRepository accountRepository, AccountService accountService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
-        this.accountRepository = accountRepository;
         this.modelMapper = modelMapper;
+        this.accountRepository = accountRepository;
+        this.accountService = accountService;
     }
 
     public List<Transaction> getAllTransactions() {
@@ -32,26 +34,29 @@ public class TransactionService {
     }
 
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
-        Transaction transaction = mapTransactionToPostDTO(transactionPOSTDto);
-        transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userRepository.findUserById(transactionPOSTDto.performingUser().getId()));
-        return transactionRepository.save(transaction);
+//        Transaction transaction = mapTransactionToPostDTO(transactionPOSTDto);
+//        transaction.setTimestamp(LocalDateTime.now());
+//        transaction.setPerformingUser(userRepository.findUserById(transactionPOSTDto.performingUser().getId()));
+        return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
     }
 
-    private Transaction mapTransactionToPostDTO(TransactionPOST_DTO transactionPOSTDto) {
-        modelMapper.typeMap(TransactionPOST_DTO.class, Transaction.class)
-                .addMappings(mapper -> mapper.skip(Transaction::setTimestamp))
-                .addMappings(mapper -> mapper.skip(Transaction::setPerformingUser));
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
 
-        Transaction transaction = modelMapper.map(transactionPOSTDto, Transaction.class);
+    public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGETDto) {
+        return modelMapper.map(transactionGETDto, Transaction.class);
+    }
 
-        Optional<Account> fromIban = accountRepository.findById(transactionPOSTDto.fromIban());
-        transaction.setFromIban(fromIban);
 
-        Account toIban = accountRepository.findAccountById(transactionPOSTDto.getToIban().getAccountId());
-        transaction.setToIban(toIban);
-
+    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(postDto.amount());
+        transaction.setTimestamp(LocalDateTime.now());
+        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
+        transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
+        transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
+        transaction.setType(postDto.type());
         return transaction;
     }
 }
-

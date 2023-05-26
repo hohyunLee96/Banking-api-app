@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @NoArgsConstructor
-
 public class Transaction {
 
     @Id
@@ -21,9 +20,7 @@ public class Transaction {
     private Account toIban;
     @Column
     private double amount;
-    @Column
     private LocalDateTime timestamp;
-    @Column
     private TransactionType type;
     @OneToOne
     private User performingUser;
