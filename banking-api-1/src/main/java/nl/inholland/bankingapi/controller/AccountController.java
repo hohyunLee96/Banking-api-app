@@ -31,9 +31,17 @@ public class AccountController {
 
     @GetMapping
     public ResponseEntity<Object> getAllAccounts() {
-//        List<Account> accounts = accountService.getAllAccounts();
-//        return ResponseEntity.ok(accounts);
         return ResponseEntity.ok(accountService.getAllAccounts());
+    }
+
+    @GetMapping("id/{id}")
+    public ResponseEntity<Object> getAccountById(@PathVariable long id) {
+        return ResponseEntity.ok().body(accountService.getAccountById(id));
+    }
+
+    @GetMapping("firstName/{firstName}")
+    public ResponseEntity<Object> getIBANByUserFirstName(@PathVariable String firstName) {
+        return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstName));
     }
 
     @PostMapping
@@ -41,4 +49,6 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(accountService.addAccount(accountPOST_dto));
     }
+
+
 }
