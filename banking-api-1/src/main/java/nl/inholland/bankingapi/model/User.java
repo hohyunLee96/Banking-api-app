@@ -9,10 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @Data
 @Entity
@@ -37,6 +34,12 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserType userType;
     private Boolean hasAccount;
+
+    public User(String username, String password, UserType userType) {
+        this.username = username;
+        this.password = password;
+        this.userType = userType;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

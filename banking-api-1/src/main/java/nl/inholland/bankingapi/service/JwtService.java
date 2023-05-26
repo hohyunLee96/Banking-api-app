@@ -49,6 +49,7 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    //generates a JSON Web Token (JWT) based on the provided claims and user details
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
         return Jwts.builder()
                 .setClaims(extraClaims)

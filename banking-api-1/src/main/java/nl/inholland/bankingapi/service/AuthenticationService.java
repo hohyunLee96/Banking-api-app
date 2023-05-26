@@ -7,9 +7,12 @@ import nl.inholland.bankingapi.model.AuthenticationResponse;
 import nl.inholland.bankingapi.model.RegisterRequest;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +22,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     //allows creating user, save it to database and then return generated token
-    public AuthenticationResponse login(RegisterRequest registerRequest) {
+//    public AuthenticationResponse login(RegisterRequest registerRequest) {
 //        var user = User.builder()
 //                .username(registerRequest.getUsername())
 //                .password(registerRequest.getPassword())
@@ -27,10 +30,19 @@ public class AuthenticationService {
 //                .build();
 //        userRepository.save(user);
 //        var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
+//        return AuthenticationResponse.builder()
 //                .token(jwtToken)
+//                .build();
+//    }
+    public AuthenticationResponse login(RegisterRequest registerRequest) {
+        var user = new User(registerRequest.getUsername(), registerRequest.getPassword(), registerRequest.getUserType());
+        userRepository.save(user);
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
                 .build();
     }
+
 
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
         authenticationManager.authenticate(
@@ -40,12 +52,16 @@ public class AuthenticationService {
                 )
         );
 
-        var user = userRepository.findByUsername(authenticationRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));// Use UserDetailsService
-        var jwtToken = jwtService.generateToken(user); // Pass userDetails instead of user
+        Optional<User> userOptional = userRepository.findByUsername(authenticationRequest.getUsername());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            var jwtToken = jwtService.generateToken(user); // Pass userDetails instead of user
 
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .build();
+        } else {
+            throw new RuntimeException("User not found");
+        }
     }
 }
