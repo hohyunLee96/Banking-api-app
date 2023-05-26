@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("accounts")
 @Log
@@ -27,14 +29,26 @@ public class AccountController {
     }
 
 
-//    @GetMapping
-//    public ResponseEntity getAllAccounts() {
-//        return ResponseEntity.ok(accountService.getAllAccounts());
-//    }
+    @GetMapping
+    public ResponseEntity<Object> getAllAccounts() {
+        return ResponseEntity.ok(accountService.getAllAccounts());
+    }
+
+    @GetMapping("id/{id}")
+    public ResponseEntity<Object> getAccountById(@PathVariable long id) {
+        return ResponseEntity.ok().body(accountService.getAccountById(id));
+    }
+
+    @GetMapping("firstName/{firstName}")
+    public ResponseEntity<Object> getIBANByUserFirstName(@PathVariable String firstName) {
+        return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstName));
+    }
 
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(accountService.addAccount(accountPOST_dto));
     }
+
+
 }
