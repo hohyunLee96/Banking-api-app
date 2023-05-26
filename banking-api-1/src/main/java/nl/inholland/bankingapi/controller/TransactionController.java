@@ -17,12 +17,16 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
     @GetMapping
-    public ResponseEntity<Object> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.getAllTransactions());
+    public ResponseEntity<Object> getAllTransactions(@RequestParam(value = "offset", required = false)Integer offset, @RequestParam(value = "limit", required = false)Integer limit) {
+        return ResponseEntity.ok(transactionService.getAllTransactions(offset, limit));
     }
 
     @PostMapping
     public ResponseEntity<Object> addTransaction(@RequestBody TransactionPOST_DTO transactionPOSTDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.addTransaction(transactionPOSTDto));
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getTransactionById(@PathVariable long id) {
+        return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 }

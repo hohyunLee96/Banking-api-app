@@ -1,13 +1,16 @@
 package nl.inholland.bankingapi.service;
 
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.Transaction;
-import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,25 +32,25 @@ public class TransactionService {
         this.accountService = accountService;
     }
 
-    public List<Transaction> getAllTransactions() {
-        return (List<Transaction>) transactionRepository.findAll();
-    }
+    public List<Transaction> getAllTransactions(Integer offset, Integer limit) {
+        if (offset == null || offset < 0)
+            offset = 0;
 
+        if (limit == null || limit < 0)
+            limit = 20;
+
+        Pageable pageable = PageRequest.of(offset, limit);
+        return  transactionRepository.findAll(pageable).getContent();
+
+        //TODO: correct the offset because it skips 10 now
+    }
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
-//        Transaction transaction = mapTransactionToPostDTO(transactionPOSTDto);
-//        transaction.setTimestamp(LocalDateTime.now());
-//        transaction.setPerformingUser(userRepository.findUserById(transactionPOSTDto.performingUser().getId()));
         return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
-    }
-
-    private User getUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGETDto) {
         return modelMapper.map(transactionGETDto, Transaction.class);
     }
-
 
     public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
         Transaction transaction = new Transaction();
@@ -58,5 +61,12 @@ public class TransactionService {
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
         return transaction;
+    }
+
+    public Transaction getTransactionById(long id) {
+        //check if id exists
+        if (transactionRepository.findById(id).isEmpty())
+            throw new ApiRequestException("Transaction with the specified ID not found.", HttpStatus.BAD_REQUEST);
+        return transactionRepository.findById(id).get();
     }
 }
