@@ -1,7 +1,10 @@
 package nl.inholland.bankingapi.service;
 
-import nl.inholland.bankingapi.exception.ApiRequestException;
+import jakarta.persistence.EntityNotFoundException;
+import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.Transaction;
+import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -10,7 +13,6 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,11 +42,36 @@ public class TransactionService {
             limit = 20;
 
         Pageable pageable = PageRequest.of(offset, limit);
-        return  transactionRepository.findAll(pageable).getContent();
+        return transactionRepository.findAll(pageable).getContent();
 
         //TODO: correct the offset because it skips 10 now
     }
+
     public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
+        Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
+        Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
+        User senderUser = senderAccount.getUser();
+
+        if (transactionPOSTDto.fromIban() == null) {
+            throw new IllegalArgumentException("Error retrieving sending account");
+        }
+        if (transactionPOSTDto.toIban() == null) {
+            throw new IllegalArgumentException("Error retrieving receiving account");
+        }
+        if (transactionPOSTDto.amount() <= 0) {
+            throw new IllegalArgumentException("Invalid amount provided");
+        }
+        if (senderAccount.getBalance() < transactionPOSTDto.amount()) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+        if (senderUser.getDailyLimit() != null && this.getTotalTransactionAmountByUser(senderUser) + transactionPOSTDto.amount() > senderUser.getDailyLimit())
+            throw new IllegalArgumentException("Daily limit amount exceeded!");
+        if (senderAccount.getAccountType() == AccountType.SAVINGS || receiverAccount.getAccountType() == AccountType.SAVINGS && (senderAccount.getUser() != receiverAccount.getUser())) {
+            throw new IllegalArgumentException("You can only transfer money between your own accounts");
+        }
+
+//        senderUser.setCurrentTransactionsAmount(senderUser.getCurrentTransactionsAmount() + transaction.getAmount());
+
         return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
     }
 
@@ -66,7 +93,24 @@ public class TransactionService {
     public Transaction getTransactionById(long id) {
         //check if id exists
         if (transactionRepository.findById(id).isEmpty())
-            throw new ApiRequestException("Transaction with the specified ID not found.", HttpStatus.BAD_REQUEST);
+            throw new EntityNotFoundException("Transaction with the specified ID not found.");
         return transactionRepository.findById(id).get();
+    }
+
+    public Double getTotalTransactionAmountByUser(User user) {
+        List<Transaction> transactions = transactionRepository.findAllByPerformingUser_Id(user.getId());
+        double totalAmount = 0.0;
+        for (Transaction transaction : transactions) {
+            totalAmount += transaction.getAmount();
+        }
+        return totalAmount;
+    }
+
+    private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
+        //subtract money from the sender and save
+        senderAccount.setBalance(senderAccount.getBalance() - amount);
+
+        //add money to the receiver and save
+        receiverAccount.setBalance(receiverAccount.getBalance() + amount);
     }
 }

@@ -6,6 +6,6 @@ import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.User;
 
-public record TransactionPOST_DTO(@NotBlank String fromIban, String toIban, double amount, TransactionType type, Integer performingUser) {
+public record TransactionPOST_DTO(@NotBlank String fromIban, String toIban, Double amount, TransactionType type, Integer performingUser) {
 
 }
