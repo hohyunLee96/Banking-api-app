@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
@@ -7,7 +8,6 @@ import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Service
