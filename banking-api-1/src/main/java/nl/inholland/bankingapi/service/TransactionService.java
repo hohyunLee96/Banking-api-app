@@ -1,21 +1,23 @@
 package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import nl.inholland.bankingapi.model.Account;
-import nl.inholland.bankingapi.model.AccountType;
-import nl.inholland.bankingapi.model.Transaction;
-import nl.inholland.bankingapi.model.User;
+import jakarta.validation.constraints.NotBlank;
+import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.pages.TransactionPage;
 import nl.inholland.bankingapi.repository.AccountRepository;
+import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,18 +25,18 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final TransactionCriteriaRepository transactionCriteriaRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, ModelMapper modelMapper, AccountRepository accountRepository, AccountService accountService) {
+    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, ModelMapper modelMapper, AccountRepository accountRepository, AccountService accountService, TransactionCriteriaRepository transactionCriteriaRepository) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
-        this.accountRepository = accountRepository;
         this.accountService = accountService;
+        this.transactionCriteriaRepository = transactionCriteriaRepository;
     }
 
-    public List<Transaction> getAllTransactions(Integer offset, Integer limit) {
+    public List<TransactionGET_DTO> getAllTransactions(Integer offset, Integer limit) {
         if (offset == null || offset < 0)
             offset = 0;
 
@@ -42,12 +44,31 @@ public class TransactionService {
             limit = 20;
 
         Pageable pageable = PageRequest.of(offset, limit);
-        return transactionRepository.findAll(pageable).getContent();
-
+        List<TransactionGET_DTO> transactions = new ArrayList<>();
+        for (Transaction transaction : transactionRepository.findAll(pageable)) {
+            transactions.add(convertTransactionResponseToDTO(transaction));
+        }
+        return transactions;
         //TODO: correct the offset because it skips 10 now
     }
 
-    public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
+    private TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
+        return new TransactionGET_DTO(
+                transaction.getId(),
+                transaction.getFromIban().getIBAN(),
+                transaction.getToIban().getIBAN(),
+                transaction.getAmount(),
+                transaction.getType(),
+                transaction.getTimestamp(),
+                transaction.getPerformingUser().getId()
+        );
+    }
+
+    public Page<Transaction> getTransactionsWithFilters(TransactionSearchCriteria searchCriteria, TransactionPage transactionPage) {
+        return transactionCriteriaRepository.findAllWithFilters(transactionPage, searchCriteria);
+    }
+
+    public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
         Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
         Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
         User senderUser = senderAccount.getUser();
@@ -72,6 +93,7 @@ public class TransactionService {
 
 //        senderUser.setCurrentTransactionsAmount(senderUser.getCurrentTransactionsAmount() + transaction.getAmount());
 
+        transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
         return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
     }
 
@@ -79,15 +101,9 @@ public class TransactionService {
         return modelMapper.map(transactionGETDto, Transaction.class);
     }
 
-    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
-        Transaction transaction = new Transaction();
-        transaction.setAmount(postDto.amount());
-        transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
-        transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
-        transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
-        transaction.setType(postDto.type());
-        return transaction;
+
+    public List<Transaction> getAllTransactionsByIban(@NotBlank String iban) {
+        return transactionRepository.findAllByFromIban(iban);
     }
 
     public Transaction getTransactionById(long id) {
@@ -106,11 +122,26 @@ public class TransactionService {
         return totalAmount;
     }
 
+    //method that transforms the getall transactions response into a transactiongetDTO
+
+
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
         senderAccount.setBalance(senderAccount.getBalance() - amount);
-
         //add money to the receiver and save
         receiverAccount.setBalance(receiverAccount.getBalance() + amount);
     }
+
+    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
+        Transaction transaction = new Transaction();
+        transaction.setAmount(postDto.amount());
+        transaction.setTimestamp(LocalDateTime.now());
+        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
+        transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
+        transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
+        transaction.setType(postDto.type());
+        return transaction;
+    }
+
+
 }

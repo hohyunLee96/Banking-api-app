@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     List<Transaction> findAllByPerformingUser_Id(Long id);
+    List<Transaction> findAllByFromIban(String iban);
 
 }

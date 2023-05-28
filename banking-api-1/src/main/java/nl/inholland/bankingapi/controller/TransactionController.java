@@ -1,7 +1,9 @@
 package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.model.TransactionSearchCriteria;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.pages.TransactionPage;
 import nl.inholland.bankingapi.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,4 +31,11 @@ public class TransactionController {
     public ResponseEntity<Object> getTransactionById(@PathVariable long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
+
+//  §
+    @PutMapping("/search")
+    public ResponseEntity<Object> updateTransaction(@PathVariable  @RequestBody TransactionPOST_DTO transactionPOSTDto) {
+        return ResponseEntity.ok(transactionService.getAllTransactionsByIban( transactionPOSTDto.fromIban()));
+    }
+
 }
