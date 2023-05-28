@@ -26,6 +26,9 @@ public class AccountService {
     private Account mapDtoToAccount(AccountPOST_DTO dto) {
         Account account = new Account();
         String iban = createIBAN();
+        while(isIbanPresent(iban)){
+            iban = createIBAN();
+        }
         account.setUser(userRepository.findUserById(dto.userId()));
         account.setIBAN(dto.IBAN());
         account.setIBAN(iban);
