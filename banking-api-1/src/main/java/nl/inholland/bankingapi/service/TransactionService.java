@@ -83,7 +83,7 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
+        transaction.setPerformingUser(userRepository.getUserById(postDto.performingUser()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());

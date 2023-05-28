@@ -1,6 +1,5 @@
 //package nl.inholland.bankingapi.exception;
 //
-//
 //import jakarta.persistence.EntityNotFoundException;
 //import lombok.extern.java.Log;
 //import nl.inholland.bankingapi.model.dto.ExceptionDTO;
@@ -17,8 +16,7 @@
 //
 //@ControllerAdvice
 //@Log
-//public class ApiRequestException  extends ResponseEntityExceptionHandler{
-//
+//public class BankingApiExceptionHandler extends ResponseEntityExceptionHandler {
 //    @ExceptionHandler(value = {DataIntegrityViolationException.class, JdbcSQLIntegrityConstraintViolationException.class})
 //    public ResponseEntity<Object> handleDataIntegrityViolation(Exception e
 //            , WebRequest webRequest) {

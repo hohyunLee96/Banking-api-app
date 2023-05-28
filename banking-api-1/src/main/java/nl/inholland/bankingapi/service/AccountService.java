@@ -6,7 +6,9 @@ import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
 import javax.persistence.EntityNotFoundException;
+
 
 import java.util.List;
 import java.util.Random;
@@ -96,6 +98,7 @@ public class AccountService {
     public List<Account> getAllAccountsByUserId(long id) {
         return accountRepository.getAllAccountsByUserId(id);
     }
+
     public Account getAccountByIBAN(String IBAN) {
         if(!isIbanPresent(IBAN)){
             throw new EntityNotFoundException("IBAN not found"+ IBAN);
