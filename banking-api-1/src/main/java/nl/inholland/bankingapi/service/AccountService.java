@@ -1,11 +1,11 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -96,5 +96,20 @@ public class AccountService {
 
     public List<Account> getAllAccountsByUserId(long id) {
         return accountRepository.getAllAccountsByUserId(id);
+    //    public Account createNewAccount(AccountPOST_DTO account){
+//        return accountRepository.save(new Account(userRepository.findUserById(account.getUserId()), account.getIBAN(), account.getBalance()));
+//    }
+//    public Account createNewAccount(AccountPOST_DTO account){
+//        return accountRepository.save(new AccountPOST_DTO(userRepository.findUserById(account.getUser().getId()),account.getIBAN(), account.getBalance(), account.getAbsoluteLimit(),account.getAccountType()));
+//    }
+    public Account getAccountByIBAN(String IBAN) {
+        if(!isIbanPresent(IBAN)){
+            throw new EntityNotFoundException("IBAN not found"+ IBAN);
+        }
+        return accountRepository.findAccountByIBAN(IBAN);
+    }
+    public boolean isIbanPresent (String iban){
+        return (accountRepository.findAccountByIBAN(iban) != null);
+
     }
 }

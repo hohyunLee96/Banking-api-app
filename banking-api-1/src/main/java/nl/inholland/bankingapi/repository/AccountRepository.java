@@ -14,6 +14,8 @@ public interface AccountRepository extends CrudRepository<Account,Long> {
     List<Account> getIBANByUserFirstName(String firstname);
 
     List<Account> getAllAccountsByUserId(long id);
+  
+    Account findAccountByIBAN(String IBAN);
 
     @Query("SELECT SUM(account.balance) AS totalBalance FROM Account account WHERE account.user.id = :user")
     Double getTotalBalanceByUserId(@Param("user") long id);

@@ -3,8 +3,8 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/banking-api-1/src/main/java" isTestSource="false" />
-    </content>
+      <sourceFolder url="file://$MODULE_DIR$/banking-api-1/src/main/java" isTestSource="false"/>
+    <content/>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
@@ -76,8 +76,7 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-web:6.0.7" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-web:6.0.7" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.14.2" level="project" />
-  <component name="AdditionalModuleElements">
-    <content url="file://$MODULE_DIR$" />
-
-  </component>
+    <component name="AdditionalModuleElements">
+        <content url="file://$MODULE_DIR$" />
+    </component>
 </module>
