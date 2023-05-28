@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("users")
 @Log
 public class UserController {
     private final UserService userService;
@@ -27,6 +27,8 @@ public class UserController {
 
     @PostMapping("/login")
     public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws Exception {
-        return userService.login(loginRequestDTO.email(), loginRequestDTO.password());
+        return new ResponseTokenDTO(
+                userService.login(loginRequestDTO.email(), loginRequestDTO.password())
+        );
     }
 }
