@@ -15,13 +15,13 @@ import java.security.cert.CertificateException;
 
 @Component
 public class JwtKeyProvider {
-    @Value("${server.ssl.key-store}")
+    @Value("${jwt.key-store}")
     private String keystore;
 
-    @Value("${server.ssl.key-store-password}")
+    @Value("${jwt.key-store-password}")
     private String password;
 
-    @Value("${server.ssl.key-alias}")
+    @Value("${jwt.key-alias}")
     private String alias;
 
     private Key privateKey;
@@ -32,6 +32,8 @@ public class JwtKeyProvider {
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         keyStore.load(resource.getInputStream(), password.toCharArray());
         privateKey = keyStore.getKey(alias, password.toCharArray());
+
+        if (privateKey == null) throw new RuntimeException("Private key not found");
     }
 
     public Key getPrivateKey() {

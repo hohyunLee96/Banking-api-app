@@ -32,11 +32,11 @@ public class User {
     private List<UserType> userType;
     private Boolean hasAccount;
 
-//    public User(String email, String password, UserType userType) {
-//        this.email = email;
-//        this.password = password;
-//        this.userType = userType;
-//    }
+    public User(String email, String password, List<UserType> userType) {
+        this.email = email;
+        this.password = password;
+        this.userType = userType;
+    }
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
