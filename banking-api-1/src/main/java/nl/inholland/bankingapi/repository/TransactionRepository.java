@@ -1,9 +1,14 @@
 package nl.inholland.bankingapi.repository;
 
 import nl.inholland.bankingapi.model.Transaction;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface TransactionRepository extends CrudRepository<Transaction, Long> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+    List<Transaction> findAllByPerformingUser_Id(Long id);
+
 }

@@ -1,5 +1,7 @@
 package nl.inholland.bankingapi.model.dto;
 
-public record TransactionGET_DTO(long transactionId, String fromIban, String toIban, double amount, String type) {
+import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.User;
 
+public record TransactionGET_DTO(long transactionId, Account fromIban, Account toIban, double amount, String type, UserGET_DTO performingUser) {
 }
