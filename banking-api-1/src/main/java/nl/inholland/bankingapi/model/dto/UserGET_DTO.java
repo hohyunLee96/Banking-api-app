@@ -4,6 +4,6 @@ import nl.inholland.bankingapi.model.UserType;
 
 import java.util.List;
 
-public record UserGET_DTO(long userId, String email, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, List<UserType> userType, Boolean hasAccount) {
+public record UserGET_DTO(long userId, String email, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Boolean hasAccount) {
 
 }

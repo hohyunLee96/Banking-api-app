@@ -18,7 +18,6 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
     // About the method security annotation enables the @PreAuthorize annotation for role-based security
     // https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html
     private final JwtTokenFilter jwtTokenFilter;
-    private final String baseUrl = "/api/v1";
 
     public WebSecurityConfig(JwtTokenFilter jwtTokenFilter) {
 
@@ -35,9 +34,9 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
 
         httpSecurity.authorizeHttpRequests()
                 //permits access to the URL path /api/v1/users without authentication
-                .requestMatchers(baseUrl +"/users").permitAll()
+                .requestMatchers( "users/login").permitAll();
                 //Only authenticated users will be able to access this endpoint
-                .requestMatchers(baseUrl +"/bankapi").authenticated();
+//                .requestMatchers("/bankapi").authenticated();
 
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code

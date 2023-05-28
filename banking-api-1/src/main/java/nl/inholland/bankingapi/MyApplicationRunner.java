@@ -45,6 +45,7 @@ public class MyApplicationRunner implements ApplicationRunner {
                 "123456789", "Street", "1234AB", "City", UserType.user);
         User user2 = new User("employee@email.com", "1234", "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.employee);
+        User user3 = new User("user@email.com", "1234");
 
         Account accountFrom = new Account(user1, "NL21INHO0123400081", 10000000.00, 100.00, AccountType.CURRENT);
         Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT);
@@ -55,6 +56,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         accountRepository.save(accountTo);
         userRepository.save(user1);
         userRepository.save(user2);
+        userRepository.save(user3);
     }
 
     public void LoadAccounts() {
