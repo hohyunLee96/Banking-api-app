@@ -3,6 +3,7 @@ package nl.inholland.bankingapi.service;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,11 +56,16 @@ public class UserService {
                 .findUserByEmail(email)
                 .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
 //         Check if the password hash matches
-//        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
+        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
 //         Return a JWT to the client
             return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-//        } else {
-//            throw new javax.naming.AuthenticationException("Incorrect email/password");
-//        }
+        } else {
+            throw new javax.naming.AuthenticationException("Incorrect email/password");
+        }
+    }
+
+    private String register(String email, String password, String firstName, String lastName, String birthDate,
+                            String postalCode, String address, String city, String phoneNumber, UserType userType){
+        return null;
     }
 }
