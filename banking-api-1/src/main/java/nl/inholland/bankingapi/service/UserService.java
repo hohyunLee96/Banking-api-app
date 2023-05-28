@@ -1,22 +1,25 @@
 package nl.inholland.bankingapi.service;
 
-import nl.inholland.bankingapi.model.Account;
+import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+//    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+//    private final JwtTokenProvider jwtTokenProvider;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+//        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+//        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     public User mapUserToDTO(UserGET_DTO userGET_dto){
@@ -43,4 +46,13 @@ public class UserService {
     public List<User> getAllUsers(){
         return (List<User>) userRepository.findAll();
     }
+
+//    public String login (LoginRequest_DTO loginRequestDTO) throws AuthenticationException {
+//        User user = userRepository.findByUsername(loginRequestDTO.getUsername()).orElseThrow(() ->
+//                new AuthenticationException("Username does not exist"));
+//        if(bCryptPasswordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())){
+//            return jwtTokenProvider.createToken(user.getUsername(), user.getUserType());
+//        }
+//        throw new AuthenticationException("Password is incorrect") ;
+//    }
 }

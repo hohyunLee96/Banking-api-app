@@ -2,12 +2,13 @@ package nl.inholland.bankingapi.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Entity
@@ -29,7 +30,6 @@ public class User implements UserDetails {
     private String address;
     private String city;
     private String phoneNumber;
-    @Enumerated(EnumType.STRING)
     private UserType userType;
     private Boolean hasAccount;
 

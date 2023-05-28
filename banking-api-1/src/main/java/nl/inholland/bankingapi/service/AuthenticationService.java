@@ -1,13 +1,11 @@
 package nl.inholland.bankingapi.service;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.model.AuthenticationRequest;
 import nl.inholland.bankingapi.model.AuthenticationResponse;
 import nl.inholland.bankingapi.model.RegisterRequest;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.repository.UserRepository;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -34,7 +32,7 @@ public class AuthenticationService {
 //                .token(jwtToken)
 //                .build();
 //    }
-    public AuthenticationResponse login(RegisterRequest registerRequest) {
+    public AuthenticationResponse register(RegisterRequest registerRequest) {
         var user = new User(registerRequest.getUsername(), registerRequest.getPassword(), registerRequest.getUserType());
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);

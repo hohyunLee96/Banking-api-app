@@ -23,6 +23,7 @@ public class ApplicationConfiguration {
                 .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
     }
 
+    //Data access object needed to fetch user details from the database/encode passwords/validate passwords etc
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -36,5 +37,6 @@ public class ApplicationConfiguration {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
 
 }

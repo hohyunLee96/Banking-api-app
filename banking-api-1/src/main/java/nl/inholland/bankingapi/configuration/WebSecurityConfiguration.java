@@ -33,7 +33,7 @@ public class WebSecurityConfiguration {
 
         httpSecurity.authorizeHttpRequests()
                 //permit all the requests to the login endpoint
-                .requestMatchers("/api/auth").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .authenticationProvider(authenticationProvider)

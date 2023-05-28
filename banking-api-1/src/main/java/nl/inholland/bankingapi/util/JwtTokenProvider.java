@@ -2,7 +2,7 @@
 //
 //import io.jsonwebtoken.*;
 //import nl.inholland.bankingapi.model.UserType;
-//import nl.inholland.bankingapi.service.UserDetailsServiceImpl;
+//import nl.inholland.bankingapi.service.UserDetailsService;
 //import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 //import org.springframework.security.core.Authentication;
@@ -19,10 +19,10 @@
 //
 //    @Value("${application.token.validity}")
 //    private long validityInMicroseconds;
-//    private final UserDetailsServiceImpl userDetailsService;
+//    private final UserDetailsService userDetailsService;
 //    private final JwtKeyProvider jwtKeyProvider;
 //
-//    public JwtTokenProvider(UserDetailsServiceImpl userDetailsService, JwtKeyProvider jwtKeyProvider) {
+//    public JwtTokenProvider(UserDetailsService userDetailsService, JwtKeyProvider jwtKeyProvider) {
 //        this.userDetailsService = userDetailsService;
 //        this.jwtKeyProvider = jwtKeyProvider;
 //    }
