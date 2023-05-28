@@ -1,4 +1,7 @@
 package nl.inholland.bankingapi.model.dto;
 
-public class AccountGET_DTO {
+import nl.inholland.bankingapi.model.AccountType;
+import org.apache.catalina.User;
+
+public record AccountGET_DTO (String user, String IBAN, double balance, double absoluteLimit, AccountType accountType){
 }
