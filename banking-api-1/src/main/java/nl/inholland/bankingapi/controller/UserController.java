@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 @Log
 public class UserController {
     private final UserService userService;
@@ -15,9 +15,9 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping(params = "id")
-    public ResponseEntity<Object> getUserById(@RequestParam long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getUserById(@PathVariable long id) {
+        return ResponseEntity.ok().body(userService.getUserById(id));
     }
 
     @GetMapping
