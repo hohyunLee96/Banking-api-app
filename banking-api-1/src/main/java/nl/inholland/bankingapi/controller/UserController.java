@@ -6,6 +6,8 @@ import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
+
 @RestController
 @RequestMapping("users")
 @Log
@@ -26,9 +28,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws Exception {
-        return new ResponseTokenDTO(
+    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
+        return ResponseEntity.ok().body(new ResponseTokenDTO(
                 userService.login(loginRequestDTO.email(), loginRequestDTO.password())
-        );
+        ));
     }
 }
