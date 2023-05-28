@@ -94,7 +94,7 @@ public class AccountService {
     }
 
     public List<Account> getAllAccountsByUserId(long id) {
-        return accountRepository.getAllAccountsByUserId(id);
+        return accountRepository.getAllAccountsByUserId(id);}
     //    public Account createNewAccount(AccountPOST_DTO account){
 //        return accountRepository.save(new Account(userRepository.findUserById(account.getUserId()), account.getIBAN(), account.getBalance()));
 //    }

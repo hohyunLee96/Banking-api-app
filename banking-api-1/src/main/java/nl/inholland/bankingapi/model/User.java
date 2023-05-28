@@ -30,10 +30,7 @@ public class User {
     private String address;
     private String city;
     private String phoneNumber;
-
     private UserType userType;
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<UserType> userTypeList;
     private Boolean hasAccount;
     private Double dailyLimit;
     private Double transactionLimit;
