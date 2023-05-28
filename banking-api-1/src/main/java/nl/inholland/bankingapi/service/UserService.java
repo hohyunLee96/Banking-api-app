@@ -50,7 +50,7 @@ public class UserService {
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
             return userRepository.save(user);
         }
-        throw new IllegalArgumentException("Username is already taken");
+        throw new IllegalArgumentException("Email is already taken");
     }
 
     public List<User> getAllUsers(){
@@ -68,7 +68,7 @@ public class UserService {
             // Return a JWT to the client
             return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
         } else {
-            throw new AuthenticationException("Invalid username/password");
+            throw new AuthenticationException("Invalid email/password");
         }
     }
 }

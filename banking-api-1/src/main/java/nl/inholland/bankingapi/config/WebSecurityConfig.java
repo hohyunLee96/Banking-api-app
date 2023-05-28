@@ -15,8 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig extends WebSecurityConfiguration {
-    // About the method security annotation enables the @PreAuthorize annotation for role-based security
-    // https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html
+
     private final JwtTokenFilter jwtTokenFilter;
 
     public WebSecurityConfig(JwtTokenFilter jwtTokenFilter) {
@@ -24,8 +23,6 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    // To create our own custom security configuration, we create a SecurityFilterChain bean
-    // Read more here: https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         // We need to do this to allow POST requests
@@ -33,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.authorizeHttpRequests()
-                //permits access to the URL path /api/v1/users without authentication
+                //permits access to the URL path /users/login without authentication
                 .requestMatchers( "users/login").permitAll();
                 //Only authenticated users will be able to access this endpoint
 //                .requestMatchers("/bankapi").authenticated();

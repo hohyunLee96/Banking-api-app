@@ -27,7 +27,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         // First, we'll get the token from the requests' authorization header
         String token = getToken(request);
 
-        // If no token is provided, we'll just continue along the chain.
         // The framework will automatically return a 403 if the accessed URL required authorization
         if (token == null) {
             filterChain.doFilter(request, response);
