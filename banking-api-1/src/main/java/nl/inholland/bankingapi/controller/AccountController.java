@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.service.AccountService;
 import org.springframework.http.HttpStatus;
@@ -17,9 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
-@RequestMapping("accounts")
+@RequestMapping("/accounts")
 @Log
 public class AccountController {
     private final AccountService accountService;
@@ -28,20 +30,31 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-
     @GetMapping
     public ResponseEntity<Object> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
 
-    @GetMapping("id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
         return ResponseEntity.ok().body(accountService.getAccountById(id));
     }
+//    @GetMapping("/{id}")
+//    public AccountGET_DTO getAccountById(@PathVariable long id) {
+//        return accountService.getAccountByUserId(id);
+//    }
 
-    @GetMapping("firstName/{firstName}")
-    public ResponseEntity<Object> getIBANByUserFirstName(@PathVariable String firstName) {
-        return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstName));
+    @GetMapping("/iban/{firstname}")
+    public ResponseEntity<Object> getIBANByUserFirstName(@PathVariable String firstname) {
+        return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstname));
+    }
+    @GetMapping("/totalbalance/{id}")
+    public Double getTotalBalanceByUserId(@PathVariable Long id) {
+        return accountService.getTotalBalanceByUserId(id);
+    }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok().body(accountService.getAllAccountsByUserId(id));
     }
 
     @PostMapping
@@ -49,6 +62,7 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(accountService.addAccount(accountPOST_dto));
     }
+
 
 
 }
