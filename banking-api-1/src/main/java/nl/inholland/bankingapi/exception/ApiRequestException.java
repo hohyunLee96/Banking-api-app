@@ -17,7 +17,7 @@ import javax.naming.AuthenticationException;
 
 @ControllerAdvice
 @Log
-public class ApiRequestException  extends ResponseEntityExceptionHandler{
+public class ApiRequestException extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {DataIntegrityViolationException.class, JdbcSQLIntegrityConstraintViolationException.class})
     public ResponseEntity<Object> handleDataIntegrityViolation(Exception e
@@ -38,8 +38,10 @@ public class ApiRequestException  extends ResponseEntityExceptionHandler{
                 .body(
                         new ExceptionDTO(
                                 404,
-                                entityNotFoundException.getClass().getName(),
-                                entityNotFoundException.getMessage()
+
+                                entityNotFoundException.getMessage(),
+                                entityNotFoundException.getClass().getName()
+
                         )
                 );
     }

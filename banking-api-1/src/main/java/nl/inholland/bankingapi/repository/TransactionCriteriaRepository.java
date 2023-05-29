@@ -25,31 +25,6 @@ public class TransactionCriteriaRepository {
         this.entityManager = entityManager;
         this.criteriaBuilder = entityManager.getCriteriaBuilder();
     }
-    public Page<Transaction> findAllWithFilters(TransactionPage transactionPage, TransactionSearchCriteria searchCriteria ) {
-        CriteriaQuery<Transaction> query = criteriaBuilder.createQuery(Transaction.class);
-        Root<Transaction> transactionRoot = query.from(Transaction.class);
-        Predicate predicate = getPredicate(searchCriteria, transactionRoot);
-        query.where(predicate);
-        setOrder(transactionPage, query, transactionRoot);
-        TypedQuery<Transaction> typedQuery = entityManager.createQuery(query);
-        typedQuery.setFirstResult(transactionPage.getPageNumber() * transactionPage.getPageSize());
-        typedQuery.setMaxResults(transactionPage.getPageSize());
-        Pageable pageable = getPageable(transactionPage);
-        long transactionCount = getTransactionCount(predicate);
-        return new PageImpl<>(typedQuery.getResultList(), pageable, transactionCount);
-    }
-
-    private long getTransactionCount(Predicate predicate) {
-        CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
-        Root<Transaction> countRoot = countQuery.from(Transaction.class);
-        countQuery.select(criteriaBuilder.count(countRoot)).where(predicate);
-        return entityManager.createQuery(countQuery).getSingleResult();
-    }
-
-
-    private void setOrder(TransactionPage transactionPage, CriteriaQuery<Transaction> query, Root<Transaction> transactionRoot) {
-        query.orderBy(criteriaBuilder.desc(transactionRoot.get(transactionPage.getSortBy())));
-    }
 
     Predicate getPredicate(TransactionSearchCriteria searchCriteria, Root<Transaction> transactionRoot) {
         return criteriaBuilder.and(
@@ -57,14 +32,10 @@ public class TransactionCriteriaRepository {
                 criteriaBuilder.like(transactionRoot.get("toIban"), "%" + searchCriteria.getToIban() + "%"),
                 criteriaBuilder.greaterThanOrEqualTo(transactionRoot.get("timestamp"), searchCriteria.getFromDate()),
                 criteriaBuilder.lessThanOrEqualTo(transactionRoot.get("timestamp"), searchCriteria.getToDate()),
-                criteriaBuilder.like(transactionRoot.get("amount"), searchCriteria.getAmount() + "%")
+                criteriaBuilder.greaterThanOrEqualTo(transactionRoot.get("amount"), searchCriteria.getGreaterThanAmount()),
+                criteriaBuilder.lessThanOrEqualTo(transactionRoot.get("amount"), searchCriteria.getLessThanAmount()),
+                criteriaBuilder.equal(transactionRoot.get("amount"), searchCriteria.getEqualToAmount())
         );
-    }
-
-
-    private Pageable getPageable(TransactionPage transactionPage) {
-        Sort sort = Sort.by(transactionPage.getSortDirection(), transactionPage.getSortBy());
-        return PageRequest.of(transactionPage.getPageNumber(), transactionPage.getPageSize(), sort);
     }
 
 
