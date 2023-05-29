@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -164,10 +165,14 @@ public class TransactionService {
 //        );
 //
 //    }
-    public List<Transaction> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Transaction>specification=TransactionSpecifications.getSpecifications( fromIban,  toIban,  fromDate,  toDate,  lessThanAmount,  greaterThanAmount,  equalToAmount,  type,  performingUser);
-        return transactionRepository.findAll(specification,pageable);
+        List<TransactionGET_DTO> transactions = new ArrayList<>();
+        for (Transaction transaction : transactionRepository.findAll(specification,pageable)) {
+            transactions.add(convertTransactionResponseToDTO(transaction));
+        }
+        return transactions;
 
     }
 
