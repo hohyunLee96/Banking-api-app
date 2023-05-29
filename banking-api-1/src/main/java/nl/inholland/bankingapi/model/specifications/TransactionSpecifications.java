@@ -9,10 +9,10 @@ public class TransactionSpecifications {
     private TransactionSpecifications() {
     }
     public static Specification<Transaction> hasFromIban(String fromIban) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("fromIban"), fromIban);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("fromIban").get("IBAN"), fromIban);
     }
     public static Specification<Transaction> hasToIban(String toIban) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("toIban"), toIban);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("toIban").get("IBAN"), toIban);
     }
     public static Specification<Transaction> hasAmountGreaterThan(double amount) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), amount);
