@@ -47,7 +47,8 @@ public class MyApplicationRunner implements ApplicationRunner {
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234")
                 , "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.user);
-        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User", "User", "11-11-2000",
+        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"),
+                "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.employee);
 
 
