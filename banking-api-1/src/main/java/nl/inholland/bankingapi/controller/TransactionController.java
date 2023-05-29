@@ -36,7 +36,7 @@ public class TransactionController {
             @RequestParam( required = false) Long performingUser
 
     ) {
-        return ResponseEntity.ok(transactionService.getAllTransactions(toIban, fromIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser));
+        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser));
     }
 
     @PostMapping
