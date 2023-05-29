@@ -16,10 +16,12 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseTokenDTO> register(
+    public ResponseEntity<Void> register(
             @RequestBody RegisterRequestDTO registerRequestDTO) {
-        return ResponseEntity.ok(authenticationService.register(registerRequestDTO));
+        authenticationService.register(registerRequestDTO);
+        return ResponseEntity.ok().build();
     }
+
     @PostMapping("/authenticate")
     public ResponseEntity<ResponseTokenDTO> authenticate(
             @RequestBody ResponseTokenDTO responseTokenDTO) {

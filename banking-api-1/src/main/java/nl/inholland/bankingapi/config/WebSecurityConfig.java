@@ -31,9 +31,10 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.authorizeHttpRequests()
-                .requestMatchers("/users/login").permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(("/users")).permitAll();
+                .requestMatchers(("/users/**")).permitAll()
+                .requestMatchers(("/register")).permitAll();
+
         httpSecurity.headers().frameOptions().disable();
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code
