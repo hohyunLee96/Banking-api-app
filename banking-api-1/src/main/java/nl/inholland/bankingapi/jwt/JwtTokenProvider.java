@@ -46,13 +46,13 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        // We will get the username from the token
+        // We will get the email from the token
         // And then get the UserDetails for this user from our service
         // We can then pass the UserDetails back to the caller
         try {
             Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(jwtKeyProvider.getPrivateKey()).build().parseClaimsJws(token);
-            String username = claims.getBody().getSubject();
-            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+            String email = claims.getBody().getSubject();
+            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(email);
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtException("Bearer token not valid");

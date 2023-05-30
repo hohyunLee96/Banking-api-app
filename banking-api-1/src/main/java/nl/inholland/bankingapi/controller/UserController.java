@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.controller;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
+import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +35,4 @@ public class UserController {
         ));
     }
 
-//    @PostMapping("/register")
 }

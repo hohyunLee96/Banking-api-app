@@ -15,6 +15,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+//sets up the authentication and authorization mechanisms, defines security rules, and registers various filters
 public class WebSecurityConfig extends WebSecurityConfiguration {
 
     private final JwtTokenFilter jwtTokenFilter;
@@ -30,9 +31,10 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.authorizeHttpRequests()
-                .requestMatchers("/users/login").permitAll()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(("/users")).permitAll();
+                .requestMatchers(("/users/**")).permitAll()
+                .requestMatchers(("/register")).permitAll();
+
         httpSecurity.headers().frameOptions().disable();
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code
