@@ -29,6 +29,9 @@ public class AccountService {
     private Account mapDtoToAccount(AccountPOST_DTO dto) {
         Account account = new Account();
         String iban = createIBAN();
+//        while(isIbanPresent(iban)){
+//            iban = createIBAN();
+//        }
         account.setUser(userRepository.findUserById(dto.userId()));
         account.setIBAN(dto.IBAN());
         account.setIBAN(iban);
@@ -65,7 +68,7 @@ public class AccountService {
     public AccountGET_DTO getAccountByUserId(long id) {
         return accountRepository.getAccountByUserId(id);
     }
-    public Account getAccountById(long id) {
+    public Account getAccountById(long id ) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));
     }
