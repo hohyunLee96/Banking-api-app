@@ -1,12 +1,9 @@
 package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
-import nl.inholland.bankingapi.model.TransactionSearchCriteria;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.service.TransactionService;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,7 +42,7 @@ public class TransactionController {
     @PostMapping
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'USER')")
     public ResponseEntity<Object> addTransaction(@RequestBody TransactionPOST_DTO transactionPOSTDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.addTransaction(transactionPOSTDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.convertTransactionResponseToDTO(transactionService.addTransaction(transactionPOSTDto)));
     }
 
 
@@ -54,6 +51,5 @@ public class TransactionController {
     public ResponseEntity<Object> getTransactionById(@PathVariable long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
-
 
 }

@@ -27,11 +27,11 @@ public class Account {
     @Column(unique = true)
     private String IBAN;
 
-    private double balance;
-    private double absoluteLimit;
+    private Double balance;
+    private Double absoluteLimit;
     private AccountType accountType;
 
-    public Account(User user, String IBAN, double balance,double absoluteLimit, AccountType accountType) {
+    public Account(User user, String IBAN, Double balance,Double absoluteLimit, AccountType accountType) {
         this.user = user;
         this.IBAN = IBAN;
         this.balance = balance;

@@ -2,25 +2,21 @@ package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
 import jakarta.validation.constraints.NotBlank;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -54,8 +50,18 @@ public class TransactionService {
         this.transactionSpecifications = transactionSpecifications;
     }
 
+    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+        Pageable pageable = PageRequest.of(0, 10);
+        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
+        List<TransactionGET_DTO> transactions = new ArrayList<>();
+        for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
+            transactions.add(convertTransactionResponseToDTO(transaction));
+        }
+        return transactions;
 
-    private TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
+    }
+
+    public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
         return new TransactionGET_DTO(
                 transaction.getId(),
                 transaction.getFromIban().getIBAN(),
@@ -72,27 +78,11 @@ public class TransactionService {
         Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
         User senderUser = senderAccount.getUser();
 
-        if (transactionPOSTDto.fromIban() == null) {
-            throw new IllegalArgumentException("Error retrieving sending account");
-        }
-        if (transactionPOSTDto.toIban() == null) {
-            throw new IllegalArgumentException("Error retrieving receiving account");
-        }
-        if (transactionPOSTDto.amount() <= 0) {
-            throw new IllegalArgumentException("Invalid amount provided");
-        }
-        if (senderAccount.getBalance() < transactionPOSTDto.amount()) {
-            throw new IllegalArgumentException("Insufficient funds");
-        }
-        if (senderUser.getDailyLimit() != null && this.getTotalTransactionAmountByUser(senderUser) + transactionPOSTDto.amount() > senderUser.getDailyLimit())
-            throw new IllegalArgumentException("Daily limit amount exceeded!");
-        if (senderAccount.getAccountType() == AccountType.SAVINGS || receiverAccount.getAccountType() == AccountType.SAVINGS && (senderAccount.getUser() != receiverAccount.getUser())) {
-            throw new IllegalArgumentException("You can only transfer money between your own accounts");
-        }
-//        senderUser.setCurrentTransactionsAmount(senderUser.getCurrentTransactionsAmount() + transaction.getAmount());
+        checkTransaction(mapTransactionToPostDTO(transactionPOSTDto), senderAccount, receiverAccount);
         transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
         return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
     }
+
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
         senderAccount.setBalance(senderAccount.getBalance() - amount);
@@ -103,6 +93,7 @@ public class TransactionService {
     public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
         return transactionRepository.findAllByFromIban(iban);
     }
+
     public TransactionGET_DTO getTransactionById(long id) {
         Optional<Transaction> optionalTransaction = transactionRepository.findById(id);
         if (optionalTransaction.isPresent()) {
@@ -133,16 +124,24 @@ public class TransactionService {
         return transaction;
     }
 
-
-    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
-        Pageable pageable = PageRequest.of(0, 10);
-        Specification<Transaction>specification=TransactionSpecifications.getSpecifications( fromIban,  toIban,  fromDate,  toDate,  lessThanAmount,  greaterThanAmount,  equalToAmount,  type,  performingUser);
-        List<TransactionGET_DTO> transactions = new ArrayList<>();
-        for (Transaction transaction : transactionRepository.findAll(specification,pageable)) {
-            transactions.add(convertTransactionResponseToDTO(transaction));
+    private ResponseEntity<String> checkTransaction(Transaction transaction, Account fromAccount, Account toAccount) {
+        if (transaction.getAmount() <= 0) {
+          return new ResponseEntity<>("You cannot transfer a negative amount of money", HttpStatus.BAD_REQUEST);
         }
-        return transactions;
+        if (fromAccount.getBalance() < transaction.getAmount()) {
+            return new ResponseEntity<>("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
+          return new ResponseEntity<>("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getUser().getId() != transaction.getPerformingUser().getId()) {
+        return new ResponseEntity<>("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
+        }
+
+
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
 
 }
