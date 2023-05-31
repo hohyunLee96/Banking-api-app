@@ -9,6 +9,7 @@ import nl.inholland.bankingapi.service.TransactionService;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import jakarta.transaction.Transactional;
 
@@ -23,14 +24,16 @@ public class MyApplicationRunner implements ApplicationRunner {
     private final TransactionService transactionService;
     private final UserService userService;
     private final AccountService accountService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService) {
+    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override

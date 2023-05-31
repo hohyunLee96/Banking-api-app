@@ -34,10 +34,12 @@ public class User {
     private Boolean hasAccount;
     private Double dailyLimit;
     private Double transactionLimit;
+
+
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
 
-    public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType) {
+   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
