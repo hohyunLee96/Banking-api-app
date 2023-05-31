@@ -24,16 +24,14 @@ public class MyApplicationRunner implements ApplicationRunner {
     private final TransactionService transactionService;
     private final UserService userService;
     private final AccountService accountService;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
@@ -44,10 +42,10 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     public void loadInformationForDB() {
 
-        User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234")
+        User user1 = new User("user@email.com", "1234"
                 , "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.user);
-        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"),
+        User user2 = new User("employee@email.com", "1234",
                 "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.employee);
 
@@ -64,7 +62,6 @@ public class MyApplicationRunner implements ApplicationRunner {
     }
 
     public void LoadAccounts() {
-
 
     }
 }

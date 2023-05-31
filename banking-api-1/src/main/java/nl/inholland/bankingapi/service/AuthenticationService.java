@@ -39,7 +39,4 @@ public class AuthenticationService {
 
     }
 
-    public ResponseTokenDTO authenticate(ResponseTokenDTO responseTokenDTO) {
-        return null;
-    }
 }

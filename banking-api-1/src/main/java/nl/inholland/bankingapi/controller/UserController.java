@@ -5,6 +5,7 @@ import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -28,6 +29,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+//    @PreAuthorize("hasAuthority('employee')")
     @PostMapping("/login")
     public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
         return ResponseEntity.ok().body(new ResponseTokenDTO(

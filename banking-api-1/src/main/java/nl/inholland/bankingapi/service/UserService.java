@@ -64,8 +64,4 @@ public class UserService {
         }
     }
 
-    private String register(String email, String password, String firstName, String lastName, String birthDate,
-                            String postalCode, String address, String city, String phoneNumber, UserType userType){
-        return null;
-    }
 }

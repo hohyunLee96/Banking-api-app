@@ -3,6 +3,7 @@ package nl.inholland.bankingapi.config;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -33,7 +34,11 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.authorizeHttpRequests()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                 .requestMatchers(("/users/**")).permitAll()
-                .requestMatchers(("/register")).permitAll();
+                .requestMatchers(("/register")).permitAll()
+                .anyRequest().authenticated();
+//                .requestMatchers(("/accounts")).permitAll()
+//                .requestMatchers(("/authenticate")).permitAll();
+
 
         httpSecurity.headers().frameOptions().disable();
 
