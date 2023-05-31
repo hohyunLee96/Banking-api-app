@@ -24,12 +24,13 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUserById(id));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') and hasRole('ROLE_USER')")
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-//    @PreAuthorize("hasAuthority('employee')")
+//    @PreAuthorize("hasRole('USER')")
     @PostMapping("/login")
     public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
         return ResponseEntity.ok().body(new ResponseTokenDTO(

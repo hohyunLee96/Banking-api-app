@@ -9,6 +9,7 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -40,7 +41,7 @@ public class UserService {
         user.setCity(userGET_dto.city());
         user.setPhoneNumber(userGET_dto.phoneNumber());
         user.setEmail(userGET_dto.email());
-        user.setUserType(userGET_dto.userType());
+        user.setUserType(Arrays.asList(userGET_dto.userType()));
         user.setHasAccount(userGET_dto.hasAccount());
 
         return user;

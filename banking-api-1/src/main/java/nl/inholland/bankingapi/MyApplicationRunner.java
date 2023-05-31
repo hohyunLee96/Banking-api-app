@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class MyApplicationRunner implements ApplicationRunner {
@@ -45,9 +47,9 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void loadInformationForDB() {
 
         User user1 = new User("user@email.com", "1234", "User1", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER);
+                "123456789", "Street", "1234AB", "City", List.of(UserType.ROLE_USER));
         User user2 = new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE);
+                "123456789", "Street", "1234AB", "City", Arrays.asList(UserType.ROLE_EMPLOYEE, UserType.ROLE_USER));
 
         Account accountFrom = new Account(user1, "NL21INHO0123400081", 100.00, 100.00, AccountType.CURRENT);
         Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT);

@@ -33,7 +33,6 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @PreAuthorize("hasRole('employee')")
     @GetMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<Object> getAllAccounts() {

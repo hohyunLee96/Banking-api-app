@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
-import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
 
     public void register(RegisterRequestDTO registerRequestDTO) {
         try {

@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -23,14 +24,17 @@ public class JwtTokenProvider {
         this.jwtKeyProvider = jwtKeyProvider;
     }
 
-    public String createToken(String username, UserType roles) {
+    public String createToken(String username, List<UserType> roles) {
         Claims claims = Jwts.claims().setSubject(username);
 
         // And we add an array of the roles to the auth element of the Claims
         // Note that we only provide the role as information to the frontend
         // The actual role based authorization should always be done in the backend code
         claims.put("auth",
-                roles.name());
+                roles
+                        .stream()
+                        .map(UserType::name)
+                        .toList());
 
         // We decide on an expiration date
         Date now = new Date();
