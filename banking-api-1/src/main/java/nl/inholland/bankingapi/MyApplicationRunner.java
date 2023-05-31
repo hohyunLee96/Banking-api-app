@@ -41,12 +41,12 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     public void loadInformationForDB() {
 
-        User user1 = new User("user@email.com", "1234", "User", "User", "11-11-2000",
+        User user1 = new User("user@email.com", "1234", "User1", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.user);
-        User user2 = new User("employee@email.com", "1234", "User", "User", "11-11-2000",
+        User user2 = new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.employee);
 
-        Account accountFrom = new Account(user1, "NL21INHO0123400081", 10000000.00, 100.00, AccountType.CURRENT);
+        Account accountFrom = new Account(user1, "NL21INHO0123400081", 100.00, 100.00, AccountType.CURRENT);
         Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT);
 
      Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
