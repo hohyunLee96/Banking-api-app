@@ -35,7 +35,7 @@ public class AccountController {
 
     @PreAuthorize("hasRole('employee')")
     @GetMapping
-    @PreAuthorize("hasAuthority('EMPLOYEE')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<Object> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
