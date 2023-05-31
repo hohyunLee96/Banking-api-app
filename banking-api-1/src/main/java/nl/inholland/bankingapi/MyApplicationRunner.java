@@ -9,6 +9,7 @@ import nl.inholland.bankingapi.service.TransactionService;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import jakarta.transaction.Transactional;
 
@@ -23,14 +24,16 @@ public class MyApplicationRunner implements ApplicationRunner {
     private final TransactionService transactionService;
     private final UserService userService;
     private final AccountService accountService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService) {
+    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
@@ -41,10 +44,13 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     public void loadInformationForDB() {
 
-        User user1 = new User("user@email.com", "1234", "User", "User", "11-11-2000",
+        User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234")
+                , "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.user);
-        User user2 = new User("employee@email.com", "1234", "User", "User", "11-11-2000",
+        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"),
+                "User", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.employee);
+
 
         Account accountFrom = new Account(user1, "NL21INHO0123400081", 10000000.00, 100.00, AccountType.CURRENT);
         Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT);
