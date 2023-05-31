@@ -37,7 +37,6 @@ public class User {
     private Double dailyLimit;
     private Double transactionLimit;
 
-
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
 

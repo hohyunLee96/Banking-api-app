@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public void register(RegisterRequestDTO registerRequestDTO) {
+
         try {
             User user = new User(
                     registerRequestDTO.email(),
@@ -35,6 +37,20 @@ public class AuthenticationService {
             throw new RuntimeException("Unable to register user.");
         }
 
+    }
+
+    public String login(String email, String password) throws javax.naming.AuthenticationException {
+
+        User user = this.userRepository
+                .findUserByEmail(email)
+                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
+        //Check if the password hash matches
+        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
+            //Return a JWT to the client
+            return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
+        } else {
+            throw new javax.naming.AuthenticationException("Incorrect email/password");
+        }
     }
 
 }

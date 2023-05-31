@@ -31,10 +31,9 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.authorizeHttpRequests()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(("/users/**")).permitAll()
-                .requestMatchers(("/register")).permitAll()
-                        .anyRequest().authenticated();
+                .requestMatchers(AntPathRequestMatcher.antMatcher("h2-console/**")).permitAll()
+                .requestMatchers(("auth/**")).permitAll()
+                .anyRequest().authenticated();
 
         httpSecurity.headers().frameOptions().disable();
 

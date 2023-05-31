@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi;
 
+import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
@@ -18,25 +19,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class MyApplicationRunner implements ApplicationRunner {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-    private final TransactionService transactionService;
-    private final UserService userService;
-    private final AccountService accountService;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    public MyApplicationRunner(TransactionRepository transactionRepository, AccountRepository accountRepository, UserRepository userRepository, TransactionService transactionService, UserService userService, AccountService accountService, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.transactionRepository = transactionRepository;
-        this.accountRepository = accountRepository;
-        this.userRepository = userRepository;
-        this.transactionService = transactionService;
-        this.userService = userService;
-        this.accountService = accountService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
 
     @Override
     @Transactional

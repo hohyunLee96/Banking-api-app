@@ -15,13 +15,9 @@ import java.util.List;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     public User getUserById(Long id) {
@@ -49,20 +45,6 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
-    }
-
-    public String login(String email, String password) throws javax.naming.AuthenticationException {
-        // See if a user with the provided username exists or throw exception
-        User user = this.userRepository
-                .findUserByEmail(email)
-                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
-//         Check if the password hash matches
-        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-//         Return a JWT to the client
-            return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-        } else {
-            throw new javax.naming.AuthenticationException("Incorrect email/password");
-        }
     }
 
 }
