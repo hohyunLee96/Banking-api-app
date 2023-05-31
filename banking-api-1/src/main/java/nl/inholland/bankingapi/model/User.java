@@ -39,7 +39,7 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
 
-   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType) {
+   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType,Double dailyLimit,Double transactionLimit) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -51,5 +51,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.userType = userType;
         this.hasAccount = false;
+        this.dailyLimit = dailyLimit;
+        this.transactionLimit = transactionLimit;
     }
 }

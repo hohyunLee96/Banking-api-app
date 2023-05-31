@@ -46,14 +46,16 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234")
                 , "User", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.user);
+                "123456789", "Street", "1234AB", "City", UserType.USER,100.0,1000.00);
         User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"),
                 "User", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.employee);
+                "123456789", "Street", "1234AB", "City", UserType.EMPLOYEE,100.0,1000.00);
+        User customer= new User("customer@email.com", bCryptPasswordEncoder.encode("1234"),
+                "User", "User", "11-11-2000",
+                "123456789", "Street", "1234AB", "City", UserType.CUSTOMER,100.0,1000.00);
 
-
-        Account accountFrom = new Account(user1, "NL21INHO0123400081", 10000000.00, 100.00, AccountType.CURRENT);
-        Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT);
+        Account accountFrom = new Account(user1, "NL21INHO0123400081", 10000000.00, 0.00, AccountType.CURRENT);
+        Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 0.00, AccountType.CURRENT);
 
      Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
         transactionRepository.save(transaction);
@@ -61,10 +63,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         accountRepository.save(accountTo);
         userRepository.save(user1);
         userRepository.save(user2);
+        userRepository.save(customer);
     }
 
-    public void LoadAccounts() {
-
-
-    }
 }

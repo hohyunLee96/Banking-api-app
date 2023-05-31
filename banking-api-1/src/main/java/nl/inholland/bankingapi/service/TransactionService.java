@@ -54,23 +54,7 @@ public class TransactionService {
         this.transactionSpecifications = transactionSpecifications;
     }
 
-    /******GETTING TRANSACTIONS******/
 
-//    public List<TransactionGET_DTO> getAllTransactions(Integer offset, Integer limit,TransactionSearchCriteria transactionSearchCriteria) {
-//        if (offset == null || offset < 0)
-//            offset = 0;
-//
-//        if (limit == null || limit < 0)
-//            limit = 20;
-//
-//        Pageable pageable = PageRequest.of(offset, limit);
-//        List<TransactionGET_DTO> transactions = new ArrayList<>();
-//        for (Transaction transaction : transactionRepository.findAll(pageable)) {
-//            transactions.add(convertTransactionResponseToDTO(transaction));
-//        }
-//        return transactions;
-//        //TODO: correct the offset because it skips 10 now
-//    }
     private TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
         return new TransactionGET_DTO(
                 transaction.getId(),
@@ -82,7 +66,6 @@ public class TransactionService {
                 transaction.getPerformingUser().getId()
         );
     }
-
 
     public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
         Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
@@ -150,21 +133,7 @@ public class TransactionService {
         return transaction;
     }
 
-//    public Page<Transaction> getAllTransactions(Pageable pageable, TransactionSearchCriteria transactionSearchCriteria) {
-//        return transactionRepository.findAllByFromIbanOrToIbanOrTimestampBetweenOrAmountLessThanEqualOrAmountGreaterThanEqualOrAmountEqualsOrTypeOrPerformingUser(
-//                pageable,
-//                transactionSearchCriteria.getFromIban(),
-//                transactionSearchCriteria.getToIban(),
-//                transactionSearchCriteria.getFromDate(),
-//                transactionSearchCriteria.getFromDate(),
-//                transactionSearchCriteria.getLessThanAmount(),
-//                transactionSearchCriteria.getGreaterThanAmount(),
-//                transactionSearchCriteria.getGreaterThanAmount(),
-//                transactionSearchCriteria.getType(),
-//                transactionSearchCriteria.getPerformingUser()
-//        );
-//
-//    }
+
     public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Transaction>specification=TransactionSpecifications.getSpecifications( fromIban,  toIban,  fromDate,  toDate,  lessThanAmount,  greaterThanAmount,  equalToAmount,  type,  performingUser);
