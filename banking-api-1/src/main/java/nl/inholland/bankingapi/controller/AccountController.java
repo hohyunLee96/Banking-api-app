@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/accounts")
 @Log
@@ -72,30 +72,10 @@ public class AccountController {
         return ResponseEntity.ok().body(response);
 //        return ResponseEntity.ok().body(accountService.getAllAccountsByUserId(userId));
     }
-
-    //    @GetMapping("/totalbalance/{id}")
-//    public Double getTotalBalanceByUserId(@PathVariable Long id) {
-//        return accountService.getTotalBalanceByUserId(id);
-//    }
-//    @GetMapping("/user/{id}")
-//    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
-//        return ResponseEntity.ok().body(accountService.getAllAccountsByUserId(id));
-//    }
-//    @GetMapping("/{id}/totalBalance")
-//    public ResponseEntity<Object> getTotalBalanceByUserId(@PathVariable long id) {
-//        return ResponseEntity.ok().body(accountService.getTotalBalanceByUserId(id));
-//    }
-//    @GetMapping("/user/{id}")
-//    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
-//        List<Account> accounts = accountService.getAllAccountsByUserId(id);
-//        double totalBalance = accountService.getTotalBalanceByUserId(id);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("accounts", accounts);
-//        response.put("totalBalance", totalBalance);
-//
-//        return ResponseEntity.ok().body(response);
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
+        return ResponseEntity.ok().body(accountService.disableAccount(id, accountGET_dto));
+    }
 
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {
