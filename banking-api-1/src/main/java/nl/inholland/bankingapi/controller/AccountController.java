@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@CrossOrigin(origins = "http://localhost:5174")
 @RestController
 @RequestMapping("/accounts")
 @Log
@@ -34,7 +35,6 @@ public class AccountController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<Object> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
     }
