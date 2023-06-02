@@ -33,5 +33,4 @@ public class Transaction {
         this.timestamp = LocalDateTime.now();
         this.performingUser = performingUser;
     }
-
 }

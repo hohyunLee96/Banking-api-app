@@ -1,116 +1,213 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import nl.inholland.bankingapi.model.Account;
-import nl.inholland.bankingapi.model.AccountType;
-import nl.inholland.bankingapi.model.Transaction;
-import nl.inholland.bankingapi.model.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
+import nl.inholland.bankingapi.exception.ApiRequestException;
+import nl.inholland.bankingapi.filter.JwtTokenFilter;
+import nl.inholland.bankingapi.jwt.JwtTokenProvider;
+import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
+import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
+    private final EntityManager entityManager;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final TransactionCriteriaRepository transactionCriteriaRepository;
+    private final TransactionSpecifications transactionSpecifications;
+    private final HttpServletRequest request;
 
-    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository, ModelMapper modelMapper, AccountRepository accountRepository, AccountService accountService) {
+    private final AccountRepository accountRepository;
+    private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenFilter jwtTokenFilter;
+
+    public TransactionService(TransactionRepository transactionRepository,
+                              UserRepository userRepository,
+                              ModelMapper modelMapper,
+                              AccountRepository accountRepository,
+                              EntityManager entityManager, AccountService accountService,
+                              TransactionCriteriaRepository transactionCriteriaRepository,
+                              TransactionSpecifications transactionSpecifications, HttpServletRequest request, AccountRepository accountRepository1, UserService userService, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
-        this.accountRepository = accountRepository;
+        this.entityManager = entityManager;
         this.accountService = accountService;
+        this.transactionCriteriaRepository = transactionCriteriaRepository;
+        this.transactionSpecifications = transactionSpecifications;
+        this.request = request;
+        this.accountRepository = accountRepository1;
+        this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    public List<Transaction> getAllTransactions(Integer offset, Integer limit) {
-        if (offset == null || offset < 0)
-            offset = 0;
-
-        if (limit == null || limit < 0)
-            limit = 20;
-
-        Pageable pageable = PageRequest.of(offset, limit);
-        return transactionRepository.findAll(pageable).getContent();
-
-        //TODO: correct the offset because it skips 10 now
+    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+        Pageable pageable = PageRequest.of(0, 10);
+        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
+        List<TransactionGET_DTO> transactions = new ArrayList<>();
+        for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
+            transactions.add(convertTransactionResponseToDTO(transaction));
+        }
+        getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
+        return transactions;
     }
 
-    public Transaction addTransaction(TransactionPOST_DTO transactionPOSTDto) {
-        Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
-        Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
-        User senderUser = senderAccount.getUser();
-
-        if (transactionPOSTDto.fromIban() == null) {
-            throw new IllegalArgumentException("Error retrieving sending account");
-        }
-        if (transactionPOSTDto.toIban() == null) {
-            throw new IllegalArgumentException("Error retrieving receiving account");
-        }
-        if (transactionPOSTDto.amount() <= 0) {
-            throw new IllegalArgumentException("Invalid amount provided");
-        }
-        if (senderAccount.getBalance() < transactionPOSTDto.amount()) {
-            throw new IllegalArgumentException("Insufficient funds");
-        }
-        if (senderUser.getDailyLimit() != null && this.getTotalTransactionAmountByUser(senderUser) + transactionPOSTDto.amount() > senderUser.getDailyLimit())
-            throw new IllegalArgumentException("Daily limit amount exceeded!");
-        if (senderAccount.getAccountType() == AccountType.SAVINGS || receiverAccount.getAccountType() == AccountType.SAVINGS && (senderAccount.getUser() != receiverAccount.getUser())) {
-            throw new IllegalArgumentException("You can only transfer money between your own accounts");
-        }
-
-//        senderUser.setCurrentTransactionsAmount(senderUser.getCurrentTransactionsAmount() + transaction.getAmount());
-
-        return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+    public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
+        return new TransactionGET_DTO(
+                transaction.getId(),
+                transaction.getFromIban().getIBAN(),
+                transaction.getToIban().getIBAN(),
+                transaction.getAmount(),
+                transaction.getType(),
+                transaction.getTimestamp(),
+                transaction.getPerformingUser().getId()
+        );
     }
 
-    public Transaction mapTransactionToGetDTO(TransactionGET_DTO transactionGETDto) {
-        return modelMapper.map(transactionGETDto, Transaction.class);
+    public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
+        try {
+            Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
+            Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
+
+            //transfer money from sender to receiver and update balances
+            checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
+            transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
+
+            //save transaction to transaction repository
+            return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
+        }
     }
+
+    private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
+        //subtract money from the sender and save
+        senderAccount.setBalance(senderAccount.getBalance() - amount);
+        receiverAccount.setBalance(receiverAccount.getBalance() + amount);
+        // Save the updated receiver account
+        accountRepository.save(senderAccount);
+        accountRepository.save(receiverAccount);
+
+    }
+
+    public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
+        return transactionRepository.findAllByFromIban(iban);
+    }
+
+    public TransactionGET_DTO getTransactionById(long id) {
+        Optional<Transaction> optionalTransaction = transactionRepository.findById(id);
+        if (optionalTransaction.isPresent()) {
+            return convertTransactionResponseToDTO((optionalTransaction.get()));
+        } else {
+            throw new EntityNotFoundException("Transaction with the specified ID not found.");
+        }
+    }
+
 
     public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
+        transaction.setPerformingUser(userService.getUserById(getLoggedInUser(request).getId()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
         return transaction;
     }
 
-    public Transaction getTransactionById(long id) {
-        //check if id exists
-        if (transactionRepository.findById(id).isEmpty())
-            throw new EntityNotFoundException("Transaction with the specified ID not found.");
-        return transactionRepository.findById(id).get();
+    private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
+        User perfomingUser = getLoggedInUser(request);
+        User receiverUser = userService.getUserById(toAccount.getUser().getId());
+        User senderUser = userService.getUserById(perfomingUser.getId());
+        if (transaction.amount() <= 0) {
+            throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getBalance() < transaction.amount()) {
+            throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
+            throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
+        }
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != UserType.ROLE_EMPLOYEE) {
+            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
+        }
+        if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
+                && senderUser.getId() != receiverUser.getId()) {
+            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
+            throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
+            throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.BAD_REQUEST);
+        }
+        if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
+            throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
+        }
+//        if (toAccount.getIsActive() == false )
+//            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+
+//        if (fromAccount.getIsActive() == false )
+//            throw new ApiRequestException("Sending account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+//
+
+        if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
+            throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
+
     }
 
-    public Double getTotalTransactionAmountByUser(User user) {
-        List<Transaction> transactions = transactionRepository.findAllByPerformingUser_Id(user.getId());
+    public User getLoggedInUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String receivedToken = jwtTokenFilter.getToken(request);
+        jwtTokenProvider.validateToken(receivedToken);
+        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
+        String userEmail = authenticatedUserUsername.getName();
+        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    }
+
+    private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
+        List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
         double totalAmount = 0.0;
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction : dailyTransactions) {
             totalAmount += transaction.getAmount();
         }
         return totalAmount;
     }
 
-    private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
-        //subtract money from the sender and save
-        senderAccount.setBalance(senderAccount.getBalance() - amount);
 
-        //add money to the receiver and save
-        receiverAccount.setBalance(receiverAccount.getBalance() + amount);
+    private boolean accountIsSavingsAccount(Account account) {
+        return account.getAccountType() == AccountType.SAVINGS;
     }
+
+    private boolean userIsEmployee(User user) {
+        return user.getUserType() == UserType.ROLE_EMPLOYEE;
+    }
+
 }

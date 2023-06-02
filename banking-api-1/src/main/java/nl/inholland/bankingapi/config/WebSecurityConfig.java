@@ -38,6 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
                 .requestMatchers(("/auth/**")).permitAll()
                 .anyRequest().authenticated();
 
+
         httpSecurity.headers().frameOptions().disable();
 
         // We ensure our own filter is executed before the framework runs its own authentication filter code
