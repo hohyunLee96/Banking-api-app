@@ -30,6 +30,8 @@ public class AuthenticationService {
                     registerRequestDTO.city(),
                     registerRequestDTO.phoneNumber(),
                     registerRequestDTO.userType(),
+                    registerRequestDTO.dailyLimit(),
+                    registerRequestDTO.transactionLimit(),
                     registerRequestDTO.hasAccount()
             );
 

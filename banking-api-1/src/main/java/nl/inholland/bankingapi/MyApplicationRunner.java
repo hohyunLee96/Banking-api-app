@@ -43,25 +43,28 @@ public class MyApplicationRunner implements ApplicationRunner {
     }
 
     public void loadInformationForDB() {
+        //Load users
+        User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, 1000.00, 1000.00,true);
+        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE,10000.00, 10000.00, true);
 
-        User user1 = new User("user@email.com", "1234", "User1", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, true);
-        User user2 = new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, true);
+        User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
 
-        Account accountFrom = new Account(user1, "NL21INHO0123400081", 100.00, 100.00, AccountType.CURRENT, true);
-        Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT, true);
+        //Load Accounts
+        Account accountFrom = new Account(user1, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+        Account accountTo = new Account(user2, "NL21INHO0123400082", 9000.00, 0.00, AccountType.SAVINGS, true);
+        Account bank= new Account(user1, "NL01INHO0000000001", 9000.00, 0.00, AccountType.CURRENT, true);
 
      Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
         transactionRepository.save(transaction);
         accountRepository.save(accountFrom);
         accountRepository.save(accountTo);
+        accountRepository.save(bank);
         userRepository.save(user1);
         userRepository.save(user2);
+        userRepository.save(customer);
     }
 
-    public void LoadAccounts() {
-
-
-    }
 }

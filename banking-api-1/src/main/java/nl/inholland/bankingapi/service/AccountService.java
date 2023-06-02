@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
@@ -8,6 +9,8 @@ import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.core.parameters.P;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -127,7 +130,7 @@ public class AccountService {
 
     public Account getAccountByIBAN(String IBAN) {
         if(!isIbanPresent(IBAN)){
-            throw new EntityNotFoundException("IBAN not found"+ IBAN);
+            throw new EntityNotFoundException("Iban not found " + IBAN);
         }
         return accountRepository.findAccountByIBAN(IBAN);
     }

@@ -1,16 +1,21 @@
 package nl.inholland.bankingapi.filter;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -33,7 +38,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        else System.out.println("Token: " + token);
+//        else System.out.println("Token: " + token);
 
         try {
             // If a token was provided, we should  validate it and set the security context
@@ -65,11 +70,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         // Continue along the filter chain
         filterChain.doFilter(request, response);
     }
-    private String getToken(HttpServletRequest request) {
+    public String getToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
         return null;
     }
+
+
 }
