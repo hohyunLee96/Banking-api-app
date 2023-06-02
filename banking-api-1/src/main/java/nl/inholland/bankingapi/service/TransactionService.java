@@ -171,12 +171,14 @@ public class TransactionService {
         if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
             throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
         }
-//        if (toAccount.getIsActive() == false )
-//            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        if (!fromAccount.isActive()) {
+            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        }
 
-//        if (fromAccount.getIsActive() == false )
-//            throw new ApiRequestException("Sending account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
-//
+        if (!toAccount.isActive()) {
+            throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        }
+
 
         if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
             throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
