@@ -4,15 +4,14 @@ import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.service.AuthenticationService;
-import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("auth")
 public class AuthenticationController {
 
@@ -32,7 +31,7 @@ public class AuthenticationController {
 
     @GetMapping("/hello")
     public String Hello() {
-        return "Front end and back end are connected!!";
+        return "Connection Established.";
     }
 
 }
