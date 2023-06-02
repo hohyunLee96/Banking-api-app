@@ -24,11 +24,13 @@ public class UserController {
         this.userService = userService;
     }
 
+    //GET Returns all the users on the system
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    //POST Creates a new user
     @PostMapping
     public ResponseEntity registerUser(@RequestBody UserPOST_DTO dto) {
         try {
@@ -39,11 +41,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserById(@PathVariable long id) {
-        return ResponseEntity.ok().body(userService.getUserById(id));
-    }
-
+    //DELETE Deletes a user of specified id
     @DeleteMapping("/{id}")
     public ResponseEntity deleteGuitar(@PathVariable Long id) {
         try {
@@ -54,19 +52,13 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
-        return ResponseEntity.ok().body(new ResponseTokenDTO(
-                userService.login(loginRequestDTO.email(), loginRequestDTO.password())
-        ));
+    //GET Retrieves a user of specified id
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getUserById(@PathVariable long id) {
+        return ResponseEntity.ok().body(userService.getUserById(id));
     }
 
-    @GetMapping("/getUserByAccount/{id}")
-    public ResponseEntity<User> getUserByAccount(@PathVariable("id") Long id) {
-        User user = userService.getUserByAccountAccountId(id);
-        return ResponseEntity.ok(user);
-    }
-
+    //PUT Updates an existing user
     @PutMapping("/update/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
         try {
@@ -77,6 +69,20 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+
+    @PostMapping("/login")
+    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
+        return ResponseEntity.ok().body(new ResponseTokenDTO(
+                userService.login(loginRequestDTO.email(), loginRequestDTO.password())
+        ));
+    }
+
+    //GET Retrieves a user who owns the account of specified id
+    @GetMapping("/getUserByAccount/{id}")
+    public ResponseEntity<User> getUserByAccount(@PathVariable("id") Long id) {
+        User user = userService.getUserByAccountAccountId(id);
+        return ResponseEntity.ok(user);
     }
 
 }

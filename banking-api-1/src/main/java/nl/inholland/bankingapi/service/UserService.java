@@ -91,25 +91,25 @@ public class UserService {
     }
 
     public User registerUser(UserPOST_DTO dto) {
-        //Check if the user already exists
+        // Check if the user already exists
         if (userRepository.findUserByEmail(dto.email()).isPresent()) {
-            throw new IllegalArgumentException("User already exists");
+            throw new IllegalArgumentException("User with the same email address already exists");
         }
-        //Check if the password is valid
-        if (dto.password().length() < 8) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        try {
+            isPasswordValid(dto.password(), dto.passwordConfirm());
+        } catch (IllegalArgumentException e) {
+            throw e;
         }
-        //Check if the password contains at least one number and one special character
-        if (!dto.password().matches(".*\\d.*") || !dto.password().matches(".*[!@#$%^&*].*")) {
-            throw new IllegalArgumentException("Password must contain at least one number and one special character");
-        }
-        //Encode the password
-        bCryptPasswordEncoder.encode(dto.password());
-
         return userRepository.save(this.mapDtoToUser(dto));
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
+        //check if the password is valid
+        try {
+            isPasswordValid(dto.password(), dto.passwordConfirm());
+        } catch (IllegalArgumentException e) {
+            throw e;
+        }
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Guitar not found"));
@@ -132,5 +132,23 @@ public class UserService {
         userRepository.delete(userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found.")));
+    }
+
+    private void isPasswordValid(String password, String passwordConfirm) throws IllegalArgumentException {
+
+        // Check if the password is the same as the password confirmation
+        if (!password.equals(passwordConfirm)) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        // Check if the password is long enough
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        }
+
+        // Check if the password contains at least one number and one special character
+        if (!password.matches(".*\\d.*") || !password.matches(".*[!@#$%^&*].*")) {
+            throw new IllegalArgumentException("Password must contain at least one number and one special character");
+        }
     }
 }
