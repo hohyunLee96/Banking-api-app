@@ -29,7 +29,8 @@ public class AuthenticationService {
                     registerRequestDTO.address(),
                     registerRequestDTO.city(),
                     registerRequestDTO.phoneNumber(),
-                    registerRequestDTO.userType()
+                    registerRequestDTO.userType(),
+                    registerRequestDTO.hasAccount()
             );
 
             userRepository.save(user);
