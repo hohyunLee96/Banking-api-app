@@ -74,9 +74,5 @@ public class UserService {
     }
 
 
-    public User getLoggedUser(HttpServletRequest request) {
-        // Get JWT token and the information of the authenticated user
-        String token = jwtTokenFilter.get;
-    }
 }
 

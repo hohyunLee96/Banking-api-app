@@ -2,8 +2,11 @@ package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import nl.inholland.bankingapi.exception.ApiRequestException;
+import nl.inholland.bankingapi.filter.JwtTokenFilter;
+import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
@@ -18,6 +21,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,9 +40,12 @@ public class TransactionService {
     private final AccountService accountService;
     private final TransactionCriteriaRepository transactionCriteriaRepository;
     private final TransactionSpecifications transactionSpecifications;
+    private final HttpServletRequest request;
 
     private final AccountRepository accountRepository;
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenFilter jwtTokenFilter;
 
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
@@ -45,7 +53,7 @@ public class TransactionService {
                               AccountRepository accountRepository,
                               EntityManager entityManager, AccountService accountService,
                               TransactionCriteriaRepository transactionCriteriaRepository,
-                              TransactionSpecifications transactionSpecifications, AccountRepository accountRepository1, UserService userService) {
+                              TransactionSpecifications transactionSpecifications, HttpServletRequest request, AccountRepository accountRepository1, UserService userService, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
@@ -53,8 +61,11 @@ public class TransactionService {
         this.accountService = accountService;
         this.transactionCriteriaRepository = transactionCriteriaRepository;
         this.transactionSpecifications = transactionSpecifications;
+        this.request = request;
         this.accountRepository = accountRepository1;
         this.userService = userService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
@@ -65,7 +76,6 @@ public class TransactionService {
             transactions.add(convertTransactionResponseToDTO(transaction));
         }
         return transactions;
-
     }
 
     public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
@@ -89,6 +99,8 @@ public class TransactionService {
             transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
             checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
             //save transaction to transaction repository
+
+
             return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
         } catch (DataIntegrityViolationException e) {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
@@ -132,7 +144,7 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userService.getUserById(postDto.performingUser()));
+        transaction.setPerformingUser(userService.getUserById(getLoggedInUser(request).getId()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
@@ -140,11 +152,11 @@ public class TransactionService {
     }
 
     private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
-        User senderUser = userService.getUserById(transaction.performingUser());
+        User perfomingUser= getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
-
+        User senderUser = userService.getUserById(perfomingUser.getId());
         if (transaction.amount() <= 0) {
-            throw new ApiRequestException("You cannot transfer a negative amount of money", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.BAD_REQUEST);
         }
         if (fromAccount.getBalance() < transaction.amount()) {
             throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
@@ -152,20 +164,46 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser())) {
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser())&& perfomingUser.getUserType()!=UserType.ROLE_EMPLOYEE) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
         }
-        if (toAccount.getAccountType() == AccountType.SAVINGS || fromAccount.getAccountType() == AccountType.SAVINGS) {
-            if (senderUser != receiverUser)
-                throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
+        if (!userIsEmployee(senderUser) &&( accountIsSavingsAccount(toAccount)|| accountIsSavingsAccount(fromAccount) )
+                && senderUser.getId() != receiverUser.getId()) {
+            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
         }
-//        if (transaction.getToIban().getIsActive() == AccountStatus.CLOSED)
-//            throw new ApiRequestException("Account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
+            throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
+        }
+        if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
+            throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.BAD_REQUEST);
+        }
+//        if (toAccount.getIsActive() == false )
+//            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
 
-        if (((fromAccount.getBalance())- transaction.amount()) < toAccount.getAbsoluteLimit())
+//        if (fromAccount.getIsActive() == false )
+//            throw new ApiRequestException("Sending account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+//
+
+        if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
             throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
 
     }
 
+    public User getLoggedInUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String receivedToken = jwtTokenFilter.getToken(request);
+        jwtTokenProvider.validateToken(receivedToken);
+        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
+        String userEmail = authenticatedUserUsername.getName();
+        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    }
+
+
+    private boolean accountIsSavingsAccount(Account account){
+        return account.getAccountType() == AccountType.SAVINGS;
+    }
+    private boolean userIsEmployee(User user){
+        return user.getUserType() == UserType.ROLE_EMPLOYEE;
+    }
 
 }

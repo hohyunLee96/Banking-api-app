@@ -4,10 +4,13 @@ import io.jsonwebtoken.*;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.Date;
 
 @Component
@@ -56,6 +59,13 @@ public class JwtTokenProvider {
             return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtException("Bearer token not valid");
+        }
+    }
+    public void validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(jwtKeyProvider.getPrivateKey()).build().parseClaimsJws(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new ResponseStatusException( HttpStatus.INTERNAL_SERVER_ERROR, "Expired or invalid JWT token");
         }
     }
 }
