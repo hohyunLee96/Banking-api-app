@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("auth")
-@CrossOrigin(origins = "http://localhost:5173")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;

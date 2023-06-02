@@ -8,6 +8,9 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -29,7 +32,7 @@ public class AuthenticationService {
                     registerRequestDTO.address(),
                     registerRequestDTO.city(),
                     registerRequestDTO.phoneNumber(),
-                    registerRequestDTO.userType(),
+                    Arrays.asList(registerRequestDTO.userType()),
                     registerRequestDTO.hasAccount()
             );
 
@@ -37,8 +40,8 @@ public class AuthenticationService {
         } catch (Exception e) {
             throw new RuntimeException("Unable to register user.");
         }
-
     }
+
 
     public String login(String email, String password) throws javax.naming.AuthenticationException {
 
