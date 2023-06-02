@@ -59,7 +59,7 @@ public class UserController {
     }
 
     //PUT Updates an existing user
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
         try {
             User updatedUser = userService.updateUser(id, dto);
