@@ -75,6 +75,7 @@ public class TransactionService {
         for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
             transactions.add(convertTransactionResponseToDTO(transaction));
         }
+        getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
         return transactions;
     }
 
@@ -96,11 +97,10 @@ public class TransactionService {
             Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
 
             //transfer money from sender to receiver and update balances
-            transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
             checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
+            transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
+
             //save transaction to transaction repository
-
-
             return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
         } catch (DataIntegrityViolationException e) {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
@@ -131,15 +131,6 @@ public class TransactionService {
     }
 
 
-    public Double getTotalTransactionAmountByUser(User user) {
-        List<Transaction> transactions = transactionRepository.findAllByPerformingUser_Id(user.getId());
-        double totalAmount = 0.0;
-        for (Transaction transaction : transactions) {
-            totalAmount += transaction.getAmount();
-        }
-        return totalAmount;
-    }
-
     public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
@@ -152,7 +143,7 @@ public class TransactionService {
     }
 
     private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
-        User perfomingUser= getLoggedInUser(request);
+        User perfomingUser = getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
         if (transaction.amount() <= 0) {
@@ -164,10 +155,10 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser())&& perfomingUser.getUserType()!=UserType.ROLE_EMPLOYEE) {
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != UserType.ROLE_EMPLOYEE) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
         }
-        if (!userIsEmployee(senderUser) &&( accountIsSavingsAccount(toAccount)|| accountIsSavingsAccount(fromAccount) )
+        if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
                 && senderUser.getId() != receiverUser.getId()) {
             throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
         }
@@ -176,6 +167,9 @@ public class TransactionService {
         }
         if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.BAD_REQUEST);
+        }
+        if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
+            throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
         }
 //        if (toAccount.getIsActive() == false )
 //            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
@@ -198,11 +192,21 @@ public class TransactionService {
         return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
     }
 
+    private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
+        List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
+        double totalAmount = 0.0;
+        for (Transaction transaction : dailyTransactions) {
+            totalAmount += transaction.getAmount();
+        }
+        return totalAmount;
+    }
 
-    private boolean accountIsSavingsAccount(Account account){
+
+    private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
     }
-    private boolean userIsEmployee(User user){
+
+    private boolean userIsEmployee(User user) {
         return user.getUserType() == UserType.ROLE_EMPLOYEE;
     }
 
