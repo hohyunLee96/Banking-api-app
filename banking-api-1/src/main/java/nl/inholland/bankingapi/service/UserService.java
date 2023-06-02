@@ -1,5 +1,7 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
@@ -16,16 +18,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenFilter jwtTokenFilter;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenFilter = jwtTokenFilter;
     }
 
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
     }
 
     public User mapUserToDTO(UserGET_DTO userGET_dto) {
@@ -68,4 +72,11 @@ public class UserService {
                             String postalCode, String address, String city, String phoneNumber, UserType userType){
         return null;
     }
+
+
+    public User getLoggedUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String token = jwtTokenFilter.get;
+    }
 }
+

@@ -3,6 +3,7 @@ package nl.inholland.bankingapi.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotBlank;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
@@ -12,16 +13,17 @@ import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -34,13 +36,16 @@ public class TransactionService {
     private final TransactionCriteriaRepository transactionCriteriaRepository;
     private final TransactionSpecifications transactionSpecifications;
 
+    private final AccountRepository accountRepository;
+    private final UserService userService;
+
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
                               ModelMapper modelMapper,
                               AccountRepository accountRepository,
                               EntityManager entityManager, AccountService accountService,
                               TransactionCriteriaRepository transactionCriteriaRepository,
-                              TransactionSpecifications transactionSpecifications) {
+                              TransactionSpecifications transactionSpecifications, AccountRepository accountRepository1, UserService userService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
@@ -48,6 +53,8 @@ public class TransactionService {
         this.accountService = accountService;
         this.transactionCriteriaRepository = transactionCriteriaRepository;
         this.transactionSpecifications = transactionSpecifications;
+        this.accountRepository = accountRepository1;
+        this.userService = userService;
     }
 
     public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
@@ -74,20 +81,28 @@ public class TransactionService {
     }
 
     public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
-        Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
-        Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
-        User senderUser = senderAccount.getUser();
+        try {
+            Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
+            Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
 
-        checkTransaction(mapTransactionToPostDTO(transactionPOSTDto), senderAccount, receiverAccount);
-        transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
-        return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+            //transfer money from sender to receiver and update balances
+            transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
+            checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
+            //save transaction to transaction repository
+            return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+        } catch (DataIntegrityViolationException e) {
+            throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
+        }
     }
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
         senderAccount.setBalance(senderAccount.getBalance() - amount);
-        //add money to the receiver and save
         receiverAccount.setBalance(receiverAccount.getBalance() + amount);
+        // Save the updated receiver account
+        accountRepository.save(senderAccount);
+        accountRepository.save(receiverAccount);
+
     }
 
     public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
@@ -117,29 +132,38 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userRepository.findUserById(postDto.performingUser()));
+        transaction.setPerformingUser(userService.getUserById(postDto.performingUser()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
         return transaction;
     }
 
-    private ResponseEntity<String> checkTransaction(Transaction transaction, Account fromAccount, Account toAccount) {
-        if (transaction.getAmount() <= 0) {
-          return new ResponseEntity<>("You cannot transfer a negative amount of money", HttpStatus.BAD_REQUEST);
+    private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
+        User senderUser = userService.getUserById(transaction.performingUser());
+        User receiverUser = userService.getUserById(toAccount.getUser().getId());
+
+        if (transaction.amount() <= 0) {
+            throw new ApiRequestException("You cannot transfer a negative amount of money", HttpStatus.BAD_REQUEST);
         }
-        if (fromAccount.getBalance() < transaction.getAmount()) {
-            return new ResponseEntity<>("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
+        if (fromAccount.getBalance() < transaction.amount()) {
+            throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
         }
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
-          return new ResponseEntity<>("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (fromAccount.getUser().getId() != transaction.getPerformingUser().getId()) {
-        return new ResponseEntity<>("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser())) {
+            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
         }
+        if (toAccount.getAccountType() == AccountType.SAVINGS || fromAccount.getAccountType() == AccountType.SAVINGS) {
+            if (senderUser != receiverUser)
+                throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
+        }
+//        if (transaction.getToIban().getIsActive() == AccountStatus.CLOSED)
+//            throw new ApiRequestException("Account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
 
-
-        return new ResponseEntity<>(HttpStatus.OK);
+        if (((fromAccount.getBalance())- transaction.amount()) < toAccount.getAbsoluteLimit())
+            throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
 
     }
 

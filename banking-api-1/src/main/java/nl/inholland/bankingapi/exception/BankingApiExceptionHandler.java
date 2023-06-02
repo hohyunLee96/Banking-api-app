@@ -24,8 +24,8 @@ public class BankingApiExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ExceptionDTO(
                         400,
-                        e.getClass().getName(),
-                        "Data Integrity Violation"
+                        e.getMessage(),
+                        e.getClass().getName()
                 ));
     }
 
@@ -36,9 +36,9 @@ public class BankingApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(
                         new ExceptionDTO(
                                 404,
-                                entityNotFoundException.getClass().getName(),
-                                entityNotFoundException.getMessage()
-                        )
+                                entityNotFoundException.getMessage(),
+                                entityNotFoundException.getClass().getName()
+                                )
                 );
     }
 
@@ -49,8 +49,20 @@ public class BankingApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(
                         new ExceptionDTO(
                                 403,
-                                authenticationException.getClass().getName(),
-                                authenticationException.getMessage()
+                                authenticationException.getMessage(),
+                                authenticationException.getClass().getName()
+                        )
+                );
+    }
+    @ExceptionHandler(value = {ApiRequestException.class})
+    public ResponseEntity<Object> handleApiRequestException(ApiRequestException apiRequestException,
+                                                                WebRequest webRequest) {
+        return ResponseEntity.status(apiRequestException.getStatus())
+                .body(
+                        new ExceptionDTO(
+                                apiRequestException.getStatus().value(),
+                                apiRequestException.getMessage(),
+                                apiRequestException.getClass().getName()
                         )
                 );
     }

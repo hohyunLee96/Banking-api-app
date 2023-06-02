@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.service.TransactionService;
@@ -51,5 +52,6 @@ public class TransactionController {
     public ResponseEntity<Object> getTransactionById(@PathVariable long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
+
 
 }
