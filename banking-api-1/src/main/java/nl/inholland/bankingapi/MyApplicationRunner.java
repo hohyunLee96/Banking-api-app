@@ -52,13 +52,13 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account accountFrom = new Account(user1, "NL21INHO0123400081", 100.00, 100.00, AccountType.CURRENT, true);
         Account accountTo = new Account(user2, "NL21INHO0123400082", 10000000.00, 100.00, AccountType.CURRENT, true);
 
-     Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
-        transactionRepository.save(transaction);
-        accountRepository.save(accountFrom);
-        accountRepository.save(accountTo);
-        userRepository.save(user1);
-        userRepository.save(user2);
-    }
+        Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
+            transactionRepository.save(transaction);
+            accountRepository.save(accountFrom);
+            accountRepository.save(accountTo);
+            userRepository.save(user1);
+            userRepository.save(user2);
+        }
 
     public void LoadAccounts() {
 
