@@ -27,8 +27,21 @@ public class UserController {
 
     //GET Returns all the users on the system
     @GetMapping
-    public ResponseEntity<Object> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Object> getAllUsers(
+            //@RequestParam( required = false) Integer offset,
+            //@RequestParam( required = false) Integer limit,
+            @RequestParam( required = false) String email,
+            @RequestParam( required = false) String firstName,
+            @RequestParam( required = false) String lastName,
+            @RequestParam( required = false) String birthDate,
+            @RequestParam( required = false) String postalCode,
+            @RequestParam( required = false) String address,
+            @RequestParam( required = false) String city,
+            @RequestParam( required = false) String phoneNumber,
+            @RequestParam( required = false) String userType,
+            @RequestParam( required = false) boolean hasAccount
+    ){
+        return ResponseEntity.ok(userService.getAllUsers(firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType));
     }
 
     //POST Creates a new user

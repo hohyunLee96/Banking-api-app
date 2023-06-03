@@ -1,17 +1,14 @@
 package nl.inholland.bankingapi.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
-import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.User;
-import nl.inholland.bankingapi.model.UserType;
-import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
+import nl.inholland.bankingapi.model.specifications.UserSpecifications;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,10 +16,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import java.util.List;
 
@@ -34,12 +29,14 @@ public class UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
+    private final UserSpecifications userSpecifications;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
+        this.userSpecifications = userSpecifications;
     }
 
     public User getUserById(Long id) {
@@ -84,9 +81,11 @@ public class UserService {
         return user;
     }
 
-    public List<UserGET_DTO> getAllUsers() {
+    public List<UserGET_DTO> getAllUsers(String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate) {
+        Pageable pageable = PageRequest.of(0, 10);
+        Specification<User> specification = UserSpecifications.getSpecifications(firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate);
         List<UserGET_DTO> users = new ArrayList<>();
-        for (User user : userRepository.findAll()) {
+        for (User user : userRepository.findAll(specification, pageable)) {
             users.add(convertUserResponseToDTO(user));
         }
         return users;
@@ -94,14 +93,14 @@ public class UserService {
     public UserGET_DTO convertUserResponseToDTO(User user) {
         return new UserGET_DTO(
                 user.getId(),
+                user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getBirthDate(),
-                user.getAddress(),
                 user.getPostalCode(),
+                user.getAddress(),
                 user.getCity(),
                 user.getPhoneNumber(),
-                user.getEmail(),
                 user.getUserType(),
                 user.getHasAccount()
         );
@@ -160,6 +159,10 @@ public class UserService {
 
     //delete user of specific id
     public void deleteUserById(Long id) {
+        //check if the user has an account
+        if (userRepository.findById(id).get().getHasAccount()) {
+            throw new ApiRequestException("User has an account", HttpStatus.CONFLICT);
+        }
         userRepository.delete(userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found.")));
