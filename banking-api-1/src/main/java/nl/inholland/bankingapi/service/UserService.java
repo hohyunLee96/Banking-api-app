@@ -5,15 +5,23 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
+import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
+import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
+import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
 import java.util.Optional;
 
 import java.util.List;
@@ -76,8 +84,27 @@ public class UserService {
         return user;
     }
 
-    public List<User> getAllUsers() {
-        return (List<User>) userRepository.findAll();
+    public List<UserGET_DTO> getAllUsers() {
+        List<UserGET_DTO> users = new ArrayList<>();
+        for (User user : userRepository.findAll()) {
+            users.add(convertUserResponseToDTO(user));
+        }
+        return users;
+    }
+    public UserGET_DTO convertUserResponseToDTO(User user) {
+        return new UserGET_DTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBirthDate(),
+                user.getAddress(),
+                user.getPostalCode(),
+                user.getCity(),
+                user.getPhoneNumber(),
+                user.getEmail(),
+                user.getUserType(),
+                user.getHasAccount()
+        );
     }
 
     public String login(String email, String password) throws javax.naming.AuthenticationException {

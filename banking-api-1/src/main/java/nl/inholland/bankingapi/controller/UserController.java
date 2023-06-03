@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.naming.AuthenticationException;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5174")
 @RequestMapping("users")
 @Log
 public class UserController {
