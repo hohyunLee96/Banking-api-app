@@ -15,11 +15,9 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     Optional<User> findUserByEmail(String email);
 
-    @Query("SELECT u FROM User u JOIN u.accounts a WHERE a.accountId = :id")
-    Optional<User> findUserByAccountId(@Param("id") long id);
-
     User findUserById(long id);
 
     void deleteUserById(long id);
 
+    List<User> findAllByHasAccount(boolean hasAccount);
 }
