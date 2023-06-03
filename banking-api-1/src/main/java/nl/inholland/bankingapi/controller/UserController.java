@@ -80,8 +80,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
         try {
-            User updatedUser = userService.updateUser(id, dto);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(updatedUser);
+            return ResponseEntity.ok().body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
