@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
@@ -9,6 +10,7 @@ import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,15 +94,10 @@ public class UserService {
         }
     }
 
-    public User getUserByAccountAccountId (Long id) {
-        return userRepository.findUserByAccountId(id)
-                .orElseThrow(() -> new EntityNotFoundException("User with such account not found."));
-    }
-
     public User registerUser(UserPOST_DTO dto) {
         // Check if the user already exists
         if (userRepository.findUserByEmail(dto.email()).isPresent()) {
-            throw new IllegalArgumentException("User with the same email address already exists");
+            throw new ApiRequestException("User with the same email address already exists", HttpStatus.CONFLICT);
         }
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());

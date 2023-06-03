@@ -81,12 +81,4 @@ public class UserController {
                 userService.login(loginRequestDTO.email(), loginRequestDTO.password())
         ));
     }
-
-    //GET Retrieves a user who owns the account of specified id
-    @GetMapping("/getUserByAccount/{id}")
-    public ResponseEntity<User> getUserByAccount(@PathVariable("id") Long id) {
-        User user = userService.getUserByAccountAccountId(id);
-        return ResponseEntity.ok(user);
-    }
-
 }

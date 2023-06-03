@@ -66,5 +66,5 @@ public class MyApplicationRunner implements ApplicationRunner {
             userRepository.save(user2);
             userRepository.save(customer);
         }
-        
+
 }
