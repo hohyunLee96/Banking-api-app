@@ -128,7 +128,7 @@ public class UserService {
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());
         } catch (IllegalArgumentException e) {
-            throw e;
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return userRepository.save(this.mapDtoToUser(dto));
     }
@@ -138,11 +138,11 @@ public class UserService {
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());
         } catch (IllegalArgumentException e) {
-            throw e;
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         User userToUpdate = userRepository
                 .findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Guitar not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
         userToUpdate.setFirstName(dto.firstName());
         userToUpdate.setLastName(dto.lastName());
         userToUpdate.setBirthDate(dto.birthDate());
