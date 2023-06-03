@@ -27,6 +27,9 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
+    public List<User>getUsersWithoutAccount(Boolean hasAccount){
+        return userRepository.findAllByHasAccount(hasAccount);
+    }
 
     public User mapUserToDTO(UserGET_DTO userGET_dto) {
 
