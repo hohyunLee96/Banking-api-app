@@ -6,7 +6,7 @@ public enum UserType implements GrantedAuthority {
 
     ROLE_USER,
     ROLE_CUSTOMER,
-    ROLE_EMPLOYEE,;
+    ROLE_EMPLOYEE;
 
     @Override
     public String getAuthority() {
