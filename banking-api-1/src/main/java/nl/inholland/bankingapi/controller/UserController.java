@@ -22,6 +22,10 @@ public class UserController {
     public ResponseEntity<Object> getUserById(@PathVariable long id) {
         return ResponseEntity.ok().body(userService.getUserById(id));
     }
+    @GetMapping(params = "hasAccount")
+    public ResponseEntity<Object> getUsersWithoutAccount(@RequestParam Boolean hasAccount) {
+        return ResponseEntity.ok().body(userService.getUsersWithoutAccount(hasAccount));
+    }
 
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
