@@ -57,14 +57,14 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account accountTo = new Account(user2, "NL21INHO0123400082", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account bank= new Account(user1, "NL01INHO0000000001", 9000.00, 0.00, AccountType.CURRENT, true);
 
-     Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
-        transactionRepository.save(transaction);
-        accountRepository.save(accountFrom);
-        accountRepository.save(accountTo);
-        accountRepository.save(bank);
-        userRepository.save(user1);
-        userRepository.save(user2);
-        userRepository.save(customer);
-    }
+         Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, user2);
+            transactionRepository.save(transaction);
+            accountRepository.save(accountFrom);
+            accountRepository.save(accountTo);
+            accountRepository.save(bank);
+            userRepository.save(user1);
+            userRepository.save(user2);
+            userRepository.save(customer);
+        }
 
 }
