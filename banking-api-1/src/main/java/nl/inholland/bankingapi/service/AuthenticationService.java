@@ -33,7 +33,7 @@ public class AuthenticationService {
                     registerRequestDTO.address(),
                     registerRequestDTO.city(),
                     registerRequestDTO.phoneNumber(),
-                    Arrays.asList(registerRequestDTO.userType()),
+                    registerRequestDTO.userType(),
                     registerRequestDTO.dailyLimit(),
                     registerRequestDTO.transactionLimit(),
                     registerRequestDTO.hasAccount()
