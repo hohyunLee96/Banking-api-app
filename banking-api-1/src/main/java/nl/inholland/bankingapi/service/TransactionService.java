@@ -86,7 +86,7 @@ public class TransactionService {
                 transaction.getToIban().getIBAN(),
                 transaction.getAmount(),
                 transaction.getType(),
-                transaction.getTimestamp(),
+                transaction.getTimestamp().toString(),
                 transaction.getPerformingUser().getId()
         );
     }
@@ -147,7 +147,7 @@ public class TransactionService {
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
         if (transaction.amount() <= 0) {
-            throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
         if (fromAccount.getBalance() < transaction.amount()) {
             throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
@@ -155,29 +155,28 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != List.of(UserType.ROLE_EMPLOYEE)) {
-            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != UserType.ROLE_EMPLOYEE) {
+            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
         }
         if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
                 && senderUser.getId() != receiverUser.getId()) {
-            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
         }
         if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
-            throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
         if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
             throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
         }
-//        if (toAccount.getIsActive() == false )
-//            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
-
-//        if (fromAccount.getIsActive() == false )
-//            throw new ApiRequestException("Sending account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
-//
-
+        if (!fromAccount.isActive()) {
+            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        }
+        if (!toAccount.isActive()) {
+            throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+        }
         if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
             throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
 
@@ -207,7 +206,7 @@ public class TransactionService {
     }
 
     private boolean userIsEmployee(User user) {
-        return user.getUserType() == List.of(UserType.ROLE_EMPLOYEE);
+        return user.getUserType() == UserType.ROLE_EMPLOYEE;
     }
 
 }

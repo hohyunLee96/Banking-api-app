@@ -39,6 +39,7 @@ public class TransactionSpecifications {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("performingUser"), userId);
     }
 
+
     public static Specification<Transaction>getSpecifications(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
         Specification<Transaction> spec = null;
         Specification<Transaction> temp=null;
@@ -78,6 +79,7 @@ public class TransactionSpecifications {
             temp=hasPerformingUser(performingUser);
             spec=spec==null?temp:spec.and(temp);
         }
+
         return spec;
     }
 }
