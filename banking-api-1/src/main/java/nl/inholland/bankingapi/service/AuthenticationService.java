@@ -3,8 +3,8 @@ package nl.inholland.bankingapi.service;
 import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
-import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ public class AuthenticationService {
                     registerRequestDTO.city(),
                     registerRequestDTO.phoneNumber(),
                     Arrays.asList(registerRequestDTO.userType()),
-                    registerRequestDTO.userType(),
                     registerRequestDTO.dailyLimit(),
                     registerRequestDTO.transactionLimit(),
                     registerRequestDTO.hasAccount()
@@ -47,7 +46,7 @@ public class AuthenticationService {
     }
 
 
-    public String login(String email, String password) throws javax.naming.AuthenticationException {
+    public LoginResponseDTO login(String email, String password) throws javax.naming.AuthenticationException {
 
         User user = this.userRepository
                 .findUserByEmail(email)
@@ -55,7 +54,8 @@ public class AuthenticationService {
         //Check if the password hash matches
         if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
             //Return a JWT to the client
-            return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
+            String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
+            return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
         } else {
             throw new javax.naming.AuthenticationException("Incorrect email/password");
         }

@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.controller;
 
 import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
+import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +26,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
-        return ResponseEntity.ok(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()));
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
+
+       return authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password());
     }
 
     @GetMapping("/hello")

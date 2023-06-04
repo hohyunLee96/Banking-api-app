@@ -30,7 +30,8 @@ public class User {
     private String address;
     private String city;
     private String phoneNumber;
-    private UserType userType;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<UserType> userType;
     private Boolean hasAccount;
     private Double dailyLimit;
     private Double transactionLimit;
@@ -39,8 +40,7 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
 
-   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType,Double dailyLimit,Double transactionLimit, boolean hasAccount) {
-   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, List<UserType> userType, boolean hasAccount) {
+   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, List<UserType> userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -52,7 +52,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.userType = userType;
         this.hasAccount = hasAccount;
-       // this.hasAccount = false;
+//        this.hasAccount = false;
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
 

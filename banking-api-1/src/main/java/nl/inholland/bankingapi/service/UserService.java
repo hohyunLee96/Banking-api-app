@@ -1,12 +1,9 @@
 package nl.inholland.bankingapi.service;
 
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
-import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -18,8 +15,6 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     public User getUserById(Long id) {
@@ -49,22 +44,4 @@ public class UserService {
         return (List<User>) userRepository.findAll();
     }
 
-    public String login(String email, String password) throws javax.naming.AuthenticationException {
-        // See if a user with the provided username exists or throw exception
-        User user = this.userRepository
-                .findUserByEmail(email)
-                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
-//         Check if the password hash matches
-        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-//         Return a JWT to the client
-            return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-        } else {
-            throw new javax.naming.AuthenticationException("Incorrect email/password");
-        }
-    }
-
-    private String register(String email, String password, String firstName, String lastName, String birthDate,
-                            String postalCode, String address, String city, String phoneNumber, UserType userType){
-        return null;
-    }
 }
