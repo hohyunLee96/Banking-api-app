@@ -1,16 +1,16 @@
 package nl.inholland.bankingapi.service;
 
 import nl.inholland.bankingapi.exception.ApiRequestException;
+import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
-import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.model.dto.UserPUT_DTO;
-import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.model.specifications.UserSpecifications;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,16 +28,19 @@ import static java.lang.Long.parseLong;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ModelMapper modelMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
     private final UserSpecifications userSpecifications;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.modelMapper = modelMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.userSpecifications = userSpecifications;
+
     }
 
     public User getUserById(Long id) {
@@ -107,20 +110,6 @@ public class UserService {
         );
     }
 
-    public String login(String email, String password) throws javax.naming.AuthenticationException {
-        // See if a user with the provided username exists or throw exception
-        User user = this.userRepository
-                .findUserByEmail(email)
-                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
-        //Check if the password hash matches
-        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-            //Return a JWT to the client
-            return jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-        } else {
-            throw new javax.naming.AuthenticationException("Incorrect email/password");
-        }
-    }
-
     public User registerUser(UserPOST_DTO dto) {
         // Check if the user already exists
         if (userRepository.findUserByEmail(dto.email()).isPresent()) {
@@ -138,17 +127,7 @@ public class UserService {
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        userToUpdate.setFirstName(dto.firstName());
-        userToUpdate.setLastName(dto.lastName());
-        userToUpdate.setBirthDate(dto.birthDate());
-        userToUpdate.setAddress(dto.address());
-        userToUpdate.setPostalCode(dto.postalCode());
-        userToUpdate.setCity(dto.city());
-        userToUpdate.setPhoneNumber(dto.phoneNumber());
-        userToUpdate.setEmail(dto.email());
-        userToUpdate.setUserType(dto.userType());
-        userToUpdate.setHasAccount(dto.hasAccount());
-        return userRepository.save(userToUpdate);
+        return userRepository.save(modelMapper.map(userToUpdate, User.class));
     }
 
     //delete user of specific id

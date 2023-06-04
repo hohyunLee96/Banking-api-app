@@ -1,16 +1,16 @@
 package nl.inholland.bankingapi.controller;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.*;
+import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
-import org.hibernate.annotations.Parameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import javax.naming.AuthenticationException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -22,6 +22,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     //GET Returns all the users on the system
     @GetMapping
     public ResponseEntity<Object> getAllUsers(
@@ -85,10 +86,4 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
-        return ResponseEntity.ok().body(new ResponseTokenDTO(
-                userService.login(loginRequestDTO.email(), loginRequestDTO.password())
-        ));
-    }
 }
