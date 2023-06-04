@@ -155,7 +155,7 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != UserType.ROLE_EMPLOYEE) {
+        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType() != List.of(UserType.ROLE_EMPLOYEE)) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.BAD_REQUEST);
         }
         if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
@@ -207,7 +207,7 @@ public class TransactionService {
     }
 
     private boolean userIsEmployee(User user) {
-        return user.getUserType() == UserType.ROLE_EMPLOYEE;
+        return user.getUserType() == List.of(UserType.ROLE_EMPLOYEE);
     }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class MyApplicationRunner implements ApplicationRunner {
@@ -45,12 +46,12 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void loadInformationForDB() {
         //Load users
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, 1000.00, 1000.00,true);
+                "123456789", "Street", "1234AB", "City", List.of(UserType.ROLE_USER), 1000.00, 1000.00,true);
         User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE,10000.00, 10000.00, true);
+                "123456789", "Street", "1234AB", "City", List.of(UserType.ROLE_EMPLOYEE) ,10000.00, 10000.00, true);
 
         User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
+                "123456789", "Street", "1234AB", "City", List.of(UserType.ROLE_CUSTOMER), 10000.00, 10000.00, true);
 
         //Load Accounts
         Account accountFrom = new Account(user1, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
@@ -67,4 +68,8 @@ public class MyApplicationRunner implements ApplicationRunner {
             userRepository.save(customer);
         }
 
+    public void LoadAccounts() {
+
+
+    }
 }

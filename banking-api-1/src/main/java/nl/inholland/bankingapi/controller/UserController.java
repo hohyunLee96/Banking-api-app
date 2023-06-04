@@ -1,4 +1,5 @@
 package nl.inholland.bankingapi.controller;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.User;
@@ -11,11 +12,11 @@ import nl.inholland.bankingapi.service.UserService;
 import org.hibernate.annotations.Parameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.AuthenticationException;
-
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("users")
 @Log
 public class UserController {
@@ -24,6 +25,12 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getUserById(@PathVariable long id) {
+        return ResponseEntity.ok().body(userService.getUserById(id));
+    }
+
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     //GET Returns all the users on the system
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
