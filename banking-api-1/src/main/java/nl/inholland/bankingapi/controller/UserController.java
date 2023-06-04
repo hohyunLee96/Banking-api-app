@@ -3,10 +3,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
-import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
-import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
-import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
-import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.service.UserService;
 import org.hibernate.annotations.Parameter;
 import org.springframework.http.HttpStatus;
@@ -78,7 +75,7 @@ public class UserController {
 
     //PUT Updates an existing user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPUT_DTO dto) {
         try {
             return ResponseEntity.ok().body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {

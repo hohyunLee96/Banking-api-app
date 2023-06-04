@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
+import nl.inholland.bankingapi.model.dto.UserPUT_DTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.model.specifications.UserSpecifications;
 import nl.inholland.bankingapi.repository.UserRepository;
@@ -133,13 +134,7 @@ public class UserService {
         return userRepository.save(this.mapDtoToUser(dto));
     }
 
-    public User updateUser(long id, UserPOST_DTO dto) {
-        //check if the password is valid
-        try {
-            isPasswordValid(dto.password(), dto.passwordConfirm());
-        } catch (IllegalArgumentException e) {
-            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    public User updateUser(long id, UserPUT_DTO dto) {
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -153,7 +148,6 @@ public class UserService {
         userToUpdate.setEmail(dto.email());
         userToUpdate.setUserType(dto.userType());
         userToUpdate.setHasAccount(dto.hasAccount());
-        userToUpdate.setPassword(bCryptPasswordEncoder.encode(dto.password()));
         return userRepository.save(userToUpdate);
     }
 
