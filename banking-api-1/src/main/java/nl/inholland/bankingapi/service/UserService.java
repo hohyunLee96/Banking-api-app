@@ -1,9 +1,6 @@
 package nl.inholland.bankingapi.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.filter.JwtTokenFilter;
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
@@ -12,10 +9,7 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-import java.util.Optional;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Long.parseLong;
@@ -23,9 +17,11 @@ import static java.lang.Long.parseLong;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public User getUserById(Long id) {
@@ -48,7 +44,7 @@ public class UserService {
         user.setCity(userGET_dto.city());
         user.setPhoneNumber(userGET_dto.phoneNumber());
         user.setEmail(userGET_dto.email());
-        user.setUserType(userGET_dto.userType());
+        user.setUserType(List.of(userGET_dto.userType()));
         user.setHasAccount(userGET_dto.hasAccount());
 
         return user;
@@ -64,7 +60,7 @@ public class UserService {
         user.setCity(dto.city());
         user.setPhoneNumber(dto.phoneNumber());
         user.setEmail(dto.email());
-        user.setUserType(dto.userType());
+        user.setUserType(List.of(dto.userType()));
         user.setHasAccount(false);
         user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
         return user;
@@ -73,8 +69,6 @@ public class UserService {
     public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
     }
-
-}
 
     public User registerUser(UserPOST_DTO dto) {
         // Check if the user already exists
@@ -107,7 +101,7 @@ public class UserService {
         userToUpdate.setCity(dto.city());
         userToUpdate.setPhoneNumber(dto.phoneNumber());
         userToUpdate.setEmail(dto.email());
-        userToUpdate.setUserType(dto.userType());
+        userToUpdate.setUserType(List.of(dto.userType()));
         userToUpdate.setHasAccount(dto.hasAccount());
         userToUpdate.setPassword(bCryptPasswordEncoder.encode(dto.password()));
         return userRepository.save(userToUpdate);
