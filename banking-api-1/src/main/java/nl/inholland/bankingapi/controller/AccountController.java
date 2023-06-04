@@ -47,15 +47,6 @@ public class AccountController {
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
         return ResponseEntity.ok().body(accountService.getAccountById(id));
     }
-//    @GetMapping("/{id}/totalBalance")
-//    public ResponseEntity<Object> getTotalBalanceByUserId(@PathVariable long id) {
-//        return ResponseEntity.ok().body(accountService.getTotalBalanceByUserId(id));
-//    }
-
-    //    @GetMapping("/iban/{firstname}")
-//    public ResponseEntity<Object> getIBANByUserFirstName(@PathVariable String firstname) {
-//        return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstname));
-//    }
     @GetMapping(params = "firstname")
     public ResponseEntity<Object> getIBANByUserFirstName(@RequestParam String firstname) {
         return ResponseEntity.ok().body(accountService.getIBANByUserFirstName(firstname));
@@ -70,7 +61,6 @@ public class AccountController {
         response.put("totalBalance", totalBalance);
 
         return ResponseEntity.ok().body(response);
-//        return ResponseEntity.ok().body(accountService.getAllAccountsByUserId(userId));
     }
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
@@ -82,6 +72,4 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(accountService.addAccount(accountPOST_dto));
     }
-
-
 }
