@@ -3,9 +3,11 @@ package nl.inholland.bankingapi.service;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
+import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.core.parameters.P;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 //import javax.persistence.EntityNotFoundException;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -41,9 +44,10 @@ public class AccountService {
         }
         User user = userRepository.findUserById(dto.userId());
         account.setUser(user);
-        userHasAccount(user);
-//        user.setHasAccount(true);
-        account.setIBAN(dto.IBAN());
+        if(!account.getUser().getHasAccount()){
+            userHasAccount(user);
+        }
+//        account.setIBAN(dto.IBAN());
         account.setIBAN(iban);
         account.setBalance(dto.balance());
         account.setAbsoluteLimit(dto.absoluteLimit());
@@ -70,10 +74,29 @@ public class AccountService {
         account.setAccountType(dto.accountType());
         return account;
     }
+    private AccountGET_DTO accountGETDto(Account account){
+        return new AccountGET_DTO(
+                account.getUser().getId(),
+                account.getIBAN(),
+                account.getBalance(),
+                account.getAbsoluteLimit(),
+                account.getAccountType(),
+                account.isActive()
+        );
+    }
 
 
-    public List<Account> getAllAccounts() {
-        return (List<Account>) accountRepository.findAll();
+    public List<AccountGET_DTO> getAllAccounts() {
+        List<AccountGET_DTO> accounts = new ArrayList<>();
+        for (Account account : accountRepository.findAll()) {
+            accounts.add(accountGETDto(account));
+        }
+        return accounts;
+    }
+    public AccountGET_DTO getAccountById(long id ) {
+        Account account =accountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+        return accountGETDto(account);
     }
 
 
@@ -88,23 +111,12 @@ public class AccountService {
     public AccountGET_DTO getAccountByUserId(long id) {
         return accountRepository.getAccountByUserId(id);
     }
-    public Account getAccountById(long id ) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
-    }
+
     public Account disableAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto){
         Account account = mapDtoToAccountPut(id,accountGET_dto);
         account.setActive(false);
         return accountRepository.save(account);
     }
-//    public Account getAccountById(long id) {
-//        Account account = accountRepository.findById(id)
-//                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
-//
-//        AccountGET_DTO accountDto = getDtoToAccount(account);
-//
-//        return accountDto;
-//    }
 
     public String createIBAN() {
         String firstLetters = "NL";
@@ -136,6 +148,5 @@ public class AccountService {
     }
     public boolean isIbanPresent (String iban){
         return (accountRepository.findAccountByIBAN(iban) != null);
-
     }
 }

@@ -35,6 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
                 .requestMatchers(("/users/**")).permitAll()
                 .requestMatchers(("/register")).permitAll()
                 .requestMatchers(("/accounts")).permitAll()
+                .requestMatchers(("/users")).permitAll()
                 .anyRequest().authenticated();
 
 
