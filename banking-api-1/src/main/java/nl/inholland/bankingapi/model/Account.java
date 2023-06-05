@@ -30,9 +30,9 @@ public class Account {
     private Double balance;
     private Double absoluteLimit;
     private AccountType accountType;
-    private boolean isActive;
+    private Boolean isActive;
 
-    public Account(User user, String IBAN, double balance,double absoluteLimit, AccountType accountType, boolean isActive) {
+    public Account(User user, String IBAN, double balance,double absoluteLimit, AccountType accountType, Boolean isActive) {
 
         this.user = user;
         this.IBAN = IBAN;

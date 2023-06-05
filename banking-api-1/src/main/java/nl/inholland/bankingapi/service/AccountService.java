@@ -6,6 +6,7 @@ import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
+import nl.inholland.bankingapi.model.dto.AccountIbanGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -52,7 +53,7 @@ public class AccountService {
         account.setBalance(dto.balance());
         account.setAbsoluteLimit(dto.absoluteLimit());
         account.setAccountType(dto.accountType());
-        account.setActive(true);
+        account.setIsActive(true);
         return account;
     }
     public void userHasAccount(User user){
@@ -63,25 +64,34 @@ public class AccountService {
 
     private Account mapDtoToAccountPut(long id,AccountGET_DTO dto) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Account not found"));
-        User user = userRepository.findUserById(dto.userId());
-        account.setUser(user);
-        if(!accountRepository.getAccountByUserId(id).isActive()) {
-            user.setHasAccount(false);
-        }
-        account.setIBAN(dto.IBAN());
-        account.setBalance(dto.balance());
-        account.setAbsoluteLimit(dto.absoluteLimit());
-        account.setAccountType(dto.accountType());
+//        User user = userRepository.findUserBySpecificAccountId(id);
+//        account.setUser(user);
+//        if(!accountRepository.getAccountByUserId(id).isActive()) {
+//            user.setHasAccount(false);
+//        }
+        account.setIBAN(account.getIBAN());
+        account.setBalance(account.getBalance());
+        account.setAbsoluteLimit(account.getAbsoluteLimit());
+        account.setAccountType(account.getAccountType());
+        account.setIsActive(false);
         return account;
     }
     private AccountGET_DTO accountGETDto(Account account){
         return new AccountGET_DTO(
+                account.getAccountId(),
                 account.getUser().getId(),
                 account.getIBAN(),
                 account.getBalance(),
                 account.getAbsoluteLimit(),
                 account.getAccountType(),
-                account.isActive()
+                account.getIsActive()
+        );
+    }
+    private AccountIbanGET_DTO accountIbanGET_DTO(Account account){
+        return new AccountIbanGET_DTO(
+                account.getUser().getFirstName(),
+                account.getUser().getLastName(),
+                account.getIBAN()
         );
     }
 
@@ -100,8 +110,12 @@ public class AccountService {
     }
 
 
-    public List<Account> getIBANByUserFirstName(String firstName) {
-        return (List<Account>) accountRepository.getIBANByUserFirstName(firstName);
+    public List<AccountIbanGET_DTO> getIBANByUserFirstName(String firstName) {
+        List<AccountIbanGET_DTO> accounts = new ArrayList<>();
+        for (Account account : accountRepository.getIBANByUserFirstName(firstName)) {
+            accounts.add(accountIbanGET_DTO(account));
+        }
+        return accounts;
     }
 
     public Account addAccount(AccountPOST_DTO account) {
@@ -112,10 +126,20 @@ public class AccountService {
         return accountRepository.getAccountByUserId(id);
     }
 
-    public Account disableAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto){
-        Account account = mapDtoToAccountPut(id,accountGET_dto);
-        account.setActive(false);
+    public Account disableAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
+        Account account = mapDtoToAccountPut(id, accountGET_dto);
+        account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
+        userRepository.save(account.getUser());
         return accountRepository.save(account);
+    }
+    public boolean isUserHasNoActiveAccounts(long id){
+        List<Account> accounts = accountRepository.getAllAccountsByUserId(id);
+        for (Account account : accounts) {
+            if(account.getIsActive()){
+                return false;
+            }
+        }
+        return true;
     }
 
     public String createIBAN() {
