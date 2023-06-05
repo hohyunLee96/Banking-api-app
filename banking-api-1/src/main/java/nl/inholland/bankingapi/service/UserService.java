@@ -85,9 +85,9 @@ public class UserService {
         return user;
     }
 
-    public List<UserGET_DTO> getAllUsers(String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate) {
+    public List<UserGET_DTO> getAllUsers(String keyword, String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<User> specification = UserSpecifications.getSpecifications(firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate);
+        Specification<User> specification = UserSpecifications.getSpecifications(keyword, firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate);
         List<UserGET_DTO> users = new ArrayList<>();
         for (User user : userRepository.findAll(specification, pageable)) {
             users.add(convertUserResponseToDTO(user));
