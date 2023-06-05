@@ -17,7 +17,6 @@ import javax.naming.AuthenticationException;
 @CrossOrigin("*")
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("auth")
 public class AuthenticationController {
 
