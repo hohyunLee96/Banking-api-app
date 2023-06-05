@@ -33,6 +33,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
@@ -42,6 +43,7 @@ public class AccountController {
 //    public ResponseEntity<Object> getAccountById(@PathVariable long id, @RequestParam(value = "totalBalance", required = false) Double totalBalance) {
 //        return ResponseEntity.ok().body(accountService.getAccountById(id));
 //    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
         return ResponseEntity.ok().body(accountService.getAccountById(id));
@@ -53,7 +55,10 @@ public class AccountController {
     @GetMapping(params = "user")
     public ResponseEntity<Object> getAllAccountsByUserId(@RequestParam Long user) {
         List<Account> accounts = accountService.getAllAccountsByUserId(user);
-        double totalBalance = accountService.getTotalBalanceByUserId(user);
+        Double totalBalance = accountService.getTotalBalanceByUserId(user);
+        if(totalBalance == null){
+            totalBalance = 0.0;
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("accounts", accounts);

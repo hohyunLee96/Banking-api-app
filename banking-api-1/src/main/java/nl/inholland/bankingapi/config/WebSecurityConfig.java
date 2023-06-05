@@ -32,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.cors();
         httpSecurity.authorizeHttpRequests()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(("/users/**")).permitAll()
+//                .requestMatchers(("/users/**")).permitAll()
                 .requestMatchers(("/accounts")).permitAll()
                 .requestMatchers(("/users")).permitAll()
                 .requestMatchers(("/auth/**")).permitAll()
