@@ -42,7 +42,7 @@ public class TransactionController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'USER')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> addTransaction(@RequestBody TransactionPOST_DTO transactionPOSTDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.convertTransactionResponseToDTO(transactionService.addTransaction(transactionPOSTDto)));
     }
