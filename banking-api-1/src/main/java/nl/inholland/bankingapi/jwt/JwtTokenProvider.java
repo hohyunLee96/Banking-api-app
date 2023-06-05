@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -32,8 +33,7 @@ public class JwtTokenProvider {
         // And we add an array of the roles to the auth element of the Claims
         // Note that we only provide the role as information to the frontend
         // The actual role based authorization should always be done in the backend code
-        claims.put("auth",
-                roles.name());
+        claims.put("auth", roles.name());
 
         // We decide on an expiration date
         Date now = new Date();

@@ -1,7 +1,10 @@
 package nl.inholland.bankingapi.repository;
 
+import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +15,8 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
+
+    List<User> findAll(Specification<User> specification, Pageable pageable);
 
     Optional<User> findUserByEmail(String email);
 

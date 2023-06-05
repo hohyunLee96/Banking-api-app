@@ -1,16 +1,15 @@
 package nl.inholland.bankingapi.controller;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
-import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
-import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
-import nl.inholland.bankingapi.model.dto.ResponseTokenDTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
-import org.hibernate.annotations.Parameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -25,10 +24,24 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     //GET Returns all the users on the system
     @GetMapping
-    public ResponseEntity<Object> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Object> getAllUsers(
+            //@RequestParam( required = false) Integer offset,
+            //@RequestParam( required = false) Integer limit,
+            @RequestParam( required = false) String email,
+            @RequestParam( required = false) String firstName,
+            @RequestParam( required = false) String lastName,
+            @RequestParam( required = false) String birthDate,
+            @RequestParam( required = false) String postalCode,
+            @RequestParam( required = false) String address,
+            @RequestParam( required = false) String city,
+            @RequestParam( required = false) String phoneNumber,
+            @RequestParam( required = false) String userType,
+            @RequestParam( required = false) boolean hasAccount
+    ){
+        return ResponseEntity.ok(userService.getAllUsers(firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType));
     }
 
     //POST Creates a new user
@@ -65,10 +78,9 @@ public class UserController {
 
     //PUT Updates an existing user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPUT_DTO dto) {
         try {
-            User updatedUser = userService.updateUser(id, dto);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(updatedUser);
+            return ResponseEntity.ok().body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
@@ -76,10 +88,4 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public Object login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
-        return ResponseEntity.ok().body(new ResponseTokenDTO(
-                userService.login(loginRequestDTO.email(), loginRequestDTO.password())
-        ));
-    }
 }

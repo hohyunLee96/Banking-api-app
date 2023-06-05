@@ -34,11 +34,11 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         httpSecurity.authorizeHttpRequests()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                 .requestMatchers(("/users/**")).permitAll()
-                .requestMatchers(("/register")).permitAll()
                 .requestMatchers(("/accounts")).permitAll()
+                .requestMatchers(("/users")).permitAll()
+                .requestMatchers(("/auth/**")).permitAll()
                 .requestMatchers(("/transactions")).permitAll()
                 .anyRequest().authenticated();
-
 
         httpSecurity.headers().frameOptions().disable();
 
