@@ -26,10 +26,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TransactionService {
@@ -68,10 +65,10 @@ public class TransactionService {
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser, Date searchDate) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate,
-                lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
+                lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate);
 
         List<TransactionGET_DTO> allTransactions = new ArrayList<>();
         List<TransactionGET_DTO> userTransactions = new ArrayList<>();

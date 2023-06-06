@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("transactions")
@@ -36,9 +38,10 @@ public class TransactionController {
             @RequestParam( required = false) String toDate,
             @RequestParam( required = false) TransactionType type,
             @RequestParam( required = false) Long performingUser
+            ,@RequestParam( required = false) Date searchDate
 
     ) {
-        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser));
+        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser,searchDate));
     }
 
     @PostMapping
