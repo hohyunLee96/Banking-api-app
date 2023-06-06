@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
-import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
@@ -13,8 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
 @CrossOrigin("*")
+@RestController
+
 @RequestMapping("users")
 @Log
 public class UserController {
@@ -57,7 +57,7 @@ public class UserController {
 
     //DELETE Deletes a user of specified id
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteGuitar(@PathVariable Long id) {
+    public ResponseEntity deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);
             return ResponseEntity.status(204).body(null);

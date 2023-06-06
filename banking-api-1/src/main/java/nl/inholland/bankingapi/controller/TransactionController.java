@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://localhost:5173")
+import java.util.Date;
+
+@CrossOrigin("*")
 @RestController
 @RequestMapping("transactions")
 @Log
@@ -23,7 +25,7 @@ public class TransactionController {
 
 
     @GetMapping
-   // @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getAllTransactions(
 //            @RequestParam(required = false) Integer offset,
 //            @RequestParam(required = false) Integer limit,
@@ -36,20 +38,21 @@ public class TransactionController {
             @RequestParam( required = false) String toDate,
             @RequestParam( required = false) TransactionType type,
             @RequestParam( required = false) Long performingUser
+            ,@RequestParam( required = false) Date searchDate
 
     ) {
-        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser));
+        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser,searchDate));
     }
 
     @PostMapping
-   // @PreAuthorize("hasAnyRole('EMPLOYEE', 'USER')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> addTransaction(@RequestBody TransactionPOST_DTO transactionPOSTDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.convertTransactionResponseToDTO(transactionService.addTransaction(transactionPOSTDto)));
     }
 
 
     @GetMapping("/{id}")
-   // @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<Object> getTransactionById(@PathVariable long id) {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
