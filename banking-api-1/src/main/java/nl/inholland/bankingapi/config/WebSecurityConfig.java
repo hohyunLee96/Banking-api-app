@@ -29,10 +29,10 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
         // We need to do this to allow POST requests
         httpSecurity.csrf().disable();
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
+        httpSecurity.cors();
         httpSecurity.authorizeHttpRequests()
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(("/users/**")).permitAll()
+//                .requestMatchers(("/users/**")).permitAll()
                 .requestMatchers(("/accounts")).permitAll()
                 .requestMatchers(("/users")).permitAll()
                 .requestMatchers(("/auth/**")).permitAll()
