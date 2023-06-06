@@ -2,15 +2,18 @@ package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.model.Account;
-import nl.inholland.bankingapi.model.Transaction;
-import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountIbanGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
+import nl.inholland.bankingapi.model.specifications.AccountSpecifications;
+import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.parameters.P;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,14 +98,32 @@ public class AccountService {
         );
     }
 
-
-    public List<AccountGET_DTO> getAllAccounts() {
+    public List<AccountGET_DTO> getAllAccountsByUserId(long id) {
+        List<AccountGET_DTO> accountsOwnedBySpecificUser = new ArrayList<>();
+        for (Account account : accountRepository.getAllAccountsByUserId(id)) {
+            accountsOwnedBySpecificUser.add(accountGETDto(account));
+        }
+        return accountsOwnedBySpecificUser;
+    }
+    public List<AccountGET_DTO> getAllAccounts(Integer offset, Integer limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
+        Pageable pageable = PageRequest.of(0, 10);
+        Specification<Account>accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
         List<AccountGET_DTO> accounts = new ArrayList<>();
-        for (Account account : accountRepository.findAll()) {
+        for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
             accounts.add(accountGETDto(account));
         }
         return accounts;
     }
+//    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+//        Pageable pageable = PageRequest.of(0, 10);
+//        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
+//        List<TransactionGET_DTO> transactions = new ArrayList<>();
+//        for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
+//            transactions.add(convertTransactionResponseToDTO(transaction));
+//        }
+//        getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
+//        return transactions;
+//    }
     public AccountGET_DTO getAccountById(long id ) {
         Account account =accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));
@@ -160,9 +181,7 @@ public class AccountService {
         return accountRepository.getTotalBalanceByUserId(id);
     }
 
-    public List<Account> getAllAccountsByUserId(long id) {
-        return accountRepository.getAllAccountsByUserId(id);
-    }
+
 
     public Account getAccountByIBAN(String IBAN) {
         if(!isIbanPresent(IBAN)){
