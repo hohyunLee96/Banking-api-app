@@ -51,7 +51,6 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.userType = userType;
         this.hasAccount = hasAccount;
-//        this.hasAccount = false;
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
 

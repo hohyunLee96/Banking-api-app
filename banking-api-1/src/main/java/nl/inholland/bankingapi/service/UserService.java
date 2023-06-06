@@ -4,6 +4,7 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
@@ -85,9 +86,12 @@ public class UserService {
         return user;
     }
 
-    public List<UserGET_DTO> getAllUsers(String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate) {
+    public List<UserGET_DTO> getAllUsers(String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate, AccountType excludedAccountType) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<User> specification = UserSpecifications.getSpecifications(firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate);
+        Specification<User> specification = UserSpecifications.getSpecifications(firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate ,excludedAccountType);
+        if (excludedAccountType != null) {
+            specification = specification.and(UserSpecifications.hasNoAccountType(excludedAccountType));
+        }
         List<UserGET_DTO> users = new ArrayList<>();
         for (User user : userRepository.findAll(specification, pageable)) {
             users.add(convertUserResponseToDTO(user));

@@ -1,5 +1,9 @@
 package nl.inholland.bankingapi.model.specifications;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -20,6 +24,12 @@ public class UserSpecifications {
 
     public static Specification<User> hasHasAccount(boolean hasAccount) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("hasAccount"), hasAccount);
+    }
+    public static Specification<User> hasNoAccountType(AccountType accountType) {
+        return (root, query, criteriaBuilder) -> {
+            Join<User, Account> accountJoin = root.join("accounts", JoinType.LEFT);
+            return criteriaBuilder.notEqual(accountJoin.get("accountType"), accountType);
+        };
     }
 
     public static Specification<User> hasEmail(String email) {
@@ -50,7 +60,7 @@ public class UserSpecifications {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("userType"), userType);
     }
 
-    public static Specification<User> getSpecifications(String firstName, String lastName, boolean hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, String userType) {
+    public static Specification<User> getSpecifications(String firstName, String lastName, boolean hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, String userType, AccountType excludedAccountType) {
         Specification<User> spec = null;
         Specification<User> temp = null;
         if (firstName != null) {
@@ -91,6 +101,10 @@ public class UserSpecifications {
         }
         if (userType != null) {
             temp = hasUserType(userType);
+            spec = spec == null ? temp : spec.and(temp);
+        }
+        if (excludedAccountType != null) {
+            temp = hasNoAccountType(excludedAccountType);
             spec = spec == null ? temp : spec.and(temp);
         }
         return spec;
