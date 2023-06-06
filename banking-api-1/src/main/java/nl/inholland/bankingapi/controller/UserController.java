@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
+
+@CrossOrigin("*")
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("users")
 @Log
 public class UserController {
