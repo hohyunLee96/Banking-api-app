@@ -35,7 +35,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    @PreAuthorize("hasRole('EMPLOYEE')")
+//    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
             @RequestParam(required = false) Integer offset,
@@ -48,21 +48,21 @@ public class AccountController {
             @RequestParam(required = false) Long user) {
         return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-    @PreAuthorize("hasRole('CUSTOMER')")
-    @GetMapping("/user/{id}")
-    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
-        List<AccountGET_DTO> accounts = accountService.getAllAccountsByUserId(id);
-        Double totalBalance = accountService.getTotalBalanceByUserId(id);
-        if(totalBalance == null){
-            totalBalance = 0.0;
-        }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("accounts", accounts);
-        response.put("totalBalance", totalBalance);
-
-        return ResponseEntity.ok().body(response);
-    }
+//    @PreAuthorize("hasRole('CUSTOMER')")
+//    @GetMapping("/user/{id}")
+//    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
+//        List<AccountGET_DTO> accounts = accountService.getAllAccountsByUserId(id);
+//        Double totalBalance = accountService.getTotalBalanceByUserId(id);
+//        if(totalBalance == null){
+//            totalBalance = 0.0;
+//        }
+//
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("accounts", accounts);
+//        response.put("totalBalance", totalBalance);
+//
+//        return ResponseEntity.ok().body(response);
+//    }
 
 
     @GetMapping("/{id}")
