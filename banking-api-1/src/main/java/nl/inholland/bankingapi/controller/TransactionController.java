@@ -23,7 +23,7 @@ public class TransactionController {
 
 
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getAllTransactions(
 //            @RequestParam(required = false) Integer offset,
 //            @RequestParam(required = false) Integer limit,
