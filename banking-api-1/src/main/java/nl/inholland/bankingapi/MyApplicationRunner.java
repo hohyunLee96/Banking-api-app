@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 public class MyApplicationRunner implements ApplicationRunner {
@@ -54,14 +53,16 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         //Load Accounts
         Account accountFrom = new Account(customer, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+        Account savings = new Account(customer, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account accountTo = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
 
         Account bank= new Account(employee, "NL01INHO0000000001", 9000.00, 0.00, AccountType.CURRENT, true);
 
-         Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.DEPOSIT, employee);
+         Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, employee);
             transactionRepository.save(transaction);
             accountRepository.save(accountFrom);
             accountRepository.save(accountTo);
+            accountRepository.save(savings);
             accountRepository.save(bank);
             userRepository.save(employee);
             userRepository.save(customer);

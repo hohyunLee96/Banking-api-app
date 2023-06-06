@@ -175,7 +175,6 @@ public class TransactionService {
             throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
         }
 
-
         if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
