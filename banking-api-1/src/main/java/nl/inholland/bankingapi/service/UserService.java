@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -162,7 +165,14 @@ public class UserService {
             throw new IllegalArgumentException("Password must contain at least one number and one special character");
         }
     }
-
+    public User getLoggedInUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String receivedToken = jwtTokenFilter.getToken(request);
+        jwtTokenProvider.validateToken(receivedToken);
+        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
+        String userEmail = authenticatedUserUsername.getName();
+        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    }
 
 }
 
