@@ -48,11 +48,6 @@ public class AccountController {
             @RequestParam(required = false) Long user) {
         return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> getAccountById(@PathVariable long id) {
-        return ResponseEntity.ok().body(accountService.getAccountById(id));
-    }
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
@@ -68,6 +63,13 @@ public class AccountController {
 
         return ResponseEntity.ok().body(response);
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getAccountById(@PathVariable long id) {
+        return ResponseEntity.ok().body(accountService.getAccountById(id));
+    }
+
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {

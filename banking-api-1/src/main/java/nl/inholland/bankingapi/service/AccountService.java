@@ -108,6 +108,8 @@ public class AccountService {
     public List<AccountGET_DTO> getAllAccounts(Integer offset, Integer limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Account>accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
+
+        List<AccountGET_DTO> userAccounts = new ArrayList<>();
         List<AccountGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
             accounts.add(accountGETDto(account));
