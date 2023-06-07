@@ -198,8 +198,6 @@ public class TransactionService {
 
     }
 
-
-
     private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
         List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
         double totalAmount = 0.0;
