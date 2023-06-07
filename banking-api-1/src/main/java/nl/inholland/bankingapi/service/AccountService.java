@@ -207,7 +207,7 @@ public class AccountService {
 
     public Account getAccountByIBAN(String IBAN) {
         if(!isIbanPresent(IBAN)){
-            throw new EntityNotFoundException("Iban not found " + IBAN);
+            throw new EntityNotFoundException("Iban not found: " + IBAN);
         }
         return accountRepository.findAccountByIBAN(IBAN);
     }

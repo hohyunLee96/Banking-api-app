@@ -8,8 +8,10 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
+import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,7 @@ public class TransactionService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
+    private final String bankIBAN = "NL01INHO0000000001";
 
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
@@ -95,10 +99,9 @@ public class TransactionService {
             Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
             Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
 
-            //transfer money from sender to receiver and update balances
             checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
+            //transfer money from sender to receiver and update balances
             transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
-
             //save transaction to transaction repository
             return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
         } catch (DataIntegrityViolationException e) {
@@ -158,6 +161,8 @@ public class TransactionService {
         User perfomingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
+
+
         if (transaction.amount() <= 0) {
             throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -167,7 +172,7 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if(!userIsOwnerOfAccount(senderUser,fromAccount)&&(!userIsEmployee(senderUser))) {
+        if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser))) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
         }
         if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
@@ -206,6 +211,19 @@ public class TransactionService {
         return totalAmount;
     }
 
+    public TransactionDepositDTO deposit(TransactionDepositDTO transactionPOSTDto) {
+        Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.iban());
+        Account senderAccount = accountService.getAccountByIBAN(bankIBAN);
+        addTransaction(receiverAccount, senderAccount)
+
+        return new TransactionDepositDTO(transactionPOSTDto.iban(), transactionPOSTDto.amount(),TransactionType.DEPOSIT);
+    }
+
+    public TransactionWithdrawDTO withdraw(TransactionWithdrawDTO transactionWithdrawDTO) {
+        Account senderAccount = accountService.getAccountByIBAN(transactionWithdrawDTO.iban());
+        Account receiverAccount = accountService.getAccountByIBAN(bankIBAN);
+        transferMoney(senderAccount, receiverAccount, transactionWithdrawDTO.amount());
+    }
 
     private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
@@ -214,6 +232,7 @@ public class TransactionService {
     private boolean userIsEmployee(User user) {
         return user.getUserType() == UserType.ROLE_EMPLOYEE;
     }
+
     private boolean userIsOwnerOfAccount(User user, Account account) {
         return Objects.equals(user.getId(), account.getUser().getId());
     }
