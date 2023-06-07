@@ -89,9 +89,9 @@ public class UserService {
         return user;
     }
 
-    public List<UserGET_DTO> getAllUsers(String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate, AccountType excludedAccountType) {
+    public List<UserGET_DTO> getAllUsers(String keyword,String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate, AccountType excludedAccountType) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<User> specification = UserSpecifications.getSpecifications(firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate ,excludedAccountType);
+        Specification<User> specification = UserSpecifications.getSpecifications(keyword,firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate ,excludedAccountType);
         if (excludedAccountType != null) {
             specification = specification.and(UserSpecifications.hasNoAccountType(excludedAccountType));
         }
@@ -134,7 +134,18 @@ public class UserService {
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return userRepository.save(modelMapper.map(userToUpdate, User.class));
+        userToUpdate.setFirstName(dto.firstName());
+        userToUpdate.setLastName(dto.lastName());
+        userToUpdate.setBirthDate(dto.birthDate());
+        userToUpdate.setAddress(dto.address());
+        userToUpdate.setPostalCode(dto.postalCode());
+        userToUpdate.setCity(dto.city());
+        userToUpdate.setPhoneNumber(dto.phoneNumber());
+        userToUpdate.setEmail(dto.email());
+        userToUpdate.setUserType(dto.userType());
+        userToUpdate.setHasAccount(dto.hasAccount());
+
+        return userRepository.save(userToUpdate);
     }
 
     //delete user of specific id
