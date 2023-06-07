@@ -94,21 +94,29 @@ public class TransactionService {
         return allTransactions;
     }
 
-    public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
+    public Transaction addTransaction(@org.jetbrains.annotations.NotNull Transaction transaction) {
         try {
-            Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
-            Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
+            Account senderAccount = accountService.getAccountByIBAN(transaction.getFromIban().getIBAN());
+            Account receiverAccount = accountService.getAccountByIBAN(transaction.getToIban().getIBAN());
 
-            checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
+            checkTransaction(transaction, senderAccount, receiverAccount);
             //transfer money from sender to receiver and update balances
-            transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
+            transferMoney(senderAccount, receiverAccount, transaction.getAmount());
             //save transaction to transaction repository
-            return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
+            return transactionRepository.save(mapTransactionToPostDTO(transaction));
         } catch (DataIntegrityViolationException e) {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
         }
     }
-
+    public Transaction mapTransactionToPostDTO(Transaction transaction) {
+        transaction.setAmount(transaction.getAmount());
+        transaction.setTimestamp(LocalDateTime.now());
+        transaction.setPerformingUser(userService.getUserById(userService.getLoggedInUser(request).getId()));
+        transaction.setToIban(accountService.getAccountByIBAN(transaction.getToIban().getIBAN()));
+        transaction.setFromIban(accountService.getAccountByIBAN(transaction.getToIban().getIBAN()));
+        transaction.setType(transaction.getType());
+        return transaction;
+    }
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
@@ -117,7 +125,6 @@ public class TransactionService {
         // Save the updated receiver account
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
-
     }
 
     public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
@@ -134,16 +141,7 @@ public class TransactionService {
     }
 
 
-    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
-        Transaction transaction = new Transaction();
-        transaction.setAmount(postDto.amount());
-        transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userService.getUserById(userService.getLoggedInUser(request).getId()));
-        transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
-        transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
-        transaction.setType(postDto.type());
-        return transaction;
-    }
+
 
     public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
         return new TransactionGET_DTO(
@@ -157,16 +155,16 @@ public class TransactionService {
         );
     }
 
-    private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
+    private void checkTransaction(Transaction transaction, Account fromAccount, Account toAccount) {
         User perfomingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
 
 
-        if (transaction.amount() <= 0) {
+        if (transaction.getAmount() <= 0) {
             throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
-        if (fromAccount.getBalance() < transaction.amount()) {
+        if (fromAccount.getBalance() < transaction.getAmount()) {
             throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
         }
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
@@ -180,13 +178,13 @@ public class TransactionService {
             throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
         }
 
-        if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
+        if (fromAccount.getUser().getDailyLimit() < transaction.getAmount()) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
-        if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
+        if (fromAccount.getUser().getTransactionLimit() < transaction.getAmount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
+        if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.getAmount()) > fromAccount.getUser().getDailyLimit()) {
             throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
@@ -195,7 +193,7 @@ public class TransactionService {
         if (!toAccount.getIsActive()) {
             throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
         }
-        if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
+        if (((fromAccount.getBalance()) - transaction.getAmount()) < toAccount.getAbsoluteLimit())
             throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
 
     }
@@ -211,12 +209,13 @@ public class TransactionService {
         return totalAmount;
     }
 
-    public TransactionDepositDTO deposit(TransactionDepositDTO transactionPOSTDto) {
-        Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.iban());
+    public Transaction deposit(TransactionDepositDTO transaction) {
+        Account receiverAccount = accountService.getAccountByIBAN(transaction.iban());
         Account senderAccount = accountService.getAccountByIBAN(bankIBAN);
-        addTransaction(receiverAccount, senderAccount)
 
-        return new TransactionDepositDTO(transactionPOSTDto.iban(), transactionPOSTDto.amount(),TransactionType.DEPOSIT);
+
+        addTransaction(transaction);
+        return transaction;
     }
 
     public TransactionWithdrawDTO withdraw(TransactionWithdrawDTO transactionWithdrawDTO) {

@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.exception.ApiRequestException;
+import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
@@ -52,9 +53,9 @@ public class TransactionController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
-    public ResponseEntity<Object> addTransaction(@RequestBody TransactionPOST_DTO transactionPOSTDto) {
+    public ResponseEntity<Object> addTransaction(@RequestBody Transaction transaction) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.convertTransactionResponseToDTO(transactionService.addTransaction(transactionPOSTDto)));
+            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.convertTransactionResponseToDTO(transactionService.addTransaction(transaction)));
         } catch (Exception e) {
             throw new ApiRequestException( e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
