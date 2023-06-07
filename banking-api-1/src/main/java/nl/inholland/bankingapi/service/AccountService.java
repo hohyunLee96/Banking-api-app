@@ -65,7 +65,6 @@ public class AccountService {
         if(!account.getUser().getHasAccount()){
             userHasAccount(user);
         }
-//        account.setIBAN(dto.IBAN());
         account.setIBAN(iban);
         account.setBalance(dto.balance());
         account.setAbsoluteLimit(dto.absoluteLimit());
