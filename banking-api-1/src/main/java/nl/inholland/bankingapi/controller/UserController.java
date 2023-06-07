@@ -2,8 +2,8 @@ package nl.inholland.bankingapi.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
-import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
@@ -12,10 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.naming.AuthenticationException;
-
 @CrossOrigin("*")
 @RestController
+
 @RequestMapping("users")
 @Log
 public class UserController {
@@ -40,9 +39,10 @@ public class UserController {
             @RequestParam( required = false) String phoneNumber,
             @RequestParam( required = false) String userType,
             @RequestParam( required = false) String keyword,
-            @RequestParam( required = false) boolean hasAccount
-    ){
-        return ResponseEntity.ok(userService.getAllUsers(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType));
+            @RequestParam( required = false) boolean hasAccount,
+            @RequestParam( required = false) AccountType excludedAccountType
+    ) {
+        return ResponseEntity.ok(userService.getAllUsers(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType));
     }
 
     //POST Creates a new user

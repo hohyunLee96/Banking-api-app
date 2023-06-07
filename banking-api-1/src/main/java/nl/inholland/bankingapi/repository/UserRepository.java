@@ -18,6 +18,9 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     List<User> findAll(Specification<User> specification, Pageable pageable);
 
+
+    List<User> findUserByAccountsAccountId(long id);
+
     Optional<User> findUserByEmail(String email);
 
     User findUserById(long id);

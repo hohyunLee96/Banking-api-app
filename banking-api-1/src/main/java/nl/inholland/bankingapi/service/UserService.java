@@ -1,9 +1,11 @@
 package nl.inholland.bankingapi.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
@@ -15,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -85,9 +89,12 @@ public class UserService {
         return user;
     }
 
-    public List<UserGET_DTO> getAllUsers(String keyword, String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate) {
+    public List<UserGET_DTO> getAllUsers(String keyword,String firstName, String lastName, boolean hasAccount, String email, String userType, String postalCode, String city, String phoneNumber, String address, String birthDate, AccountType excludedAccountType) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<User> specification = UserSpecifications.getSpecifications(keyword, firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate);
+        Specification<User> specification = UserSpecifications.getSpecifications(keyword,firstName, lastName, hasAccount, email, userType, postalCode, city, phoneNumber, address, birthDate ,excludedAccountType);
+        if (excludedAccountType != null) {
+            specification = specification.and(UserSpecifications.hasNoAccountType(excludedAccountType));
+        }
         List<UserGET_DTO> users = new ArrayList<>();
         for (User user : userRepository.findAll(specification, pageable)) {
             users.add(convertUserResponseToDTO(user));
@@ -169,7 +176,14 @@ public class UserService {
             throw new IllegalArgumentException("Password must contain at least one number and one special character");
         }
     }
-
+    public User getLoggedInUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String receivedToken = jwtTokenFilter.getToken(request);
+        jwtTokenProvider.validateToken(receivedToken);
+        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
+        String userEmail = authenticatedUserUsername.getName();
+        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    }
 
 }
 

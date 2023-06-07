@@ -26,10 +26,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TransactionService {
@@ -68,27 +65,29 @@ public class TransactionService {
         this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser, Date searchDate) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
-        List<TransactionGET_DTO> transactions = new ArrayList<>();
+        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate,
+                lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate);
+
+        List<TransactionGET_DTO> allTransactions = new ArrayList<>();
+        List<TransactionGET_DTO> userTransactions = new ArrayList<>();
+
         for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
-            transactions.add(convertTransactionResponseToDTO(transaction));
+            allTransactions.add(convertTransactionResponseToDTO(transaction));
+            //if the transaction is performed by the logged-in user, add it to the userTransactions list
+            if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
+                userTransactions.add(convertTransactionResponseToDTO(transaction));
+            }
         }
         getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
-        return transactions;
-    }
 
-    public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
-        return new TransactionGET_DTO(
-                transaction.getId(),
-                transaction.getFromIban().getIBAN(),
-                transaction.getToIban().getIBAN(),
-                transaction.getAmount(),
-                transaction.getType(),
-                transaction.getTimestamp().toString(),
-                transaction.getPerformingUser().getId()
-        );
+        if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
+            return userTransactions;
+        } else if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_EMPLOYEE)) {
+            return allTransactions;
+        }
+        return allTransactions;
     }
 
     public Transaction addTransaction(@org.jetbrains.annotations.NotNull TransactionPOST_DTO transactionPOSTDto) {
@@ -106,6 +105,7 @@ public class TransactionService {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
         }
     }
+
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
@@ -135,15 +135,27 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userService.getUserById(getLoggedInUser(request).getId()));
+        transaction.setPerformingUser(userService.getUserById(userService.getLoggedInUser(request).getId()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
         return transaction;
     }
 
+    public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
+        return new TransactionGET_DTO(
+                transaction.getId(),
+                transaction.getFromIban().getIBAN(),
+                transaction.getToIban().getIBAN(),
+                transaction.getAmount(),
+                transaction.getType(),
+                transaction.getTimestamp().toString(),
+                transaction.getPerformingUser().getId()
+        );
+    }
+
     private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
-        User perfomingUser = getLoggedInUser(request);
+        User perfomingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
         if (transaction.amount() <= 0) {
@@ -155,13 +167,14 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (!Objects.equals(fromAccount.getUser().getId(), transaction.performingUser()) && perfomingUser.getUserType()!=UserType.ROLE_EMPLOYEE) {
+        if(!userIsOwnerOfAccount(senderUser,fromAccount)&&(!userIsEmployee(senderUser))) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
         }
         if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
                 && senderUser.getId() != receiverUser.getId()) {
             throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
         }
+
         if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
@@ -171,10 +184,10 @@ public class TransactionService {
         if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
             throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
         }
-        if (!fromAccount.isActive()) {
+        if (!fromAccount.getIsActive()) {
             throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
         }
-        if (!toAccount.isActive()) {
+        if (!toAccount.getIsActive()) {
             throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
         }
         if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
@@ -182,14 +195,7 @@ public class TransactionService {
 
     }
 
-    public User getLoggedInUser(HttpServletRequest request) {
-        // Get JWT token and the information of the authenticated user
-        String receivedToken = jwtTokenFilter.getToken(request);
-        jwtTokenProvider.validateToken(receivedToken);
-        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
-        String userEmail = authenticatedUserUsername.getName();
-        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
-    }
+
 
     private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
         List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
@@ -206,7 +212,10 @@ public class TransactionService {
     }
 
     private boolean userIsEmployee(User user) {
-        return user.getUserType()==UserType.ROLE_EMPLOYEE;
+        return user.getUserType() == UserType.ROLE_EMPLOYEE;
+    }
+    private boolean userIsOwnerOfAccount(User user, Account account) {
+        return Objects.equals(user.getId(), account.getUser().getId());
     }
 
 }
