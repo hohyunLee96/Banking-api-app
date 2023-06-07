@@ -127,7 +127,18 @@ public class UserService {
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        return userRepository.save(modelMapper.map(userToUpdate, User.class));
+        userToUpdate.setFirstName(dto.firstName());
+        userToUpdate.setLastName(dto.lastName());
+        userToUpdate.setBirthDate(dto.birthDate());
+        userToUpdate.setAddress(dto.address());
+        userToUpdate.setPostalCode(dto.postalCode());
+        userToUpdate.setCity(dto.city());
+        userToUpdate.setPhoneNumber(dto.phoneNumber());
+        userToUpdate.setEmail(dto.email());
+        userToUpdate.setUserType(dto.userType());
+        userToUpdate.setHasAccount(dto.hasAccount());
+
+        return userRepository.save(userToUpdate);
     }
 
     //delete user of specific id

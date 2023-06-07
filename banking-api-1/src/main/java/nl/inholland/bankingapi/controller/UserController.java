@@ -58,7 +58,7 @@ public class UserController {
 
     //DELETE Deletes a user of specified id
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteGuitar(@PathVariable Long id) {
+    public ResponseEntity deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);
             return ResponseEntity.status(204).body(null);

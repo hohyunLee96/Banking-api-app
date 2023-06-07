@@ -22,7 +22,7 @@ public class UserSpecifications {
     }
 
     public static Specification<User> hasFirstName(String firstName) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("firstName"), firstName);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), firstName);
     }
 
     public static Specification<User> hasLastName(String lastName) {
@@ -50,7 +50,7 @@ public class UserSpecifications {
     }
 
     public static Specification<User> hasbirthDate(String birthDate){
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("birthDate"), birthDate);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("birthDate"), birthDate);
     }
 
     public static Specification<User> hasPhoneNumber(String phoneNumber){
