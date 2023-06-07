@@ -38,10 +38,11 @@ public class UserController {
             @RequestParam( required = false) String city,
             @RequestParam( required = false) String phoneNumber,
             @RequestParam( required = false) String userType,
+            @RequestParam( required = false) String keyword,
             @RequestParam( required = false) boolean hasAccount,
             @RequestParam( required = false) AccountType excludedAccountType
-    ){
-        return ResponseEntity.ok(userService.getAllUsers(firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType));
+    ) {
+        return ResponseEntity.ok(userService.getAllUsers(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType));
     }
 
     //POST Creates a new user

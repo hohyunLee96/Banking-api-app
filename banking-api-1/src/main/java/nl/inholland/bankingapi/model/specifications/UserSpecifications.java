@@ -12,9 +12,20 @@ public class UserSpecifications {
     private UserSpecifications() {
     }
 
-    //User specifications
+    public static Specification<User> hasKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.or(
+                criteriaBuilder.like(root.get("firstName"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("lastName"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("email"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("address"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("city"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("postalCode"), "%" + keyword + "%"),
+                criteriaBuilder.like(root.get("birthDate"), "%" + keyword + "%")
+        );
+    }
+
     public static Specification<User> hasFirstName(String firstName) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("firstName"), firstName);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("firstName"), firstName);
     }
 
     public static Specification<User> hasLastName(String lastName) {
@@ -55,7 +66,7 @@ public class UserSpecifications {
     }
 
     public static Specification<User> hasbirthDate(String birthDate){
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("birthDate"), birthDate);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("birthDate"), birthDate);
     }
 
     public static Specification<User> hasPhoneNumber(String phoneNumber){
@@ -66,9 +77,14 @@ public class UserSpecifications {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("userType"), userType);
     }
 
-    public static Specification<User> getSpecifications(String firstName, String lastName, boolean hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, String userType, AccountType excludedAccountType) {
+    public static Specification<User> getSpecifications(String keyword, String firstName, String lastName, boolean hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, String userType, AccountType excludedAccountType) {
         Specification<User> spec = null;
         Specification<User> temp = null;
+
+        if (keyword != null && !keyword.isEmpty()) {
+            temp = hasKeyword(keyword);
+            spec = spec == null ? temp : spec.and(temp);
+        }
         if (firstName != null) {
             temp = hasFirstName(firstName);
             spec = spec == null ? temp : spec.and(temp);
