@@ -8,8 +8,10 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
+import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
@@ -43,6 +45,7 @@ public class TransactionService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
+    private final String bankIban="NL01INHO0000000001";
 
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
@@ -213,6 +216,22 @@ public class TransactionService {
         return totalAmount;
     }
 
+    public Transaction withdraw(TransactionWithdrawDTO dto) {
+       return addTransaction( new TransactionPOST_DTO(
+                bankIban,
+                dto.fromIban(),
+                dto.amount(),
+                TransactionType.WITHDRAWAL,
+                getLoggedInUser(request).getId()));
+    }
+    public Transaction deposit(TransactionDepositDTO dto) {
+        return addTransaction(new TransactionPOST_DTO(
+                dto.toIban(),
+                bankIban,
+                dto.amount(),
+                TransactionType.DEPOSIT,
+                getLoggedInUser(request).getId()));
+    }
 
     private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
