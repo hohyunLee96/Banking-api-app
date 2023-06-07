@@ -1,7 +1,6 @@
 package nl.inholland.bankingapi.model.specifications;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.*;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
@@ -36,12 +35,19 @@ public class UserSpecifications {
     public static Specification<User> hasHasAccount(boolean hasAccount) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("hasAccount"), hasAccount);
     }
-    public static Specification<User> hasNoAccountType(AccountType accountType) {
+    public static Specification<User> hasNoAccountType(AccountType excludedAccountType) {
         return (root, query, criteriaBuilder) -> {
-            Join<User, Account> accountJoin = root.join("accounts", JoinType.LEFT);
-            return criteriaBuilder.notEqual(accountJoin.get("accountType"), accountType);
+        Subquery<Long> subquery = query.subquery(Long.class);
+        Root<User> subRoot = subquery.from(User.class);
+        Join<User, Account> accountJoin = subRoot.join("accounts", JoinType.LEFT);
+
+        Predicate accountTypeCondition = criteriaBuilder.equal(accountJoin.get("accountType"), excludedAccountType);
+        subquery.select(subRoot.get("id")).where(accountTypeCondition);
+
+        return criteriaBuilder.not(root.get("id").in(subquery));
         };
     }
+
 
     public static Specification<User> hasEmail(String email) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("email"), email);
