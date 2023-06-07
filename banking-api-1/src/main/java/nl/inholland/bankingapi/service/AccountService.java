@@ -1,7 +1,10 @@
 package nl.inholland.bankingapi.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
+import nl.inholland.bankingapi.filter.JwtTokenFilter;
+import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountIbanGET_DTO;
@@ -14,9 +17,11 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.parameters.P;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -34,10 +40,18 @@ public class AccountService {
     private AccountRepository accountRepository;
     private UserRepository userRepository;
     private List<Account> accounts;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenFilter jwtTokenFilter;
 
-    public AccountService(AccountRepository accountRepository, UserRepository userRepository) {
+    private final HttpServletRequest request;
+
+
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, HttpServletRequest request) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtTokenFilter = jwtTokenFilter;
+        this.request = request;
     }
 
     private Account mapDtoToAccount(AccountPOST_DTO dto) {
@@ -51,7 +65,6 @@ public class AccountService {
         if(!account.getUser().getHasAccount()){
             userHasAccount(user);
         }
-//        account.setIBAN(dto.IBAN());
         account.setIBAN(iban);
         account.setBalance(dto.balance());
         account.setAbsoluteLimit(dto.absoluteLimit());
@@ -108,22 +121,31 @@ public class AccountService {
     public List<AccountGET_DTO> getAllAccounts(Integer offset, Integer limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Account>accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
+
+        List<AccountGET_DTO> userAccounts = new ArrayList<>();
         List<AccountGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
             accounts.add(accountGETDto(account));
+            if(account.getUser().getId().equals(getLoggedInUser(request).getId())){
+                Long userId = account.getUser().getId();
+                Double totalBalance = accountRepository.getTotalBalanceByUserId(userId);
+                userAccounts.add(accountGETDto(account));
+            }
+        }
+        if (getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
+            return userAccounts;
         }
         return accounts;
     }
-//    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
-//        Pageable pageable = PageRequest.of(0, 10);
-//        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser);
-//        List<TransactionGET_DTO> transactions = new ArrayList<>();
-//        for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
-//            transactions.add(convertTransactionResponseToDTO(transaction));
-//        }
-//        getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
-//        return transactions;
-//    }
+    public User getLoggedInUser(HttpServletRequest request) {
+        // Get JWT token and the information of the authenticated user
+        String receivedToken = jwtTokenFilter.getToken(request);
+        jwtTokenProvider.validateToken(receivedToken);
+        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
+        String userEmail = authenticatedUserUsername.getName();
+        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+    }
+
     public AccountGET_DTO getAccountById(long id ) {
         Account account =accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));

@@ -79,15 +79,15 @@ public class TransactionService {
         for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
             allTransactions.add(convertTransactionResponseToDTO(transaction));
             //if the transaction is performed by the logged-in user, add it to the userTransactions list
-            if (transaction.getPerformingUser().getId().equals(getLoggedInUser(request).getId())) {
+            if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
                 userTransactions.add(convertTransactionResponseToDTO(transaction));
             }
         }
         getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
 
-        if (getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
+        if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
             return userTransactions;
-        } else if (getLoggedInUser(request).getUserType().equals(UserType.ROLE_EMPLOYEE)) {
+        } else if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_EMPLOYEE)) {
             return allTransactions;
         }
         return allTransactions;
@@ -138,7 +138,7 @@ public class TransactionService {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
-        transaction.setPerformingUser(userService.getUserById(getLoggedInUser(request).getId()));
+        transaction.setPerformingUser(userService.getUserById(userService.getLoggedInUser(request).getId()));
         transaction.setToIban(accountService.getAccountByIBAN(postDto.toIban()));
         transaction.setFromIban(accountService.getAccountByIBAN(postDto.fromIban()));
         transaction.setType(postDto.type());
@@ -158,7 +158,7 @@ public class TransactionService {
     }
 
     private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
-        User perfomingUser = getLoggedInUser(request);
+        User perfomingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(perfomingUser.getId());
         if (transaction.amount() <= 0) {
@@ -198,14 +198,7 @@ public class TransactionService {
 
     }
 
-    public User getLoggedInUser(HttpServletRequest request) {
-        // Get JWT token and the information of the authenticated user
-        String receivedToken = jwtTokenFilter.getToken(request);
-        jwtTokenProvider.validateToken(receivedToken);
-        Authentication authenticatedUserUsername = jwtTokenProvider.getAuthentication(receivedToken);
-        String userEmail = authenticatedUserUsername.getName();
-        return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
-    }
+
 
     private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
         List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());

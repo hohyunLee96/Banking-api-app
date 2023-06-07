@@ -44,34 +44,40 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     public void loadInformationForDB() {
         //Load users
-
-
         User employee = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true);
 
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 1000.00, 1000.00,true);
-        User user2 = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
+        User employee2 = new User("employee2@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
 
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE ,10000.00, 10000.00, true);
 
-        User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
+        User customer = new User("customer@email.com", bCryptPasswordEncoder.encode(  "1234"), "Customer", "Customer", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
 
         //Load Accounts
-        Account accountFrom = new Account(customer, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+        Account account1 = new Account(customer, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         Account savings = new Account(customer, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
-        Account accountTo = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
+        Account account2 = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
+        Account savings2 = new Account(employee, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
 
         Account bank= new Account(employee, "NL01INHO0000000001", 9000.00, 0.00, AccountType.CURRENT, true);
+        Account savings3 = new Account(employee, "NL01INHO0000000002", 9000.00, 0.00, AccountType.SAVINGS, true);
 
-         Transaction transaction = new Transaction(accountFrom, accountTo, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, employee);
+         Transaction transaction = new Transaction(account1, account2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, customer);
+         Transaction transaction2 = new Transaction(savings, savings2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, employee);
             transactionRepository.save(transaction);
-            accountRepository.save(accountFrom);
-            accountRepository.save(accountTo);
+            transactionRepository.save(transaction2);
+            accountRepository.save(account1);
+            accountRepository.save(account2);
             accountRepository.save(savings);
+            accountRepository.save(savings2);
+            accountRepository.save(savings3);
             accountRepository.save(bank);
             userRepository.save(employee);
+            userRepository.save(user1);
+            userRepository.save(employee2);
             userRepository.save(customer);
         }
 
