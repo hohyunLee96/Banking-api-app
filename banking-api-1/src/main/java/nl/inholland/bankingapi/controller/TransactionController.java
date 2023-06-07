@@ -62,18 +62,18 @@ public class TransactionController {
     }
     @PostMapping("/deposit")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
-    public ResponseEntity<Object> deposit(@RequestBody TransactionDepositDTO transactionDepositDTO) {
+    public ResponseEntity<Object> deposit(@RequestBody Transaction transaction) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.deposit((transactionDepositDTO)));
+            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.deposit((transaction)));
         } catch (Exception e) {
             throw new ApiRequestException( e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @PostMapping("/withdraw")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
-    public ResponseEntity<Object> withdraw(@RequestBody TransactionWithdrawDTO transactionWithdrawDTO) {
+    public ResponseEntity<Object> withdraw(@RequestBody Transaction transaction) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.withdraw((transactionWithdrawDTO)));
+            return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.withdraw((transaction)));
         } catch (Exception e) {
             throw new ApiRequestException( e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }

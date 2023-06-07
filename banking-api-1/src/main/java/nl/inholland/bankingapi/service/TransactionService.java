@@ -10,7 +10,6 @@ import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -23,9 +22,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -127,9 +123,9 @@ public class TransactionService {
         accountRepository.save(receiverAccount);
     }
 
-    public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
-        return transactionRepository.findAllByFromIban(iban);
-    }
+//    public List<Transaction> getAllTransactionsByIban(@NotBlank Account iban) {
+//        return transactionRepository.findAllByFromIban(iban);
+//    }
 
     public TransactionGET_DTO getTransactionById(long id) {
         Optional<Transaction> optionalTransaction = transactionRepository.findById(id);
@@ -139,9 +135,6 @@ public class TransactionService {
             throw new EntityNotFoundException("Transaction with the specified ID not found.");
         }
     }
-
-
-
 
     public TransactionGET_DTO convertTransactionResponseToDTO(Transaction transaction) {
         return new TransactionGET_DTO(
@@ -207,20 +200,23 @@ public class TransactionService {
         return totalAmount;
     }
 
-    public Transaction deposit(TransactionDepositDTO transaction) {
-        Account receiverAccount = accountService.getAccountByIBAN(transaction.iban());
+    public Transaction deposit(Transaction transaction) {
+        Account receiverAccount = accountService.getAccountByIBAN(transaction.getToIban().getIBAN());
         Account senderAccount = accountService.getAccountByIBAN(bankIBAN);
 
-
-        addTransaction(transaction);
-        return transaction;
+        transaction.setFromIban(senderAccount);
+        transaction.setToIban(receiverAccount);
+        return addTransaction(transaction);
     }
 
-    public TransactionWithdrawDTO withdraw(TransactionWithdrawDTO transactionWithdrawDTO) {
-        Account senderAccount = accountService.getAccountByIBAN(transactionWithdrawDTO.iban());
+    public Transaction withdraw(Transaction transaction) {
+        Account senderAccount = accountService.getAccountByIBAN(transaction.getFromIban().getIBAN());
         Account receiverAccount = accountService.getAccountByIBAN(bankIBAN);
-        transferMoney(senderAccount, receiverAccount, transactionWithdrawDTO.amount());
+        transaction.setFromIban(senderAccount);
+        transaction.setToIban(receiverAccount);
+        return addTransaction(transaction);
     }
+
 
     private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
