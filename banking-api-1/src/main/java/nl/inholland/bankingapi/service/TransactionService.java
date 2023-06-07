@@ -169,16 +169,18 @@ public class TransactionService {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
 
-        if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
-                && !Objects.equals(senderUser.getId(), receiverUser.getId())) {
-            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
+        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(senderUser, fromAccount)) {
+            throw new ApiRequestException("Savings account does not belong to the user performing the transaction", HttpStatus.FORBIDDEN);
+        }
+
+        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
+            throw new ApiRequestException("Savings account does not belong to the recipient user", HttpStatus.FORBIDDEN);
         }
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
 
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
         }
         if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
-            System.out.println(receiverUser.getId() + " " + toAccount.getUser().getId());
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
         }
         if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
