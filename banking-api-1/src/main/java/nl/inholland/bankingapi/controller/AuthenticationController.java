@@ -1,31 +1,43 @@
 package nl.inholland.bankingapi.controller;
 
 import lombok.RequiredArgsConstructor;
-import nl.inholland.bankingapi.model.AuthenticationRequest;
-import nl.inholland.bankingapi.model.AuthenticationResponse;
-import nl.inholland.bankingapi.model.RegisterRequest;
+import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
+import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
+import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
+
+@CrossOrigin("*")
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@RequestMapping("auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest registerRequest) {
-        return ResponseEntity.ok(authenticationService.register(registerRequest));
+    public ResponseEntity<Void> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+
+        authenticationService.register(registerRequestDTO);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
-        return ResponseEntity.ok(authenticationService.authenticate(authenticationRequest));
+    @PostMapping("/login")
+    public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
+
+       return authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password());
+    }
+
+    @GetMapping("/hello")
+    public String Hello() {
+        return "Connection Established.";
     }
 
 }

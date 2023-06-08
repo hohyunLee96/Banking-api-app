@@ -1,28 +1,28 @@
 package nl.inholland.bankingapi.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Data
 @Entity
 @NoArgsConstructor
 @Table(name = "users")
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String email;
-    private String username;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
     private String firstName;
     private String lastName;
     private String birthDate;
@@ -32,48 +32,27 @@ public class User implements UserDetails {
     private String phoneNumber;
     private UserType userType;
     private Boolean hasAccount;
+    private Double dailyLimit;
+    private Double transactionLimit;
 
-    public User(String username, String password, UserType userType) {
-        this.username = username;
-        this.password = password;
-        this.userType = userType;
-    }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(userType.name()));
-    }
-
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
 
+   public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.postalCode = postalCode;
+        this.address = address;
+        this.city = city;
+        this.phoneNumber = phoneNumber;
+        this.userType = userType;
+        this.hasAccount = hasAccount;
+        this.dailyLimit = dailyLimit;
+        this.transactionLimit = transactionLimit;
+
+    }
 }
