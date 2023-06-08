@@ -57,7 +57,7 @@ public class MyApplicationRunner implements ApplicationRunner {
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
 
         //Load Accounts
-        Account account1 = new Account(customer, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+//        Account account1 = new Account(customer, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         Account savings = new Account(customer, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account account2 = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
         Account savings2 = new Account(employee, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
@@ -65,11 +65,11 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account bank= new Account(employee, "NL01INHO0000000001", 9000.00, 0.00, AccountType.CURRENT, true);
         Account savings3 = new Account(employee, "NL01INHO0000000002", 9000.00, 0.00, AccountType.SAVINGS, true);
 
-         Transaction transaction = new Transaction(account1, account2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, customer);
+//         Transaction transaction = new Transaction(account1, account2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, customer);
          Transaction transaction2 = new Transaction(savings, savings2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, employee);
-            transactionRepository.save(transaction);
+//            transactionRepository.save(transaction);
             transactionRepository.save(transaction2);
-            accountRepository.save(account1);
+//            accountRepository.save(account1);
             accountRepository.save(account2);
             accountRepository.save(savings);
             accountRepository.save(savings2);

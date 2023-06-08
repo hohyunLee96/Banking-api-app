@@ -12,15 +12,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class JwtTokenProvider {
 
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
+    @Value("${application.refresh.token.validity}")
+    private long refreshTokenValidityInMicroseconds;
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtKeyProvider jwtKeyProvider;
+
+    private Claims refreshTokenClaims;
 
     public JwtTokenProvider(UserDetailsServiceImpl userDetailsServiceImpl, JwtKeyProvider jwtKeyProvider) {
         this.userDetailsServiceImpl = userDetailsServiceImpl;
@@ -28,24 +31,41 @@ public class JwtTokenProvider {
     }
 
     public String createToken(String username, UserType roles) {
-        Claims claims = Jwts.claims().setSubject(username);
+         Claims tokenClaims = Jwts.claims().setSubject(username);
 
         // And we add an array of the roles to the auth element of the Claims
         // Note that we only provide the role as information to the frontend
         // The actual role based authorization should always be done in the backend code
-        claims.put("auth", roles.name());
+        tokenClaims.put("auth", roles.name());
 
         // We decide on an expiration date
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + validityInMicroseconds);
+        Date expiration = calculateExpirationDate(now, validityInMicroseconds);
 
         // And finally, generate the token and sign it. .compact() then turns it into a string that we can return.
         return Jwts.builder()
-                .setClaims(claims)
+                .setClaims(tokenClaims)
+                .setClaims(refreshTokenClaims)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(jwtKeyProvider.getPrivateKey())
                 .compact();
+    }
+    public String createRefreshToken(String username, UserType role){
+        refreshTokenClaims = Jwts.claims().setSubject(username);
+        refreshTokenClaims.put("auth", role.name());
+        Date now = new Date();
+        Date expiration = calculateExpirationDate(now, refreshTokenValidityInMicroseconds);
+        return Jwts.builder()
+                .setClaims(refreshTokenClaims)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(jwtKeyProvider.getPrivateKey())
+                .compact();
+    }
+    public Date calculateExpirationDate(Date currentDate, long validityInMicroseconds) {
+        long expirationTimeInMilliseconds = currentDate.getTime() + (validityInMicroseconds / 1000);
+        return new Date(expirationTimeInMilliseconds);
     }
 
     public Authentication getAuthentication(String token) {
