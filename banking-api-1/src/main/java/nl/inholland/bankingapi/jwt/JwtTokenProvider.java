@@ -21,7 +21,6 @@ public class JwtTokenProvider {
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtKeyProvider jwtKeyProvider;
 
-
     public JwtTokenProvider(UserDetailsServiceImpl userDetailsServiceImpl, JwtKeyProvider jwtKeyProvider) {
         this.userDetailsServiceImpl = userDetailsServiceImpl;
         this.jwtKeyProvider = jwtKeyProvider;
@@ -30,9 +29,7 @@ public class JwtTokenProvider {
     public String createToken(String username, UserType roles) {
          Claims tokenClaims = Jwts.claims().setSubject(username);
 
-        // And we add an array of the roles to the auth element of the Claims
         // Note that we only provide the role as information to the frontend
-        // The actual role based authorization should always be done in the backend code
         tokenClaims.put("auth", roles.name());
 
         // We decide on an expiration date
@@ -55,7 +52,6 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        // We will get the email from the token
         // And then get the UserDetails for this user from our service
         // We can then pass the UserDetails back to the caller
         try {

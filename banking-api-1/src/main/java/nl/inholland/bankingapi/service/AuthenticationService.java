@@ -42,7 +42,6 @@ public class AuthenticationService {
         }
     }
 
-
     public LoginResponseDTO login(String email, String password) throws javax.naming.AuthenticationException {
 
         User user = this.userRepository
