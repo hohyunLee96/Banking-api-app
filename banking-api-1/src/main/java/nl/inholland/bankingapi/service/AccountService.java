@@ -6,10 +6,7 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
-import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
-import nl.inholland.bankingapi.model.dto.AccountIbanGET_DTO;
-import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.specifications.AccountSpecifications;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -74,22 +71,28 @@ public class AccountService {
     }
     public void userHasAccount(User user){
         user.setHasAccount(true);
+        user.setUserType(UserType.ROLE_CUSTOMER);
         userRepository.save(user);
     }
 
 
-    private Account mapDtoToAccountPut(long id,AccountGET_DTO dto) {
+    private Account mapDtoToAccountPut(long id,AccountPUT_DTO dto) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Account not found"));
 //        User user = userRepository.findUserBySpecificAccountId(id);
 //        account.setUser(user);
 //        if(!accountRepository.getAccountByUserId(id).isActive()) {
 //            user.setHasAccount(false);
 //        }
-        account.setIBAN(account.getIBAN());
-        account.setBalance(account.getBalance());
-        account.setAbsoluteLimit(account.getAbsoluteLimit());
-        account.setAccountType(account.getAccountType());
-        account.setIsActive(false);
+//        account.setIBAN(account.getIBAN());
+//        account.setBalance(account.getBalance());
+//        account.setAbsoluteLimit(account.getAbsoluteLimit());
+//        account.setAccountType(account.getAccountType());
+//        account.setIsActive(account.getIsActive());
+//        account.setIsActive(false);
+
+        account.setAbsoluteLimit(dto.absoluteLimit());
+        account.setIsActive(dto.isActive());
+
         return account;
     }
     private AccountGET_DTO accountGETDto(Account account){
@@ -127,8 +130,6 @@ public class AccountService {
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
             accounts.add(accountGETDto(account));
             if(account.getUser().getId().equals(getLoggedInUser(request).getId())){
-                Long userId = account.getUser().getId();
-                Double totalBalance = accountRepository.getTotalBalanceByUserId(userId);
                 userAccounts.add(accountGETDto(account));
             }
         }
@@ -161,16 +162,36 @@ public class AccountService {
         return accounts;
     }
 
+//    public Account addAccount(AccountPOST_DTO account) {
+//        return accountRepository.save(this.mapDtoToAccount(account));
+//    }
     public Account addAccount(AccountPOST_DTO account) {
-        return accountRepository.save(this.mapDtoToAccount(account));
+        if(!isCustomer(account.userId())){
+            throw new ApiRequestException("Employee type cannot own accounts", HttpStatus.BAD_REQUEST);
+        }
+        if (hasAccountOfType(account.userId(), account.accountType())) {
+            throw new ApiRequestException("User already has an account of type " + account.accountType(),
+                    HttpStatus.BAD_REQUEST);        }
+        return accountRepository.save(mapDtoToAccount(account));
     }
 
+    private boolean hasAccountOfType(Long userId, AccountType accountType) {
+        // Implement the logic to check if the user already has an account of the specified type
+        // You can query the account repository or perform any other necessary checks
+        return accountRepository.existsByUserIdAndAccountType(userId, accountType);
+    }
+    private Boolean isCustomer(Long userId){
+        if(userRepository.findById(userId).get().getUserType().equals(UserType.ROLE_EMPLOYEE)){
+            return false;
+        }
+        return true;
+    }
     public AccountGET_DTO getAccountByUserId(long id) {
         return accountRepository.getAccountByUserId(id);
     }
 
-    public Account disableAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
-        Account account = mapDtoToAccountPut(id, accountGET_dto);
+    public Account disableAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
+        Account account = mapDtoToAccountPut(id, accountPUT_dto);
         account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
         userRepository.save(account.getUser());
         return accountRepository.save(account);

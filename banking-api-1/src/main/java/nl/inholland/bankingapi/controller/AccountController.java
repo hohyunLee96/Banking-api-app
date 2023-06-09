@@ -6,6 +6,7 @@ import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
+import nl.inholland.bankingapi.model.dto.AccountPUT_DTO;
 import nl.inholland.bankingapi.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -72,8 +73,8 @@ public class AccountController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
-        return ResponseEntity.ok().body(accountService.disableAccount(id, accountGET_dto));
+    public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
+        return ResponseEntity.ok().body(accountService.disableAccount(id, accountPUT_dto));
     }
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping
