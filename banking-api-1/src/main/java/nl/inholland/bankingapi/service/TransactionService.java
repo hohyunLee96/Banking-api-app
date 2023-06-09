@@ -8,8 +8,10 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
+import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
+import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
@@ -21,8 +23,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -43,6 +43,7 @@ public class TransactionService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
+    private final String bankIban = "NL01INHO0000000001";
 
     public TransactionService(TransactionRepository transactionRepository,
                               UserRepository userRepository,
@@ -155,9 +156,9 @@ public class TransactionService {
     }
 
     private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
-        User perfomingUser = userService.getLoggedInUser(request);
+        User performingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
-        User senderUser = userService.getUserById(perfomingUser.getId());
+        User senderUser = userService.getUserById(performingUser.getId());
         if (transaction.amount() <= 0) {
             throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -167,14 +168,21 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if(!userIsOwnerOfAccount(senderUser,fromAccount)&&(!userIsEmployee(senderUser))) {
-            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
-        }
-        if (!userIsEmployee(senderUser) && (accountIsSavingsAccount(toAccount) || accountIsSavingsAccount(fromAccount))
-                && senderUser.getId() != receiverUser.getId()) {
-            throw new ApiRequestException("Savings account does not belong to user", HttpStatus.FORBIDDEN);
+
+        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(senderUser, fromAccount)) {
+            throw new ApiRequestException("Savings account does not belong to the user performing the transaction", HttpStatus.FORBIDDEN);
         }
 
+        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
+            throw new ApiRequestException("Savings account does not belong to the recipient user", HttpStatus.FORBIDDEN);
+        }
+        if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
+
+            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
+        }
+        if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
+            throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
+        }
         if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
@@ -196,7 +204,6 @@ public class TransactionService {
     }
 
 
-
     private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
         List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
         double totalAmount = 0.0;
@@ -206,6 +213,23 @@ public class TransactionService {
         return totalAmount;
     }
 
+    public Transaction withdraw(TransactionWithdrawDTO dto) {
+        return addTransaction(new TransactionPOST_DTO(
+                dto.fromIban(),
+                bankIban,
+                dto.amount(),
+                TransactionType.WITHDRAWAL,
+                userService.getLoggedInUser(request).getId()));
+    }
+
+    public Transaction deposit(TransactionDepositDTO dto) {
+        return addTransaction(new TransactionPOST_DTO(
+                bankIban,
+                dto.toIban(),
+                dto.amount(),
+                TransactionType.DEPOSIT,
+                userService.getLoggedInUser(request).getId()));
+    }
 
     private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
@@ -214,8 +238,17 @@ public class TransactionService {
     private boolean userIsEmployee(User user) {
         return user.getUserType() == UserType.ROLE_EMPLOYEE;
     }
+
     private boolean userIsOwnerOfAccount(User user, Account account) {
         return Objects.equals(user.getId(), account.getUser().getId());
+    }
+
+    private boolean accountIsBankAccount(Account account) {
+        return account.getIBAN().equals(bankIban);
+    }
+
+    private boolean transactionIsWithdrawalOrDeposit(TransactionPOST_DTO transaction) {
+        return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
 
 }
