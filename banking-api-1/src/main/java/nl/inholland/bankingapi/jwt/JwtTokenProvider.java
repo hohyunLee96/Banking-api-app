@@ -39,7 +39,6 @@ public class JwtTokenProvider {
         // And finally, generate the token and sign it. .compact() then turns it into a string that we can return.
         return Jwts.builder()
                 .setClaims(tokenClaims)
-//                .setClaims(refreshTokenClaims)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(jwtKeyProvider.getPrivateKey())
