@@ -27,7 +27,7 @@ public class JwtTokenProvider {
     }
 
     public String createToken(String username, UserType roles) {
-         Claims tokenClaims = Jwts.claims().setSubject(username);
+        Claims tokenClaims = Jwts.claims().setSubject(username);
 
         // Note that we only provide the role as information to the frontend
         tokenClaims.put("auth", roles.name());
@@ -46,7 +46,7 @@ public class JwtTokenProvider {
     }
 
     public Date calculateExpirationDate(Date currentDate, long validityInMicroseconds) {
-        long expirationTimeInMilliseconds = currentDate.getTime() + (validityInMicroseconds / 1000);
+        long expirationTimeInMilliseconds = currentDate.getTime() + validityInMicroseconds;
         return new Date(expirationTimeInMilliseconds);
     }
 
