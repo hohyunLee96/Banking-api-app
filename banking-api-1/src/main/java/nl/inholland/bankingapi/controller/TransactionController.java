@@ -1,10 +1,12 @@
 package nl.inholland.bankingapi.controller;
 
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.service.TransactionService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
+@ControllerAdvice
 @CrossOrigin("*")
 @RestController
 @RequestMapping("transactions")
@@ -41,7 +44,12 @@ public class TransactionController {
             ,@RequestParam( required = false) Date searchDate
 
     ) {
-        return ResponseEntity.ok(transactionService.getAllTransactions( fromIban,toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser,searchDate));
+        try {
+            return ResponseEntity.ok(transactionService.getAllTransactions(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate));
+        } catch (ApiRequestException e) {
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @PostMapping
