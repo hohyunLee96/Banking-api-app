@@ -18,12 +18,9 @@ public class JwtTokenProvider {
 
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
-    @Value("${application.refresh.token.validity}")
-    private long refreshTokenValidityInMicroseconds;
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtKeyProvider jwtKeyProvider;
 
-    private Claims refreshTokenClaims;
 
     public JwtTokenProvider(UserDetailsServiceImpl userDetailsServiceImpl, JwtKeyProvider jwtKeyProvider) {
         this.userDetailsServiceImpl = userDetailsServiceImpl;
@@ -45,24 +42,13 @@ public class JwtTokenProvider {
         // And finally, generate the token and sign it. .compact() then turns it into a string that we can return.
         return Jwts.builder()
                 .setClaims(tokenClaims)
-                .setClaims(refreshTokenClaims)
+//                .setClaims(refreshTokenClaims)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(jwtKeyProvider.getPrivateKey())
                 .compact();
     }
-    public String createRefreshToken(String username, UserType role){
-        refreshTokenClaims = Jwts.claims().setSubject(username);
-        refreshTokenClaims.put("auth", role.name());
-        Date now = new Date();
-        Date expiration = calculateExpirationDate(now, refreshTokenValidityInMicroseconds);
-        return Jwts.builder()
-                .setClaims(refreshTokenClaims)
-                .setIssuedAt(now)
-                .setExpiration(expiration)
-                .signWith(jwtKeyProvider.getPrivateKey())
-                .compact();
-    }
+
     public Date calculateExpirationDate(Date currentDate, long validityInMicroseconds) {
         long expirationTimeInMilliseconds = currentDate.getTime() + (validityInMicroseconds / 1000);
         return new Date(expirationTimeInMilliseconds);

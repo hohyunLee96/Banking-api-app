@@ -52,8 +52,7 @@ public class AuthenticationService {
         if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
             //Return a JWT to the client
             String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-            String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getUserType());
-            return new LoginResponseDTO(jwt, refreshToken, user.getEmail(), user.getId());
+            return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
         } else {
             throw new javax.naming.AuthenticationException("Incorrect email/password");
         }
