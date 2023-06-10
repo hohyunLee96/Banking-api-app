@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.repository;
 
 import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.Transaction;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import org.springframework.data.domain.Pageable;
@@ -26,4 +27,7 @@ public interface AccountRepository extends CrudRepository<Account,Long> {
     Double getTotalBalanceByUserId(@Param("user") long id);
 
     AccountGET_DTO getAccountByUserId(long id);
+
+    boolean existsByUserIdAndAccountType(Long userId, AccountType accountType);
+
 }

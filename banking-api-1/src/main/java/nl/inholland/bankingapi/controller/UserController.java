@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
@@ -37,9 +38,9 @@ public class UserController {
             @RequestParam( required = false) String address,
             @RequestParam( required = false) String city,
             @RequestParam( required = false) String phoneNumber,
-            @RequestParam( required = false) String userType,
+            @RequestParam( required = false) UserType userType,
             @RequestParam( required = false) String keyword,
-            @RequestParam( required = false) boolean hasAccount,
+            @RequestParam( required = false) String hasAccount,
             @RequestParam( required = false) AccountType excludedAccountType
     ) {
         return ResponseEntity.ok(userService.getAllUsers(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType));
@@ -71,10 +72,6 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getUserById(@PathVariable long id) {
         return ResponseEntity.ok().body(userService.getUserById(id));
-    }
-    @GetMapping(params = "hasAccount")
-    public ResponseEntity<Object> getUsersWithoutAccount(@RequestParam Boolean hasAccount) {
-        return ResponseEntity.ok().body(userService.getUsersWithoutAccount(hasAccount));
     }
 
     //PUT Updates an existing user
