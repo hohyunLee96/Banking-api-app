@@ -1,8 +1,6 @@
 package nl.inholland.bankingapi.controller;
 
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.inholland.bankingapi.ApiTestConfiguration;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.Transaction;
@@ -21,10 +19,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -34,7 +30,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -45,8 +40,9 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ContextConfiguration(classes = {TransactionController.class})
@@ -54,7 +50,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(TransactionController.class)
 @EnableMethodSecurity(prePostEnabled = true)
-
 class TransactionControllerTest {
 
     @Autowired
@@ -82,7 +77,7 @@ class TransactionControllerTest {
         MockitoAnnotations.openMocks(this);
         transactionController = new TransactionController(transactionService);
         transactionGETDto = new TransactionGET_DTO(1, "NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, LocalDateTime.now().toString(), 123L);
-         transaction = new Transaction(1L, accountService.getAccountByIBAN("NL21INHO0123400081"),accountService.getAccountByIBAN("NL21INHO0123400082"), 120.0, LocalDateTime.now(), TransactionType.TRANSFER, new User());
+        transaction = new Transaction(1L, accountService.getAccountByIBAN("NL21INHO0123400081"), accountService.getAccountByIBAN("NL21INHO0123400082"), 120.0, LocalDateTime.now(), TransactionType.TRANSFER, new User());
     }
 
     private String asJsonString(Object object) {
@@ -98,22 +93,21 @@ class TransactionControllerTest {
     @Test
     void getAllTransactions() {
         List<TransactionGET_DTO> transactionGETDtoList = Collections.singletonList(transactionGETDto);
-        when(transactionService.getAllTransactions(null,null,null,null,null,null,null,null,null,null)).thenReturn(transactionGETDtoList);
+        when(transactionService.getAllTransactions(null, null, null, null, null, null, null, null, null, null)).thenReturn(transactionGETDtoList);
         assertThat(transactionGETDtoList).isNotNull();
     }
 
     @Test
-
+    @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
     void getTransactionById() throws Exception {
         when(transactionService.getTransactionById(1L)).thenReturn(transactionGETDto);
         MockHttpServletResponse response = mockMvc.perform(get("/transactions/1")
-
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isNotEmpty();
+        assertThat(response.getContentAsString()).isEqualTo(asJsonString(transactionGETDto));
     }
 
 
@@ -124,15 +118,16 @@ class TransactionControllerTest {
         Transaction transaction = new Transaction(1L, new Account(), new Account(), 120.0, LocalDateTime.now(), TransactionType.TRANSFER, new User());
         when(transactionService.addTransaction(transactionPOSTDto)).thenReturn(transaction);
 
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        response.setStatus(HttpStatus.CREATED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
-        response.getWriter().write(asJsonString(transaction));
+//        MockHttpServletResponse response = new MockHttpServletResponse();
+//        response.setStatus(HttpStatus.CREATED.value());
+//        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//        response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+//        response.getWriter().write(asJsonString(transaction));
 
-        mockMvc.perform(post("/transactions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(transactionPOSTDto)))
+        MockHttpServletResponse response = mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .characterEncoding(StandardCharsets.UTF_8.toString())
+                        .content(asJsonString(transaction)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
 
@@ -148,8 +143,9 @@ class TransactionControllerTest {
         when(transactionService.withdraw(transactionWithdrawDto)).thenReturn(transaction);
 
         MockHttpServletResponse response = mockMvc.perform(post("/transactions/withdraw")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(transactionWithdrawDto)))
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .characterEncoding(StandardCharsets.UTF_8.toString())
+                        .content(asJsonString(transaction)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
 
