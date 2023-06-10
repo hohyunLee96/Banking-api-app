@@ -45,7 +45,7 @@ public class MyApplicationRunner implements ApplicationRunner {
     public void loadInformationForDB() {
         //Load users
         User employee = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true);
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true);
 
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 1000.00, 1000.00,true);

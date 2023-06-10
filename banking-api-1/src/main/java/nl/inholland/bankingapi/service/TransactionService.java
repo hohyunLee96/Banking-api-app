@@ -191,7 +191,7 @@ public class TransactionService {
         if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByAccount( request)+transaction.amount() > fromAccount.getUser().getDailyLimit()) ){
+        if ((getSumOfAllTransactionsFromTodayByAccount(request)+transaction.amount() > performingUser.getDailyLimit()) ){
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
