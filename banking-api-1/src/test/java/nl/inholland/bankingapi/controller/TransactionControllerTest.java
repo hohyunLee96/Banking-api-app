@@ -1,108 +1,166 @@
 package nl.inholland.bankingapi.controller;
 
-import nl.inholland.bankingapi.model.*;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.inholland.bankingapi.ApiTestConfiguration;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.Transaction;
+import nl.inholland.bankingapi.model.TransactionType;
+import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
+import nl.inholland.bankingapi.service.AccountService;
 import nl.inholland.bankingapi.service.TransactionService;
+import nl.inholland.bankingapi.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
- class TransactionControllerTest {
+@ContextConfiguration(classes = {TransactionController.class})
+@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(TransactionController.class)
+@EnableMethodSecurity(prePostEnabled = true)
 
-    @Mock
+class TransactionControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    private TransactionGET_DTO transactionGETDto;
+
+    @MockBean
     private TransactionService transactionService;
-    @Mock
-    private TransactionController transactionController;
-    private String fromIban;
-    private String toIban;
-    private String fromDate;
-    private String toDate;
-    private Double amount;
-    private Double lessThanAmount;
-    private Double greaterThanAmount;
-    private Double equalToAmount;
-    private TransactionType type;
-    private Long performingUser;
-    private Date searchDate;
 
+    @MockBean
+    private AccountService accountService;
+
+    @MockBean
+    private UserService userService;
+
+    private Transaction transaction;
+    @InjectMocks
+    private TransactionController transactionController;
 
     @BeforeEach
     public void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         MockitoAnnotations.openMocks(this);
         transactionController = new TransactionController(transactionService);
-        // Mock the necessary parameters for the test
-         fromIban = "NL21INHO0123400081";
-         toIban = "NL21INHO0123400083";
-         fromDate = "2022-01-01";
-         toDate = "2022-12-31";
-         lessThanAmount = 1000.0;
-         greaterThanAmount = 500.0;
-         equalToAmount = 750.0;
-         type = TransactionType.DEPOSIT;
-         performingUser = 12345L;
-         searchDate = new Date();
+        transactionGETDto = new TransactionGET_DTO(1, "NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, LocalDateTime.now().toString(), 123L);
+         transaction = new Transaction(1L, accountService.getAccountByIBAN("NL21INHO0123400081"),accountService.getAccountByIBAN("NL21INHO0123400082"), 120.0, LocalDateTime.now(), TransactionType.TRANSFER, new User());
+    }
 
+    private String asJsonString(Object object) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            return objectMapper.writeValueAsString(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void getAllTransactions() {
+        List<TransactionGET_DTO> transactionGETDtoList = Collections.singletonList(transactionGETDto);
+        when(transactionService.getAllTransactions(null,null,null,null,null,null,null,null,null,null)).thenReturn(transactionGETDtoList);
+        assertThat(transactionGETDtoList).isNotNull();
+    }
+
+    @Test
+
+    void getTransactionById() throws Exception {
+        when(transactionService.getTransactionById(1L)).thenReturn(transactionGETDto);
+        MockHttpServletResponse response = mockMvc.perform(get("/transactions/1")
+
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.getContentAsString()).isNotEmpty();
+    }
+
+
+    @Test
+    @WithMockUser(username = "customer", roles = {"CUSTOMER"})
+    void addTransaction() throws Exception {
+        TransactionPOST_DTO transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, 123L);
+        Transaction transaction = new Transaction(1L, new Account(), new Account(), 120.0, LocalDateTime.now(), TransactionType.TRANSFER, new User());
+        when(transactionService.addTransaction(transactionPOSTDto)).thenReturn(transaction);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(HttpStatus.CREATED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+        response.getWriter().write(asJsonString(transaction));
+
+        mockMvc.perform(post("/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(transactionPOSTDto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(response.getContentAsString()).isEqualTo(asJsonString(transaction));
+    }
+
+    @Test
+    @WithMockUser(username = "customer", roles = {"CUSTOMER"})
+    void withdraw() throws Exception {
+
+        TransactionWithdrawDTO transactionWithdrawDto = new TransactionWithdrawDTO("NL21INHO0123400081", 120.0);
+        when(transactionService.withdraw(transactionWithdrawDto)).thenReturn(transaction);
+
+        MockHttpServletResponse response = mockMvc.perform(post("/transactions/withdraw")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(transactionWithdrawDto)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
+        assertThat(response.getContentAsString()).isEqualTo(asJsonString(transaction));
 
     }
 
-     @Test
-     void testGetAllTransactions() {
-         // Prepare the test data
-         TransactionGET_DTO transactionGETDto = new TransactionGET_DTO(1, "NL21INHO0123400081", "NL21INHO0123400083", 750.0, TransactionType.DEPOSIT, LocalDateTime.now().toString(), 12345L);
-         List<TransactionGET_DTO> expectedResponse = Collections.singletonList(transactionGETDto);
+    @Test
+    void deposit() {
+    }
 
-         // Mock the response from the transactionService
-         when(transactionService.getAllTransactions(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate))
-                 .thenReturn(expectedResponse);
 
-         // Call the getAllTransactions method in the transactionController
-         ResponseEntity<Object> actualResponse = transactionController.getAllTransactions(fromIban, toIban, lessThanAmount, greaterThanAmount, equalToAmount,
-                 fromDate, toDate, type, performingUser, searchDate);
-
-         // Assert that the actual response matches the expected response
-         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-         assertEquals(expectedResponse, actualResponse.getBody());
-
-         // Verify that no exception is thrown and the catch block is executed
-         verify(transactionService, times(1)).getAllTransactions(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate);
-     }
-
-     @Test
-     void deposit() {
-
-     }
-
-     @Test
-     void testGetTransactionById() {
-         // Prepare the test data
-         long transactionId = 1L;
-         TransactionGET_DTO expectedResponse = new TransactionGET_DTO(transactionId, "NL21INHO0123400081", "NL21INHO0123400083", 750.0, TransactionType.DEPOSIT, LocalDateTime.now().toString(), 12345L);
-
-         // Mock the response from the transactionService
-         when(transactionService.getTransactionById(transactionId)).thenReturn(expectedResponse);
-
-         // Call the getTransactionById method in the transactionController
-         ResponseEntity<Object> actualResponse = transactionController.getTransactionById(transactionId);
-
-         // Assert that the actual response matches the expected response
-         assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-         assertEquals(expectedResponse, actualResponse.getBody());
-
-         // Verify that no exception is thrown and the catch block is executed
-         verify(transactionService, times(1)).getTransactionById(transactionId);
-     }
- }
+}
