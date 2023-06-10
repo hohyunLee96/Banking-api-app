@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
+import nl.inholland.bankingapi.model.UserType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -49,7 +50,7 @@ class JwtTokenFilterTest {
         // Arrange
         String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyQGVtYWlsLmNvbSIsImF1dGgiOiJST0xFX0NVU1RPTUVSIiwiaWF0IjoxNjg2MzAwMTMxLCJleHAiOjE2ODYzMDAxMzF9.BKx5_i-hpC11TEKdPKZS2aopH9pdrcTDKuXhlYUvfnQ9iw2vG0mb-m95ZMrQ4YC3ZYTTyXvRrgjSUBjUmkPvNwdQ0lMUlrmOTCgnqWPQAXzI91oI3r-9igKpl9vV8uqBk76P7_3Xy3R-zFgT5jVQVJAruCCr5u6HjEQgTAMwEPkLFd8re4IOX4kL0u-Wd-FrhxdqO3GhHscJsJ9uapRraWGy5CDMBMJX15hNCifmsC_ex7i_r17f4O_JLzJk91fnKIkh2OwLOQeW1p3EQls6_O8wIZ1BGoaXZghCdSCd8lrnP8wHu4JKJ9ti5390XR1wMOfr4aoEbngn-b8OoR0Y-w";
 //        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        UserDetails userDetails = createUserDetails("user1", "USER");
+        UserDetails userDetails = createUserDetails("user@email.com", UserType.ROLE_USER);
         Authentication authentication = createAuthentication(userDetails);
         when(jwtTokenProvider.getAuthentication(token)).thenReturn(authentication);
 
@@ -116,10 +117,10 @@ class JwtTokenFilterTest {
                 .compact();
     }
 
-    private UserDetails createUserDetails(String username, String... roles) {
+    private UserDetails createUserDetails(String username, UserType userType) {
         return User.withUsername(username)
                 .password("password")
-                .roles(roles)
+                .roles(String.valueOf(userType))
                 .build();
     }
 
