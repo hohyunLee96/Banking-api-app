@@ -21,7 +21,7 @@ import java.util.List;
 @Log
 public class TransactionStepDefinitions extends BaseStepDefinitions {
     private static final String TRANSACTION_ENDPOINT = "/transactions";
-    private final TransactionGET_DTO transactionGET_dto = new TransactionGET_DTO(1, "NL21INHO0123400081", "NL21INHO0123400082", 100.0, TransactionType.TRANSFER, LocalDateTime.now().toString().substring(0, 19), 4);
+    private final TransactionGET_DTO transactionGET_dto = new TransactionGET_DTO(1, "NL21INHO0123400082", "NL21INHO0123400082", 100.0, TransactionType.TRANSFER, LocalDateTime.now().toString().substring(0, 19), 4);
 
     private TransactionPOST_DTO transactionPOSTDto;
     private final HttpHeaders httpHeaders = new HttpHeaders();
@@ -35,6 +35,33 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     private String token;
     private LoginRequestDTO loginRequestDTO;
 
+    @Given("I login as a customer")
+    public void iLoginAsACustomer() throws JsonProcessingException {
+        httpHeaders.clear();
+        httpHeaders.add("Content-Type", "application/json");
+        loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
+        token = getToken(loginRequestDTO);
+    }
+
+    @Given("I login as a {string} or an {string}")
+    public void iLoginAsAOrAn(String arg0, String arg1) throws JsonProcessingException {
+        httpHeaders.clear();
+        httpHeaders.add("Content-Type", "application/json");
+        if (arg0.equals("Customer")) {
+            loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
+        } else if (arg1.equals("Employee")) {
+            loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
+        }
+        token = getToken(loginRequestDTO);
+    }
+
+    @Given("I login as an employee")
+    public void iLoginAsAn(String arg0) throws JsonProcessingException {
+        httpHeaders.clear();
+        httpHeaders.add("Content-Type", "application/json");
+        loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
+        token = getToken(loginRequestDTO);
+    }
 
     @When("I request to get all transactions")
     public void iRequestToGetAllTransactions() {
@@ -50,7 +77,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     @Then("I should get all transactions")
     public void iShouldGetAllTransactions() throws JsonProcessingException {
         List<TransactionGET_DTO> transactions;
-            transactions = Arrays.asList(objectMapper.readValue(response.getBody(), TransactionGET_DTO[].class));
+        transactions = Arrays.asList(objectMapper.readValue(response.getBody(), TransactionGET_DTO[].class));
         Assertions.assertEquals(2, transactions.size());
     }
 
@@ -69,7 +96,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
 
     @Then("I get a status code of {int}")
     public void iGetAStatusCodeOf(int status) {
-    Assertions.assertEquals(status, response.getStatusCode().value());
+        Assertions.assertEquals(status, response.getStatusCode().value());
     }
 
     @Then("I should get a single transaction")
@@ -157,35 +184,6 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
         return tokenDTO.jwt();
     }
 
-    @Given("I login as a customer")
-    public void iLoginAsACustomer() throws JsonProcessingException {
-        httpHeaders.clear();
-        httpHeaders.add("Content-Type", "application/json");
-        loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
-        token = getToken(loginRequestDTO);
-    }
-
-    @Given("I login as a {string} or an {string}")
-    public void iLoginAsAOrAn(String arg0, String arg1) throws JsonProcessingException {
-        httpHeaders.clear();
-        httpHeaders.add("Content-Type", "application/json");
-        if (arg0.equals("Customer")) {
-            loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
-        } else if (arg1.equals("Employee")) {
-            loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
-        }
-        token = getToken(loginRequestDTO);
-    }
-
-    @Given("I login as an {string}")
-    public void iLoginAsAn(String arg0) throws JsonProcessingException {
-        httpHeaders.clear();
-        httpHeaders.add("Content-Type", "application/json");
-        if (arg0.equals("Employee")) {
-            loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
-        }
-        token = getToken(loginRequestDTO);
-    }
 
 
     //Scenario 3
