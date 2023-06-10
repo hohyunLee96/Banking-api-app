@@ -36,6 +36,10 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiration = calculateExpirationDate(now, validityInMicroseconds);
 
+        if (expiration.getTime() - now.getTime() < 60000) {
+            System.out.println("Warning: Token expired in less than 1 minute!");
+        }
+
         // And finally, generate the token and sign it. .compact() then turns it into a string that we can return.
         return Jwts.builder()
                 .setClaims(tokenClaims)
@@ -69,4 +73,5 @@ public class JwtTokenProvider {
             throw new ResponseStatusException( HttpStatus.INTERNAL_SERVER_ERROR, "Expired or invalid JWT token");
         }
     }
+
 }

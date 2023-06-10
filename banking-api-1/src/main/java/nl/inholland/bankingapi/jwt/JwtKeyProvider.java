@@ -27,7 +27,7 @@ public class JwtKeyProvider {
     private Key privateKey;
 
     @PostConstruct
-    protected void init() throws KeyStoreException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException {
+    public void init() throws KeyStoreException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException {
         Resource resource = new ClassPathResource(keystore);
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         keyStore.load(resource.getInputStream(), password.toCharArray());
