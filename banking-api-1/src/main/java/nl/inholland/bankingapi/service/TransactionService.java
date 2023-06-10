@@ -25,8 +25,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static java.time.LocalDate.now;
 
 @Service
 public class TransactionService {
@@ -79,9 +82,10 @@ public class TransactionService {
             //if the transaction is performed by the logged-in user, add it to the userTransactions list
             if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
                 userTransactions.add(convertTransactionResponseToDTO(transaction));
+                getSumOfAllTransactionsFromTodayByAccount(request);
             }
         }
-        getSumOfAllTransactionsFromTodayByIban(accountRepository.findAccountByIBAN(fromIban));
+
 
         if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
             return userTransactions;
@@ -100,6 +104,7 @@ public class TransactionService {
             checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
             transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
 
+            System.out.println(getSumOfAllTransactionsFromTodayByAccount(request));
             //save transaction to transaction repository
             return transactionRepository.save(mapTransactionToPostDTO(transactionPOSTDto));
         } catch (DataIntegrityViolationException e) {
@@ -108,7 +113,7 @@ public class TransactionService {
     }
 
 
-    private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
+    public void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
         senderAccount.setBalance(senderAccount.getBalance() - amount);
         receiverAccount.setBalance(receiverAccount.getBalance() + amount);
@@ -183,17 +188,14 @@ public class TransactionService {
         if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
         }
-        if (fromAccount.getUser().getDailyLimit() < transaction.amount()) {
-            throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
-        }
         if (fromAccount.getUser().getTransactionLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByIban(fromAccount) + transaction.amount()) > fromAccount.getUser().getDailyLimit()) {
-            throw new ApiRequestException("You have exceeded your daily transaction limit", HttpStatus.BAD_REQUEST);
+        if ((getSumOfAllTransactionsFromTodayByAccount( request)+transaction.amount() > fromAccount.getUser().getDailyLimit()) ){
+            throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
-            throw new ApiRequestException("Receiver account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
+            throw new ApiRequestException("Sender account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
         }
         if (!toAccount.getIsActive()) {
             throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
@@ -204,14 +206,6 @@ public class TransactionService {
     }
 
 
-    private Double getSumOfAllTransactionsFromTodayByIban(Account iban) {
-        List<Transaction> dailyTransactions = transactionRepository.findAllByFromIbanAndTimestamp(iban, LocalDateTime.now());
-        double totalAmount = 0.0;
-        for (Transaction transaction : dailyTransactions) {
-            totalAmount += transaction.getAmount();
-        }
-        return totalAmount;
-    }
 
     public Transaction withdraw(TransactionWithdrawDTO dto) {
         return addTransaction(new TransactionPOST_DTO(
@@ -250,5 +244,19 @@ public class TransactionService {
     private boolean transactionIsWithdrawalOrDeposit(TransactionPOST_DTO transaction) {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
+
+    public Double getSumOfAllTransactionsFromTodayByAccount(HttpServletRequest request) {
+        User user = userService.getLoggedInUser(request);
+
+        List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0,0), LocalDate.now().atTime(23, 59));
+        double totalAmount = 0.0;
+        for (Transaction transaction : transactions) {
+            totalAmount += transaction.getAmount();
+            System.out.println(transaction.getAmount());
+        }
+        return totalAmount;
+    }
+
+
 
 }

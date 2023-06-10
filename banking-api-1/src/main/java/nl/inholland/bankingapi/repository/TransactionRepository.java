@@ -2,6 +2,8 @@ package nl.inholland.bankingapi.repository;
 
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.Transaction;
+import nl.inholland.bankingapi.model.User;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findAll(Specification<Transaction> specification, Pageable pageable);
 
-    List<Transaction> findAllByFromIbanAndTimestamp(Account fromIban, LocalDateTime timestamp);
+List<Transaction> findAllTransactionsByFromIbanAndTimestamp(Account fromIban, LocalDateTime fromTimestamp);
+
+    List<Transaction> findAllByPerformingUserAndTimestampBetween(User user, LocalDateTime start, LocalDateTime end);
 }
