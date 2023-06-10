@@ -57,7 +57,7 @@ class LoginRequestDTOTest {
 
         Set<ConstraintViolation<LoginRequestDTO>> violations = this.validator.validate(loginRequestDTO);
         String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("Email is invalid.", errorMessage);
+        Assertions.assertEquals("Invalid email", errorMessage);
     }
 
     @Test
@@ -72,16 +72,16 @@ class LoginRequestDTOTest {
 
         Set<ConstraintViolation<LoginRequestDTO>> violations = this.validator.validate(loginRequestDTO);
         String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("Email is required.", errorMessage);
+        Assertions.assertEquals("Email required", errorMessage);
     }
 
     @Test
     void createLoginRequestDTO_WithoutAPassword_ShouldResultInAConstraintViolationException() {
-        LoginRequestDTO loginRequestDTO = new LoginRequestDTO("email@email.com", "");
+        LoginRequestDTO loginRequestDTO = new LoginRequestDTO("user@email.com", "");
 
         Set<ConstraintViolation<LoginRequestDTO>> violations = this.validator.validate(loginRequestDTO);
         String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("Password is required.", errorMessage);
+        Assertions.assertEquals("Password required", errorMessage);
     }
 
 }

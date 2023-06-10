@@ -47,14 +47,20 @@ public class AuthenticationService {
         User user = this.userRepository
                 .findUserByEmail(email)
                 .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
-        //Check if the password hash matches
-        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-            //Return a JWT to the client
-            String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-            return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
+        if (!user.getPassword().isEmpty()) {
+            //Check if the password hash matches
+            if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
+                //Return a JWT to the client
+                String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
+                return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
+            } else {
+                throw new javax.naming.AuthenticationException("Incorrect email/password");
+            }
+
         } else {
-            throw new javax.naming.AuthenticationException("Incorrect email/password");
+            throw new javax.naming.AuthenticationException("Password is empty");
         }
+
     }
 
 }

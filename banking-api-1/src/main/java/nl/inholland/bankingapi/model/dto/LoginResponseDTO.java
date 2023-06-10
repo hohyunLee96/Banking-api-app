@@ -9,3 +9,4 @@ public record LoginResponseDTO(
         long id
 ) {
 }
+

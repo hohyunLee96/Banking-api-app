@@ -5,6 +5,7 @@ import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.service.AuthenticationService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,5 +61,52 @@ class AuthenticationControllerTest {
                         + "\"}"));
         verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
     }
+
+    @Test
+    void login_THROWS_NOTFOUND_WHEN_URL_IS_WRONG() throws Exception {
+
+        when(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()))
+                .thenReturn(loginResponseDto);
+
+        mockMvc.perform(post("/wrong/path")
+                        .contentType("application/json")
+                        .content("{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}"))
+                .andExpect(status().is(404))
+                .andReturn();
+
+    }
+
+    @Test
+    void login_THROWS_BADREQUEST_WHEN_PASSWORD_AND_EMAIL_IS_MISSING() throws Exception {
+
+            when(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()))
+                    .thenReturn(loginResponseDto);
+
+            mockMvc.perform(post("/auth/login")
+                            .contentType("application/json")
+                            .content(""))
+                    .andExpect(status().is(400))
+                    .andReturn();
+
+    }
+
+    @Test
+    void correct_LOGIN_PRODUCES_A_TOKEN() throws Exception {
+        when(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()))
+                .thenReturn(loginResponseDto);
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType("application/json")
+                        .content("{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.jwt").exists()) // Check if "jwt" key exists in the response
+                .andExpect(MockMvcResultMatchers.jsonPath("$.jwt").isString()) // Check if "jwt" value is a string
+                .andExpect(MockMvcResultMatchers.jsonPath("$.jwt").value(Matchers.not(Matchers.isEmptyOrNullString()))) // Check if "jwt" value is not empty or null
+                .andExpect(MockMvcResultMatchers.content().json("{" +
+                        "\"jwt\":\"" + loginResponseDto.jwt() + "\",\"id\":" + loginResponseDto.id() + ",\"email\":\"" + loginResponseDto.email() + "\"}"));
+
+        verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
+    }
+
 
 }

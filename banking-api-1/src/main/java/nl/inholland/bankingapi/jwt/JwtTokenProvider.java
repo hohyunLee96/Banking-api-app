@@ -15,7 +15,6 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
