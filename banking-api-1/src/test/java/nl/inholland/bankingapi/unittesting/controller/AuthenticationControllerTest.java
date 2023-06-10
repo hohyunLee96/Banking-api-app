@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.UnitTesting.controller;
+package nl.inholland.bankingapi.unittesting.controller;
 
 import nl.inholland.bankingapi.controller.AuthenticationController;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;

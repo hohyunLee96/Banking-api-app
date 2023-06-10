@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.UnitTesting.DTO;
+package nl.inholland.bankingapi.unittesting.DTO;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;

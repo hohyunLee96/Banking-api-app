@@ -1,10 +1,8 @@
-package nl.inholland.bankingapi.UnitTesting.jwt;
+package nl.inholland.bankingapi.unittesting.jwt;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.io.IOException;
 import nl.inholland.bankingapi.jwt.JwtKeyProvider;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
-import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.service.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.*;
-import java.security.cert.CertificateException;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;

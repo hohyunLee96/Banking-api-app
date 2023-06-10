@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.UnitTesting.jwt;
+package nl.inholland.bankingapi.unittesting.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

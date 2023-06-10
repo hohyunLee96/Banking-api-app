@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.UnitTesting.service;
+package nl.inholland.bankingapi.unittesting.service;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
