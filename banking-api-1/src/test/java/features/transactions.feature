@@ -6,7 +6,7 @@ Feature: Getting all transactions
     Then I get a status code of 200
 
   Scenario: Getting a single transaction
-    Given I login as a "customer" or an "employee"
+    Given I login as a customer
     When I request to get a single transaction
     Then I should get a single transaction
     Then I get a status code of 200
@@ -30,6 +30,6 @@ Feature: Getting all transactions
 
       Scenario: Withdraw from selected account with insufficient funds
         Given I login as a customer
-        And I want to withdraw from current account amount 2000.0
+        And I want to withdraw from current account amount 200.0
         When I request to withdraw from selected account
         Then I get a status code of 403

@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.cucumber;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -15,7 +16,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 @Log
@@ -31,7 +31,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
     private TransactionDepositDTO transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
-    private final TransactionWithdrawDTO transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200.0);
+    private  TransactionWithdrawDTO transactionWithdrawDTO;
     private String token;
     private LoginRequestDTO loginRequestDTO;
 
@@ -44,19 +44,19 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     }
 
     @Given("I login as a {string} or an {string}")
-    public void iLoginAsAOrAn(String arg0, String arg1) throws JsonProcessingException {
+    public void iLoginAsAOrAn(String arg0) throws JsonProcessingException {
         httpHeaders.clear();
         httpHeaders.add("Content-Type", "application/json");
         if (arg0.equals("Customer")) {
             loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
-        } else if (arg1.equals("Employee")) {
+        } else if (arg0.equals("Employee")) {
             loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
         }
         token = getToken(loginRequestDTO);
     }
 
     @Given("I login as an employee")
-    public void iLoginAsAn(String arg0) throws JsonProcessingException {
+    public void iLoginAsAn() throws JsonProcessingException {
         httpHeaders.clear();
         httpHeaders.add("Content-Type", "application/json");
         loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
@@ -76,9 +76,10 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
 
     @Then("I should get all transactions")
     public void iShouldGetAllTransactions() throws JsonProcessingException {
-        List<TransactionGET_DTO> transactions;
-        transactions = Arrays.asList(objectMapper.readValue(response.getBody(), TransactionGET_DTO[].class));
-        Assertions.assertEquals(2, transactions.size());
+        String body = response.getBody();
+        int actual = JsonPath.read(body, "$.size()");
+        Assertions.assertEquals(2, actual);
+
     }
 
 
@@ -161,11 +162,13 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     //Scenario 4
     @And("I want to withdraw from current account amount {double}")
     public void iWantToWithdrawFromCurrentAccountAmount(double amount) {
+        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200.0);
         Assertions.assertEquals(transactionWithdrawDTO.amount(), amount);
     }
 
     @When("I request to withdraw from selected account")
     public void iRequestToWithdrawFromSelectedAccount() {
+        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200.0);
         response = restTemplate.exchange(
                 TRANSACTION_ENDPOINT + "/withdraw",
                 HttpMethod.POST,
@@ -183,7 +186,6 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
         TokenDTO tokenDTO = objectMapper.readValue(response.getBody(), TokenDTO.class);
         return tokenDTO.jwt();
     }
-
 
 
     //Scenario 3

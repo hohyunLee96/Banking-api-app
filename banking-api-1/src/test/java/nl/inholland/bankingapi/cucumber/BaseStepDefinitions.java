@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 public class BaseStepDefinitions {
 
     public static final String VALID_CUSTOMER = "customer@email.com";
-    public static final String VALID_EMPLOYEE = "employee";
+    public static final String VALID_EMPLOYEE = "employee@email.com";
     public static final String VALID_PASSWORD = "1234";
     public static final String INVALID_USERNAME = "bla";
     public static final String INVALID_PASSWORD = "invalid";
