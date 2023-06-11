@@ -35,7 +35,6 @@ class TransactionServiceTest {
     private UserService userService;
     @MockBean
     AccountService accountService;
-
     @Mock
     private HttpServletRequest request;
 
@@ -55,7 +54,7 @@ class TransactionServiceTest {
         performinUser = userService.getLoggedInUser(request);
         customer = new User("customer@email.com", "1234", "Customer", "Customer", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
-        senderAccount = new Account(performinUser, "NL21INHO0123400081",    1000.00, 0.00, AccountType.CURRENT, true);
+        senderAccount = new Account(performinUser, "NL21INHO0123400081", 1000.00, 0.00, AccountType.CURRENT, true);
         receiverAccount = new Account(customer, "NL21INHO0123400082", 1000.00, 0.00, AccountType.CURRENT, true);
     }
 
@@ -115,16 +114,5 @@ class TransactionServiceTest {
         Account receiverAccount = new Account();
     }
 
-    @Test
-    void transferMoneyShouldChangeBalanceOfSenderAndReceiver() {
-        // Prepare test data
-        TransactionPOST_DTO transactionDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, 123L);
-
-        // Invoke the method to be tested
-        transactionService.transferMoney(senderAccount, receiverAccount, transactionDto.amount());
-        System.out.println(senderAccount.getBalance());
-        // Perform assertions
-        Assertions.assertEquals(880.0, senderAccount.getBalance());
-    }
 
 }

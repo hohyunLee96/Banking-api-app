@@ -23,10 +23,4 @@ public class BaseStepDefinitions {
     private ResponseEntity<String> response;
 
 
-    public void setHttpHeaders(String token) {
-        httpHeaders.clear();
-        httpHeaders.add("Authorization",  "Bearer " + token);
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-    }
-
 }

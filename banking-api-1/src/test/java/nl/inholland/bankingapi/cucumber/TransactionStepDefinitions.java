@@ -2,7 +2,6 @@ package nl.inholland.bankingapi.cucumber;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +30,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
     private TransactionDepositDTO transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
-    private  TransactionWithdrawDTO transactionWithdrawDTO;
+    private TransactionWithdrawDTO transactionWithdrawDTO;
     private String token;
     private LoginRequestDTO loginRequestDTO;
 
@@ -42,6 +40,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
         httpHeaders.add("Content-Type", "application/json");
         loginRequestDTO = new LoginRequestDTO(VALID_CUSTOMER, VALID_PASSWORD);
         token = getToken(loginRequestDTO);
+        httpHeaders.add("Authorization", "Bearer " + token);
     }
 
     @Given("I login as a {string} or an {string}")
@@ -62,6 +61,7 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
         httpHeaders.add("Content-Type", "application/json");
         loginRequestDTO = new LoginRequestDTO(VALID_EMPLOYEE, VALID_PASSWORD);
         token = getToken(loginRequestDTO);
+        httpHeaders.add("Authorization", "Bearer " + token);
     }
 
     @When("I request to get all transactions")
@@ -168,6 +168,24 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
                         new HttpEntity<>(objectMapper.writeValueAsString(loginDTO), httpHeaders), String.class);
         TokenDTO tokenDTO = objectMapper.readValue(response.getBody(), TokenDTO.class);
         return tokenDTO.jwt();
+    }
+
+    @And("I want to deposit from current account amount {double}")
+    public void iWantToDepositFromCurrentAccountAmount(double amount) {
+        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
+        Assertions.assertEquals(transactionWithdrawDTO.amount(), amount);
+    }
+
+    @When("I request to deposit from selected account")
+    public void iRequestToDepositFromSelectedAccount() {
+        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT + "/withdraw",
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionWithdrawDTO,
+                        httpHeaders),
+                String.class);
     }
 
 

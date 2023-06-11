@@ -128,7 +128,7 @@ class TransactionControllerTest {
 
 
     @Test
-    @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
+    @WithMockUser(roles = {"EMPLOYEE"})
     void addTransaction() throws Exception {
         TransactionPOST_DTO transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, 123L);
         when(transactionService.addTransaction(transactionPOSTDto)).thenReturn(transaction);
@@ -136,10 +136,8 @@ class TransactionControllerTest {
         MockHttpServletResponse response = mockMvc.perform(post("/transactions")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .with(csrf())
-                        .with(user("employee@email.com").roles("EMPLOYEE").password("1234"))
                         .characterEncoding(StandardCharsets.UTF_8.toString())
                         .content(asJsonString(transaction)))
-
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
 

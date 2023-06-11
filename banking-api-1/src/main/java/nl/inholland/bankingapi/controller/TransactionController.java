@@ -57,6 +57,9 @@ public class TransactionController {
         } catch (ApiRequestException e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
     }
 
     @PostMapping("/withdraw")
