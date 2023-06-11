@@ -103,7 +103,8 @@ class TransactionServiceTest {
     void transferMoneyShouldChangeBalanceOfSenderAndReceiver() {
         // Prepare test data
         TransactionPOST_DTO transactionDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, 123L);
-        Account senderAccount = new Account();
+        User senderUser = accountService.getLoggedInUser(request);
+        Account senderAccount=new Account();
         Account receiverAccount = new Account();
         senderAccount.setBalance(1000.0);
         receiverAccount.setBalance(1000.0);
