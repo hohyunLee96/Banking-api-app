@@ -1,19 +1,28 @@
 package nl.inholland.bankingapi.cucumber;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.exception.ApiRequestException;
+import nl.inholland.bankingapi.model.Account;
+import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.TransactionType;
+import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.*;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,9 +39,13 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     @Autowired
     private ObjectMapper objectMapper;
     private TransactionDepositDTO transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
+
     private TransactionWithdrawDTO transactionWithdrawDTO;
     private String token;
+
+
     private LoginRequestDTO loginRequestDTO;
+
 
     @Given("I login as a customer")
     public void iLoginAsACustomer() throws JsonProcessingException {
@@ -111,14 +124,6 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
         Assertions.assertEquals(transactionGET_dto.performingUserId(), transactionGET_dto.performingUserId());
     }
 
-    @Given("I have an invalid token")
-    public void iHaveAnInvalidToken() {
-        token = INVALID_TOKEN;
-        httpHeaders.clear();
-        httpHeaders.add("Authorization", "Bearer " + token);
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-    }
-
     @When("I request to create a transaction")
     public void iRequestToCreateATransaction() {
         response = restTemplate.exchange(
@@ -145,13 +150,13 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     //Scenario 4
     @And("I want to withdraw from current account amount {double}")
     public void iWantToWithdrawFromCurrentAccountAmount(double amount) {
-        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200.0);
+        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", amount);
         Assertions.assertEquals(transactionWithdrawDTO.amount(), amount);
     }
 
     @When("I request to withdraw from selected account")
     public void iRequestToWithdrawFromSelectedAccount() {
-        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200.0);
+        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", 200000.0);
         response = restTemplate.exchange(
                 TRANSACTION_ENDPOINT + "/withdraw",
                 HttpMethod.POST,
@@ -172,13 +177,13 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
 
     @And("I want to deposit from current account amount {double}")
     public void iWantToDepositFromCurrentAccountAmount(double amount) {
-        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
-        Assertions.assertEquals(transactionWithdrawDTO.amount(), amount);
+        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200000.0);
+        Assertions.assertEquals(transactionDepositDTO.amount(), amount);
     }
 
     @When("I request to deposit from selected account")
     public void iRequestToDepositFromSelectedAccount() {
-        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200.0);
+        transactionDepositDTO = new TransactionDepositDTO("NL21INHO0123400081", 200000.0);
         response = restTemplate.exchange(
                 TRANSACTION_ENDPOINT + "/withdraw",
                 HttpMethod.POST,
@@ -189,6 +194,68 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
     }
 
 
-    //Scenario 3
+    @Given("I login with an invalid user")
+    public void iLoginWithAnInvalidUser() throws JsonProcessingException {
+        httpHeaders.clear();
+        httpHeaders.add("Content-Type", "application/json");
+        loginRequestDTO = new LoginRequestDTO("invalid", "INVALID_PASSWORD");
+        token = getToken(loginRequestDTO);
+        httpHeaders.add("Authorization", "Bearer " + token);
+    }
 
+    @When("I request to withdraw from selected account {double}")
+    public void iRequestToWithdrawFromSelectedAccount(double amount) {
+        transactionWithdrawDTO = new TransactionWithdrawDTO("NL21INHO0123400081", amount);
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT + "/withdraw",
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionWithdrawDTO,
+                        httpHeaders),
+                String.class);
+    }
+
+    @Then("I get a response object of a transaction with amount {double}")
+    public void iGetAResponseObjectOfATransactionWithAmount(double amount) throws JsonProcessingException {
+        TransactionGET_DTO transactionGETDto = objectMapper.readValue(response.getBody(), TransactionGET_DTO.class);
+        Assertions.assertEquals(transactionGETDto.amount(), amount);
+    }
+
+    @And("I get an error message of {string}")
+    public void iGetAnErrorMessageOf(String expectedErrorMessage) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(response.getBody());
+        String actualErrorMessage = jsonNode.get("message").asText();
+        Assertions.assertEquals(expectedErrorMessage, actualErrorMessage);
+    }
+    @And("I want to transfer from current account amount {double}")
+    public void iWantToTransferFromCurrentAccountAmount(double amount) {
+        transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", amount, TransactionType.TRANSFER,1);
+        Assertions.assertEquals(transactionPOSTDto.amount(), amount);
+    }
+
+    @When("I request to transfer to deactivated account")
+    public void iRequestToTransferToDeactivatedAccount() {
+        transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400085", 200.0, TransactionType.TRANSFER,1);
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT ,
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionPOSTDto,
+                        httpHeaders),
+                String.class);
+    }
+
+    @When("I request to transfer from deactivated account")
+    public void iRequestToTransferFromDeactivatedAccount() {
+        transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400085", "NL21INHO0123400081", 200.0, TransactionType.TRANSFER,1);
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT ,
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionPOSTDto,
+                        httpHeaders),
+                String.class);
+    }
 }
+
