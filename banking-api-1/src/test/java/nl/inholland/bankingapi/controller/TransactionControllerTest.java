@@ -175,6 +175,4 @@ class TransactionControllerTest {
                         .content(asJsonString(transactionDepositDto)))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
     }
-
-
 }

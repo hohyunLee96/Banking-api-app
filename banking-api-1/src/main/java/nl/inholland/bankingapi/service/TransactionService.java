@@ -3,7 +3,6 @@ package nl.inholland.bankingapi.service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.constraints.NotBlank;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
@@ -29,8 +28,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-
-import static java.time.LocalDate.now;
 
 @Service
 public class TransactionService {
@@ -166,13 +163,12 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-
-        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(senderUser, fromAccount)) {
+        if (accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(performingUser, toAccount) && transaction.type() == TransactionType.DEPOSIT) {
             throw new ApiRequestException("Savings account does not belong to the user performing the transaction", HttpStatus.FORBIDDEN);
         }
-        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
-            throw new ApiRequestException("Savings account does not belong to the recipient user", HttpStatus.FORBIDDEN);
-        }
+//        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
+//            throw new ApiRequestException("Savings account does not belong to the recipient user", HttpStatus.FORBIDDEN);
+//        }
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
 
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
@@ -183,7 +179,7 @@ public class TransactionService {
         if (performingUser.getTransactionLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByAccount(request)+transaction.amount() > performingUser.getDailyLimit()) ){
+        if ((getSumOfAllTransactionsFromTodayByAccount(request) + transaction.amount() > performingUser.getDailyLimit())) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
@@ -237,7 +233,7 @@ public class TransactionService {
 
     public Double getSumOfAllTransactionsFromTodayByAccount(HttpServletRequest request) {
         User user = userService.getLoggedInUser(request);
-        List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0,0), LocalDate.now().atTime(23, 59));
+        List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
         double totalAmount = 0.0;
         for (Transaction transaction : transactions) {
             totalAmount += transaction.getAmount();
