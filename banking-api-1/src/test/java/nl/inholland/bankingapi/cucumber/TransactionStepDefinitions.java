@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,10 +77,8 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
 
     @Then("I should get all transactions")
     public void iShouldGetAllTransactions() throws JsonProcessingException {
-        String body = response.getBody();
-        int actual = JsonPath.read(body, "$.size()");
-        Assertions.assertEquals(2, actual);
-
+        List<TransactionGET_DTO> transactions = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, TransactionGET_DTO.class));
+        Assertions.assertEquals(2, transactions.size());
     }
 
 
@@ -141,22 +140,6 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
                         transactionPOSTDto,
                         httpHeaders),
                 String.class);
-    }
-
-    @Given("I have a valid token for role {string} or role {string}")
-    public void iHaveAValidTokenForRoleCustomerOrRoleEmployee(String roleCustomer, String roleEmployee) {
-        if (roleCustomer.equals("Customer"))
-            setHttpHeaders(CUSTOMER_TOKEN);
-        else if (roleEmployee.equals("Employee"))
-            setHttpHeaders(EMPLOYEE_TOKEN);
-    }
-
-    @Given("I have a valid token for role {string}")
-    public void iHaveAValidTokenForRole(String role) {
-        if (role.equals("Customer"))
-            setHttpHeaders(CUSTOMER_TOKEN);
-        else if (role.equals("Employee"))
-            setHttpHeaders(EMPLOYEE_TOKEN);
     }
 
     //Scenario 4

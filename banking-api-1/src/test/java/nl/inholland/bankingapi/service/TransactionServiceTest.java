@@ -8,6 +8,7 @@ import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,8 +22,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class TransactionServiceTest {
@@ -41,8 +42,22 @@ class TransactionServiceTest {
     @Mock
     private AccountRepository accountRepository;
 
-    @MockBean
+    @Mock
     private TransactionService transactionService;
+
+    private Account senderAccount;
+    private Account receiverAccount;
+    private User performinUser;
+    private User customer;
+
+    @BeforeEach
+    void setUp() {
+        performinUser = userService.getLoggedInUser(request);
+        customer = new User("customer@email.com", "1234", "Customer", "Customer", "11-11-2000",
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
+        senderAccount = new Account(performinUser, "NL21INHO0123400081",    1000.00, 0.00, AccountType.CURRENT, true);
+        receiverAccount = new Account(customer, "NL21INHO0123400082", 1000.00, 0.00, AccountType.CURRENT, true);
+    }
 
     @Test
     void getAllTransactions_shouldReturnUserTransactionsForCustomer() {
@@ -91,6 +106,7 @@ class TransactionServiceTest {
         assertThat(result.get(0).transactionId()).isEqualTo(1L);
         // Add more assertions if needed
     }
+
     @Test
     void addTransaction_shouldCreateTransactionAndTransferMoney() {
         // Prepare test data
@@ -103,17 +119,12 @@ class TransactionServiceTest {
     void transferMoneyShouldChangeBalanceOfSenderAndReceiver() {
         // Prepare test data
         TransactionPOST_DTO transactionDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, 123L);
-        User senderUser = accountService.getLoggedInUser(request);
-        Account senderAccount=new Account();
-        Account receiverAccount = new Account();
-        senderAccount.setBalance(1000.0);
-        receiverAccount.setBalance(1000.0);
-        when(accountService.getAccountByIBAN(transactionDto.fromIban())).thenReturn(senderAccount);
-        when(accountService.getAccountByIBAN(transactionDto.toIban())).thenReturn(receiverAccount);
+
         // Invoke the method to be tested
         transactionService.transferMoney(senderAccount, receiverAccount, transactionDto.amount());
         System.out.println(senderAccount.getBalance());
         // Perform assertions
         Assertions.assertEquals(880.0, senderAccount.getBalance());
     }
+
 }

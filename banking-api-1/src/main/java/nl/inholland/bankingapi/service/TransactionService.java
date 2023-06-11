@@ -87,7 +87,7 @@ public class TransactionService {
             }
         }
 
-        //if the logged in user is an employee, then show all transactions else show only user transactions
+        //if the logged-in user is an employee, then show all transactions else show only user transactions
         if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_CUSTOMER)) {
             return userTransactions;
         } else if (userService.getLoggedInUser(request).getUserType().equals(UserType.ROLE_EMPLOYEE)) {
