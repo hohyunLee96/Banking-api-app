@@ -257,5 +257,47 @@ public class TransactionStepDefinitions extends BaseStepDefinitions {
                         httpHeaders),
                 String.class);
     }
+
+    @And("I request to create a transaction amount {double}")
+    public void iRequestToCreateATransactionAmount(double amount) {
+        transactionPOSTDto = new TransactionPOST_DTO("NL21INHO0123400081", "NL21INHO0123400082", amount, TransactionType.TRANSFER,1);
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT ,
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionPOSTDto,
+                        httpHeaders),
+                String.class);
+    }
+
+    @And("I request to transfer from  account {string} to account {string} amount {double}")
+    public void iRequestToTransferFromAccountToAccountAmount(String fromIban, String toIban, double amount) {
+        transactionPOSTDto = new TransactionPOST_DTO(fromIban, toIban, amount, TransactionType.TRANSFER,1);
+        Assertions.assertEquals(transactionPOSTDto.amount(), amount);
+        Assertions.assertEquals(transactionPOSTDto.fromIban(), fromIban);
+        Assertions.assertEquals(transactionPOSTDto.toIban(), toIban);
+
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT ,
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionPOSTDto,
+                        httpHeaders),
+                String.class);
+    }
+
+    @And("I request to deposit to savings account with Iban {string} amount {double}")
+    public void iRequestToDepositToSavingsAccountWithIbanAmount(String toIban, double amount) {
+        transactionDepositDTO=new TransactionDepositDTO(toIban,amount);
+        Assertions.assertEquals(transactionDepositDTO.amount(), amount);
+
+        response = restTemplate.exchange(
+                TRANSACTION_ENDPOINT + "/deposit",
+                HttpMethod.POST,
+                new HttpEntity<>(
+                        transactionDepositDTO,
+                        httpHeaders),
+                String.class);
+    }
 }
 
