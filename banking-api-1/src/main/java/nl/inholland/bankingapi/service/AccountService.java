@@ -81,7 +81,7 @@ public class AccountService {
         return account;
     }
 
-    private AccountGET_DTO accountGETDto(Account account) {
+    protected AccountGET_DTO accountGETDto(Account account) {
         return new AccountGET_DTO(
                 account.getAccountId(),
                 account.getUser().getId(),
@@ -116,7 +116,9 @@ public class AccountService {
         List<AccountGET_DTO> userAccounts = new ArrayList<>();
         List<AccountGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
-            accounts.add(accountGETDto(account));
+            if(!account.getAccountType().equals(AccountType.BANK)){
+                accounts.add(accountGETDto(account));
+            }
             if (account.getUser().getId().equals(getLoggedInUser(request).getId())) {
                 userAccounts.add(accountGETDto(account));
             }
@@ -139,6 +141,9 @@ public class AccountService {
     public AccountGET_DTO getAccountById(long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+        if(account.getAccountType() == AccountType.BANK){
+            throw new ApiRequestException("Bank account cannot be accessed", HttpStatus.BAD_REQUEST);
+        }
         return accountGETDto(account);
     }
 

@@ -11,8 +11,11 @@ import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
+import nl.inholland.bankingapi.model.dto.AccountPUT_DTO;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.h2.mvstore.Page;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,14 +26,20 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import javax.resource.spi.work.SecurityContext;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,222 +79,187 @@ class AccountServiceTest {
 //        accountService = new AccountService(accountRepository, userRepository, jwtTokenProvider, jwtTokenFilter, request);
     }
 
-//    protected Account mapDtoToAccount(AccountPOST_DTO dto) {
-//        Account account = new Account();
-//        String iban ="NL01INHO0000000031";
-//        User user = new User("customer@email.com", "1234", "Customer", "Customer", "11-11-2000",
-//                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, false);
-//        account.setUser(user);
-//        account.setIBAN(iban);
-//        account.setBalance(dto.balance());
-//        account.setAbsoluteLimit(dto.absoluteLimit());
-//        account.setAccountType(dto.accountType());
-//        account.setIsActive(true);
-//        return account;
-//    }
-//    @Test
-//    void saveAccount() {
-//        AccountPOST_DTO accountDTO = new AccountPOST_DTO(1, "NL01INHO0000000001", 0.0, 1000.00, AccountType.SAVINGS, true);
-//        Account account = new Account();
-//
-//        User user = new User("customer@email.com", "1234", "Customer", "Customer", "11-11-2000",
-//                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
-//
-//        // Create a mock UserRepository instance
-//        UserRepository userRepository = mock(UserRepository.class);
-//
-//        // Set up the mock to return the user when findById is called with the provided userId
-//        when(userRepository.findById(eq(accountDTO.userId()))).thenReturn(Optional.of(user));
-//
-//        // Inject the userRepository mock into your accountService instance
-////        accountService.setUserRepository(userRepository);
-//
-//        when(accountRepository.save(account)).thenReturn(account);
-//
-//        Account createdAccount = accountService.addAccount(accountDTO);
-//
-//        assertEquals(account.getIBAN(), createdAccount.getIBAN());
-//    }
-
     @Test
-    void saveAccount() throws Exception{
+    void saveAccount() throws Exception {
         User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
 
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(accountRepository.existsByUserIdAndAccountType(user.getId(),dummyAccount.getAccountType())).thenReturn(false);
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-        Account createdAccount= accountService.addAccount(dto);
+        Account createdAccount = accountService.addAccount(dto);
         assertEquals(dummyAccount, createdAccount);
     }
 
+    @Test
+    void employeeCannotOwnAccount() throws Exception {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_EMPLOYEE, true, 100.0, 5200.00, null);
 
-    //    @Test
-//    void getAllAccounts() {
-//        // Create a list to hold the mock account data
-//        List<Account> mockAccounts = Arrays.asList(
-//                new Account(new User(),"NL01INHO0000000001", 1000.00, 0.0, AccountType.SAVINGS, true),
-//                new Account(new User(),"NL01INHO0000000002", 1000.00, 0.0, AccountType.SAVINGS, true),
-//                new Account(new User(),"NL01INHO0000000003", 1000.00, 0.0, AccountType.SAVINGS, true)
-//        );
-//
-//        // Mock the account repository
-//        AccountRepository accountRepository = mock(AccountRepository.class);
-//        when(accountRepository.findAll()).thenReturn(mockAccounts);
-//
-//        accountService = new AccountService(accountRepository, userRepository, jwtTokenProvider, jwtTokenFilter, request);
-//        // Create the object under test and invoke the method
-//        List<AccountGET_DTO> result = accountService.getAllAccounts(null,null,null,null,null,null,null,null);
-//
-//        // Perform assertions on the result
-//        assertEquals(mockAccounts.size(), result.size());
-//        // Add additional assertions as needed for each account in the result list
-//        // For example: assertEquals(mockAccounts.get(0), result.get(0));
-//        // Make sure to override the equals() and hashCode() methods in the AccountGET_DTO class for accurate assertions
-//    }
-//    @Test
-//    @WithMockUser(username = "employee@email.com", password = "1234", roles = "EMPLOYEE")
-//    void getAllAccounts() {
-//        // Create a list to hold the mock account data
-//        List<Account> mockAccounts = Arrays.asList(
-//                new Account(new User(), "NL01INHO0000000001", 1000.00, 0.0, AccountType.SAVINGS, true),
-//                new Account(new User(), "NL01INHO0000000002", 1000.00, 0.0, AccountType.SAVINGS, true),
-//                new Account(new User(), "NL01INHO0000000003", 1000.00, 0.0, AccountType.SAVINGS, true)
-//        );
-//
-//        // Mock the dependencies
-//        AccountRepository accountRepository = mock(AccountRepository.class);
-//        UserRepository userRepository = mock(UserRepository.class);
-//        JwtTokenProvider jwtTokenProvider = mock(JwtTokenProvider.class);
-//        JwtTokenFilter jwtTokenFilter = mock(JwtTokenFilter.class);
-//        HttpServletRequest request = mock(HttpServletRequest.class);
-//
-//        // Configure the mock dependencies
-//        when(accountRepository.findAll()).thenReturn(mockAccounts);
-//        when(jwtTokenFilter.getToken(request)).thenReturn("mockToken");
-//        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
-//                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true)));
-//
-//        // Create the object under test and invoke the method
-//        AccountService accountService = new AccountService(accountRepository, userRepository, jwtTokenProvider, jwtTokenFilter, request);
-//        List<AccountGET_DTO> result = accountService.getAllAccounts(null, null, null, null, null, null, null, null);
-//
-//        // Perform assertions on the result
-//        assertEquals(mockAccounts.size(), result.size());
-//        // Add additional assertions as needed for each account in the result list
-//        // For example: assertEquals(mockAccounts.get(0), result.get(0));
-//        // Make sure to override the equals() and hashCode() methods in the AccountGET_DTO class for accurate assertions
-//    }
+        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
+        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
 
+        ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
+            Account createdAccount = accountService.addAccount(dto);
+        });
 
-    //    @Test
-//    void shouldReturnAccount(){
-//        AccountPOST_DTO accountPOST_dto = new AccountPOST_DTO(1, "NL01INHO0000000001", 0.0, 1000.00, AccountType.CURRENT, true);
-//        when(accountRepository.save(accountPOST_dto)).thenReturn(accountPOST_dto);
-//
-//        Account account = accountRepository.save(accountPOST_dto);
-//
-//    }
-//    @Test
-//    public void testAddAccount() {
-//        AccountPOST_DTO accountDTO = new AccountPOST_DTO(1, "NL01INHO0000000001", 0.0, 1000.00, AccountType.CURRENT, true);
-//
-//        User user = new User();
-//        user.setUserType(UserType.ROLE_CUSTOMER);
-//        when(userRepository.findUserById(accountDTO.userId())).thenReturn(user);
-//        when(accountRepository.existsByUserIdAndAccountType(accountDTO.userId(), accountDTO.accountType()))
-//                .thenReturn(false);
-//
-//        accountService.addAccount(accountDTO);
-//
-////        verify(accountRepository, times(1)).save(any(Account.class));
-//    }
-
-    //    @Test
-//    public void testAddAccount_employeeTypeThrowsException() {
-//        AccountPOST_DTO accountDTO = new AccountPOST_DTO(1, "NL01INHO0000000001", 0.0, 1000.00, AccountType.SAVINGS, true);
-//
-//        User user = new User();
-//        user.setUserType(UserType.ROLE_EMPLOYEE);
-//        when(userRepository.findUserById(accountDTO.userId())).thenReturn(user);
-//
-//        Account account = new Account();
-//        account.setUser(user);
-//        account.setIBAN(accountDTO.IBAN());
-//        account.setBalance(accountDTO.balance());
-//        account.setAbsoluteLimit(accountDTO.absoluteLimit());
-//        account.setAccountType(accountDTO.accountType());
-//        account.setIsActive(accountDTO.isActive());
-//
-//        try {
-//            accountRepository.save(account);
-//        } catch (ApiRequestException ex) {
-//            assertEquals("Employee type cannot own accounts", ex.getMessage());
-//            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-//        }
-//    }
-//    @Test
-//    public void testAddAccount_employeeTypeThrowsException() {
-//        // Arrange
-//        AccountPOST_DTO accountDTO = new AccountPOST_DTO(1, "NL01INHO0000000001", 0.0, 1000.00, AccountType.SAVINGS, true);
-//
-//        User user = new User();
-//        user.setId(1L);
-//        user.setUserType(UserType.ROLE_EMPLOYEE);
-//        when(userRepository.findUserById(accountDTO.userId())).thenReturn(user);
-//
-//        // Act and Assert
-//        ApiRequestException exception = Assertions.assertThrows(ApiRequestException.class, () -> accountService.addAccount(accountDTO));
-//        assertEquals("Employee type cannot own accounts", exception.getMessage());
-//    }
-//    @Test
-//    public void testAddAccount_WhenUserIsEmployee_ShouldThrowException() {
-//        // Arrange
-//        Long userId = 1L;
-//        AccountType accountType = AccountType.SAVINGS;
-//        double balance = 100.0;
-//        double absoluteLimit = 1000.0;
-//
-//        AccountPOST_DTO accountDto = new AccountPOST_DTO();
-//        accountDto.setUserId(userId);
-//        accountDto.setAccountType(accountType);
-//        accountDto.setBalance(balance);
-//        accountDto.setAbsoluteLimit(absoluteLimit);
-//
-//        User user = new User();
-//        user.setId(userId);
-//        user.setUserType(UserType.ROLE_EMPLOYEE);
-//        when(userRepository.findUserById(userId)).thenReturn(user);
-//
-//        // Act & Assert
-//        Assertions.assertThrows(ApiRequestException.class, () -> accountService.addAccount(accountDto));
-//
-//        verifyZeroInteractions(accountRepository);
-//    }
+        assertEquals("Employee type cannot own accounts", exception.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    }
 
     @Test
-    public void testAddAccount_WhenUserIsEmployee_ShouldThrowException() {
-        // Arrange
-        Long userId = 1L;
-        AccountType accountType = AccountType.SAVINGS;
-        double balance = 100.0;
-        double absoluteLimit = 1000.0;
+    void customerCannotOwnTwoAccountPerAccountType() throws Exception {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
 
-        AccountPOST_DTO accountDto = mock(AccountPOST_DTO.class);
-        User user = new User();
-        user.setUserType(UserType.ROLE_EMPLOYEE);
+        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(true);
+        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
 
-        when(accountDto.userId()).thenReturn(userId);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
+            Account createdAccount = accountService.addAccount(dto);
+        });
 
-        // Act & Assert
-        Assertions.assertThrows(ApiRequestException.class, () -> accountService.addAccount(accountDto));
-
-        verifyZeroInteractions(accountRepository);
+        assertEquals("User already has an account of type " + dummyAccount.getAccountType(), exception.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
+
+    @Test
+    void modifyAbsoluteLimitOfAccount() throws Exception {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
+
+        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
+        AccountPUT_DTO dto = new AccountPUT_DTO(8.0, dummyAccount.getIsActive());
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(dummyAccount));
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(accountRepository.getAllAccountsByUserId(user.getId())).thenReturn(List.of(
+                        new Account(user, "NL21INHO0123400081", 90000.00, 5.00, AccountType.CURRENT, true)
+                )
+        );
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
+        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        assertEquals(8.0, modifiedAccount.getAbsoluteLimit());
+    }
+
+    @Test
+    void deactivateAccount() throws Exception {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
+
+        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
+        AccountPUT_DTO dto = new AccountPUT_DTO(dummyAccount.getAbsoluteLimit(), false);
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(dummyAccount));
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(accountRepository.getAllAccountsByUserId(user.getId())).thenReturn(List.of(
+                        new Account(user, "NL21INHO0123400081", 90000.00, 5.00, AccountType.CURRENT, true)
+                )
+        );
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
+        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        assertEquals(false, modifiedAccount.getIsActive());
+    }
+
+    @Test
+    public void testCreateIBAN() {
+        String iban = accountService.createIBAN();
+
+        // Assert that the generated IBAN has the correct format
+        String ibanPattern = "NL\\d{2}INHO0\\d{9}";
+        assertTrue(Pattern.matches(ibanPattern, iban));
+    }
+
+    @Test
+    public void testGetAccountById_ExistingId_ReturnsAccountDTO() {
+        Account dummyAccount = new Account(1L, new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
+        // Arrange
+        long accountId = 1L;
+        when(accountRepository.findById(dummyAccount.getAccountId())).thenReturn(Optional.of(dummyAccount));
+        AccountGET_DTO get_dto = accountService.accountGETDto(dummyAccount);
+        assertEquals(dummyAccount.getIBAN(), get_dto.IBAN());
+        // Set up account object with test data
+    }
+
+    @Test
+    public void testGetAccountById_NonExistingId_ReturnsAccountDTO() {
+        // Create a dummy account with a non-existing ID
+        long nonExistingId = 1L;
+        when(accountRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+        // Perform the operation and assert the expected exception
+        assertThrows(EntityNotFoundException.class, () -> {
+            accountService.getAccountById(nonExistingId);
+        });
+    }
+
+
+//    @Test
+//    void getAllAccounts_shouldReturnAccountDTOs() {
+//        // Prepare test data
+//        Integer offset = 0;
+//        Integer limit = 10;
+//        String firstName = "John";
+//        String lastName = "Doe";
+//        AccountType accountType = AccountType.SAVINGS;
+//        Double absoluteLimit = 1000.0;
+//        Boolean isActive = true;
+//        Long user = 1L;
+//
+//        User loggedInUser = new User();
+//        loggedInUser.setId(1L);
+//        loggedInUser.setUserType(UserType.ROLE_CUSTOMER);
+//
+//        Account account1 = new Account();
+//        account1.setAccountId(1L);
+//        account1.setUser(loggedInUser);
+//
+//        Account account2 = new Account();
+//        account2.setAccountId(2L);
+//        account2.setUser(new User());
+//
+//        List<Account> accountList = Arrays.asList(account1, account2);
+////        Page<Account> accountPage = new PageImpl<>(accountList);
+////
+////        when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(accountPage);
+//        when(accountService.getLoggedInUser(request)).thenReturn(loggedInUser);
+//
+//        // Call the method under test
+//        List<AccountGET_DTO> result = accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user);
+//
+//        // Assert the returned list of AccountGET_DTO
+//        assertEquals(1, result.size());
+//        assertEquals(account1.getAccountId(), result.get(0).accountId());
+//    }
+
+
+//    @Test
+//    void getLoggedInUser_shouldReturnLoggedInUser() {
+//        // Prepare test data
+//        HttpServletRequest request = mock(HttpServletRequest.class);
+//        String receivedToken = "your_received_token";
+//        // Mock the behavior of the jwtTokenFilter.getToken method
+//        when(jwtTokenFilter.getToken(request)).thenReturn(receivedToken);
+//
+//        // Continue with the rest of your test code
+//        // ...
+//    }
 
 
     @Test
@@ -350,30 +324,6 @@ class AccountServiceTest {
     @Test
     void isIbanPresent() {
     }
-
-
-//    @Test
-//    void testMapDtoToAccount() {
-//        UserRepository userRepository = mock(UserRepository.class);
-//        AccountService accountService = new AccountService();
-//
-//        // Create a dummy User object
-//        User user = new User("user@example.com", "password", "John", "Doe", ...); // Create a valid User object here
-//
-//        // Mock the userRepository.findUserById() method to return the dummy User object
-//        when(userRepository.findUserById(anyInt())).thenReturn(Optional.of(user));
-//
-//        // Call the mapDtoToAccount method
-//        Account actualAccount = accountService.mapDtoToAccount(accountDTO, userRepository);
-//
-//        // Perform assertions on the actualAccount object
-//        assertEquals(accountDTO.IBAN(), actualAccount.getIBAN());
-//        assertEquals(accountDTO.balance(), actualAccount.getBalance());
-//        assertEquals(accountDTO.absoluteLimit(), actualAccount.getAbsoluteLimit());
-//        assertEquals(accountDTO.accountType(), actualAccount.getAccountType());
-//        assertTrue(actualAccount.getIsActive());
-//        assertEquals(user, actualAccount.getUser());
-//    }
 
 
     @Test
