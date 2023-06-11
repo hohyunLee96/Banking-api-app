@@ -51,51 +51,37 @@ public class AccountService {
         this.request = request;
     }
 
-    private Account mapDtoToAccount(AccountPOST_DTO dto) {
-        Account account = new Account();
-        String iban = createIBAN();
-        while(isIbanPresent(iban)){
-            iban = createIBAN();
-        }
-        User user = userRepository.findUserById(dto.userId());
-        account.setUser(user);
-        if(!account.getUser().getHasAccount()){
-            userHasAccount(user);
-        }
-        account.setIBAN(iban);
-        account.setBalance(dto.balance());
-        account.setAbsoluteLimit(dto.absoluteLimit());
-        account.setAccountType(dto.accountType());
-        account.setIsActive(true);
-        return account;
-    }
-    public void userHasAccount(User user){
+
+
+    public void userHasAccount(User user) {
         user.setHasAccount(true);
         user.setUserType(UserType.ROLE_CUSTOMER);
         userRepository.save(user);
     }
 
 
-    private Account mapDtoToAccountPut(long id,AccountPUT_DTO dto) {
+    public Account disableAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
+        Account account = mapDtoToAccountPut(id, accountPUT_dto);
+        account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
+        userRepository.save(account.getUser());
+        return accountRepository.save(account);
+    }
+
+    private Account mapDtoToAccountPut(long id, AccountPUT_DTO dto) {
         Account account = accountRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Account not found"));
-//        User user = userRepository.findUserBySpecificAccountId(id);
-//        account.setUser(user);
-//        if(!accountRepository.getAccountByUserId(id).isActive()) {
-//            user.setHasAccount(false);
-//        }
-//        account.setIBAN(account.getIBAN());
-//        account.setBalance(account.getBalance());
-//        account.setAbsoluteLimit(account.getAbsoluteLimit());
-//        account.setAccountType(account.getAccountType());
-//        account.setIsActive(account.getIsActive());
-//        account.setIsActive(false);
+        if (account.getBalance() < dto.absoluteLimit()) {
+            throw new ApiRequestException("Absolute limit cannot be higher than account balance", HttpStatus.BAD_REQUEST);
+        }
+        if (dto.isActive() != null) {
+            account.setIsActive(dto.isActive());
+        }
 
         account.setAbsoluteLimit(dto.absoluteLimit());
-        account.setIsActive(dto.isActive());
 
         return account;
     }
-    private AccountGET_DTO accountGETDto(Account account){
+
+    private AccountGET_DTO accountGETDto(Account account) {
         return new AccountGET_DTO(
                 account.getAccountId(),
                 account.getUser().getId(),
@@ -106,7 +92,8 @@ public class AccountService {
                 account.getIsActive()
         );
     }
-    private AccountIbanGET_DTO accountIbanGET_DTO(Account account){
+
+    private AccountIbanGET_DTO accountIbanGET_DTO(Account account) {
         return new AccountIbanGET_DTO(
                 account.getUser().getFirstName(),
                 account.getUser().getLastName(),
@@ -121,15 +108,16 @@ public class AccountService {
         }
         return accountsOwnedBySpecificUser;
     }
+
     public List<AccountGET_DTO> getAllAccounts(Integer offset, Integer limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
         Pageable pageable = PageRequest.of(0, 10);
-        Specification<Account>accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
+        Specification<Account> accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
 
         List<AccountGET_DTO> userAccounts = new ArrayList<>();
         List<AccountGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
             accounts.add(accountGETDto(account));
-            if(account.getUser().getId().equals(getLoggedInUser(request).getId())){
+            if (account.getUser().getId().equals(getLoggedInUser(request).getId())) {
                 userAccounts.add(accountGETDto(account));
             }
         }
@@ -138,6 +126,7 @@ public class AccountService {
         }
         return accounts;
     }
+
     public User getLoggedInUser(HttpServletRequest request) {
         // Get JWT token and the information of the authenticated user
         String receivedToken = jwtTokenFilter.getToken(request);
@@ -147,8 +136,8 @@ public class AccountService {
         return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
     }
 
-    public AccountGET_DTO getAccountById(long id ) {
-        Account account =accountRepository.findById(id)
+    public AccountGET_DTO getAccountById(long id) {
+        Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));
         return accountGETDto(account);
     }
@@ -162,44 +151,57 @@ public class AccountService {
         return accounts;
     }
 
-//    public Account addAccount(AccountPOST_DTO account) {
-//        return accountRepository.save(this.mapDtoToAccount(account));
-//    }
     public Account addAccount(AccountPOST_DTO account) {
-        if(!isCustomer(account.userId())){
+        if (!isCustomer(account.userId())) {
             throw new ApiRequestException("Employee type cannot own accounts", HttpStatus.BAD_REQUEST);
         }
         if (hasAccountOfType(account.userId(), account.accountType())) {
             throw new ApiRequestException("User already has an account of type " + account.accountType(),
-                    HttpStatus.BAD_REQUEST);        }
+                    HttpStatus.BAD_REQUEST);
+        }
         return accountRepository.save(mapDtoToAccount(account));
     }
 
-    private boolean hasAccountOfType(Long userId, AccountType accountType) {
+    protected Account mapDtoToAccount(AccountPOST_DTO dto) {
+        Account account = new Account();
+        String iban = createIBAN();
+        while (isIbanPresent(iban)) {
+            iban = createIBAN();
+        }
+        account.setUser(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        account.setIBAN(iban);
+        account.setBalance(dto.balance());
+        account.setAbsoluteLimit(dto.absoluteLimit());
+        account.setAccountType(dto.accountType());
+        account.setIsActive(true);
+        if (!account.getUser().getHasAccount()) {
+            userHasAccount(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        }
+        return account;
+    }
+
+    protected boolean hasAccountOfType(Long userId, AccountType accountType) {
         // Implement the logic to check if the user already has an account of the specified type
         // You can query the account repository or perform any other necessary checks
         return accountRepository.existsByUserIdAndAccountType(userId, accountType);
     }
-    private Boolean isCustomer(Long userId){
-        if(userRepository.findById(userId).get().getUserType().equals(UserType.ROLE_EMPLOYEE)){
+
+    protected Boolean isCustomer(Long userId) {
+        if (userRepository.findById(userId).get().getUserType().equals(UserType.ROLE_EMPLOYEE)) {
             return false;
         }
         return true;
     }
+
     public AccountGET_DTO getAccountByUserId(long id) {
         return accountRepository.getAccountByUserId(id);
     }
 
-    public Account disableAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
-        Account account = mapDtoToAccountPut(id, accountPUT_dto);
-        account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
-        userRepository.save(account.getUser());
-        return accountRepository.save(account);
-    }
-    public boolean isUserHasNoActiveAccounts(long id){
+
+    public boolean isUserHasNoActiveAccounts(long id) {
         List<Account> accounts = accountRepository.getAllAccountsByUserId(id);
         for (Account account : accounts) {
-            if(account.getIsActive()){
+            if (account.getIsActive()) {
                 return false;
             }
         }
@@ -225,14 +227,14 @@ public class AccountService {
     }
 
 
-
     public Account getAccountByIBAN(String IBAN) {
-        if(!isIbanPresent(IBAN)){
+        if (!isIbanPresent(IBAN)) {
             throw new EntityNotFoundException("Iban not found " + IBAN);
         }
         return accountRepository.findAccountByIBAN(IBAN);
     }
-    public boolean isIbanPresent (String iban){
+
+    public boolean isIbanPresent(String iban) {
         return (accountRepository.findAccountByIBAN(iban) != null);
     }
 }
