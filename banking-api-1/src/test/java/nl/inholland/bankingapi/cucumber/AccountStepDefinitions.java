@@ -78,7 +78,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @Then("I should get all accounts")
     public void iShouldGetAllAccounts() throws JsonProcessingException {
         List<AccountGET_DTO> accounts = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, TransactionGET_DTO.class));
-        Assertions.assertEquals(5, accounts.size());
+        Assertions.assertEquals(6, accounts.size());
     }
     @Then("I should get all accounts as customer")
     public void iShouldGetAllAccountsAsCustomer() throws JsonProcessingException {

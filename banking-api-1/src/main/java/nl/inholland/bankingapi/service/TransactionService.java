@@ -166,7 +166,7 @@ public class TransactionService {
         if (accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(performingUser, fromAccount) && transaction.type() == TransactionType.WITHDRAWAL) {
             throw new ApiRequestException("You do not own the savings account you are trying to withdraw from", HttpStatus.FORBIDDEN);
         }
-
+        
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
 
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
