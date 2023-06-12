@@ -11,6 +11,7 @@ import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.*;
+import nl.inholland.bankingapi.repository.AccountRepository;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -27,6 +28,8 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
     private final AccountPUT_DTO accountPUTDto = new AccountPUT_DTO(100.0, false);
     private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(100.0, true);
+
+    private AccountRepository accountRepository;
 
     private TransactionPOST_DTO transactionPOSTDto;
     private final HttpHeaders httpHeaders = new HttpHeaders();
@@ -133,7 +136,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @When("I request to deactivate account with ID")
     public void requestDeactivateAccountWithID() {
         response = restTemplate.exchange(
-                ACCOUNT_ENDPOINT + "/3",
+                ACCOUNT_ENDPOINT + "/3" + accountPUTDto,
                 HttpMethod.PUT,
                 new HttpEntity<>(
                         null,
@@ -142,6 +145,10 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     }
     @Then("I should deactivate account with ID")
     public void deactivateAccountWithID() {
+        account.setAccountType(account.getAccountType());
+        account.setBalance(account.getBalance());
+        account.setIBAN(account.getIBAN());
+        account.setUser(account.getUser());
         account.setAbsoluteLimit(accountPUTDto.absoluteLimit());
         account.setIsActive(accountPUTDto.isActive());
         Assertions.assertEquals(false, account.getIsActive());
@@ -161,7 +168,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     public void activateAccountWithID() {
         account2.setAbsoluteLimit(accountPUTDto2.absoluteLimit());
         account2.setIsActive(accountPUTDto2.isActive());
-        Assertions.assertEquals(true, accountPUTDto.isActive());
+        Assertions.assertEquals(true, accountRepository.findById(4L).get().getIsActive());
     }
 
     private String getTheToken(LoginRequestDTO loginDTO) throws JsonProcessingException {
