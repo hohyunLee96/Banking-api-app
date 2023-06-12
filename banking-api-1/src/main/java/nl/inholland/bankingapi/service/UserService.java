@@ -146,7 +146,7 @@ public class UserService {
     public void deleteUserById(Long id) {
         //check if the user has an account
         if (userRepository.findById(id).get().getHasAccount()) {
-            throw new ApiRequestException("User has an account", HttpStatus.CONFLICT);
+            throw new ApiRequestException("Cannot delete user with an active account", HttpStatus.CONFLICT);
         }
         userRepository.delete(userRepository
                 .findById(id)
