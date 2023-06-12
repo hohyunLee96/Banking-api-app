@@ -36,7 +36,8 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-//    @PreAuthorize("hasRole('EMPLOYEE')")
+    //    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
             @RequestParam(required = false) Integer offset,
@@ -66,20 +67,37 @@ public class AccountController {
 //    }
 
 
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
-        return ResponseEntity.ok().body(accountService.getAccountById(id));
+        try{
+            return ResponseEntity.ok().body(accountService.getAccountById(id));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
-        return ResponseEntity.ok().body(accountService.disableAccount(id, accountPUT_dto));
+        try{
+            return ResponseEntity.ok().body(accountService.disableAccount(id, accountPUT_dto));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
+
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(accountService.addAccount(accountPOST_dto));
+        try{
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(accountService.addAccount(accountPOST_dto));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

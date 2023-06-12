@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
@@ -27,24 +28,14 @@ public class TransactionSpecifications {
     public static Specification<Transaction> hasAmountEqualTo(double amount) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("amount"), amount);
     }
-    public static Specification<Transaction> hasDateGreaterThan(String date) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), date);
+    public static Specification<Transaction> hasDateFrom(LocalDateTime fromDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), fromDate);
     }
-    public static Specification<Transaction> hasDateLessThan(String date) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), date);
-    }
-    public static Specification<Transaction> hasDateEqualTo(Date date) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("timestamp"), date);
-    }
-    public static Specification<Transaction> hasType(TransactionType type) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("type"), type);
-    }
-    public static Specification<Transaction> hasPerformingUser(Long userId) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("performingUser"), userId);
+    public static Specification<Transaction> hasDateTo(LocalDateTime toDate) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), toDate);
     }
 
-
-    public static Specification<Transaction>getSpecifications(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser, Date searchDate) {
+    public static Specification<Transaction>getSpecifications(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount) {
         Specification<Transaction> spec = null;
         Specification<Transaction> temp=null;
         if (fromIban != null) {
@@ -68,23 +59,11 @@ public class TransactionSpecifications {
             spec=spec==null?temp:spec.and(temp);
         }
         if (fromDate != null) {
-            temp=hasDateGreaterThan(fromDate);
+            temp=hasDateFrom(LocalDateTime.parse(fromDate));
             spec=spec==null?temp:spec.and(temp);
         }
-        if (toDate!= null) {
-            temp=hasDateLessThan(toDate);
-            spec=spec==null?temp:spec.and(temp);
-        }
-        if (type!= null) {
-            temp=hasType(type);
-            spec=spec==null?temp:spec.and(temp);
-        }
-        if (performingUser!= null) {
-            temp=hasPerformingUser(performingUser);
-            spec=spec==null?temp:spec.and(temp);
-        }
-        if (searchDate!= null) {
-            temp=hasDateEqualTo(searchDate);
+        if (toDate != null) {
+            temp=hasDateTo(LocalDateTime.parse(toDate));
             spec=spec==null?temp:spec.and(temp);
         }
 

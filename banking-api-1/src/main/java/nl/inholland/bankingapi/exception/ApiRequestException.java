@@ -4,7 +4,6 @@ package nl.inholland.bankingapi.exception;
 import org.springframework.http.HttpStatus;
 
 public class ApiRequestException extends RuntimeException {
-
     private  HttpStatus status;
     public ApiRequestException(String message, HttpStatus status) {
         super(message);
@@ -16,7 +15,4 @@ public class ApiRequestException extends RuntimeException {
         return  this.status;
     }
 
-    public ApiRequestException(String message, Throwable cause, HttpStatus status) {
-        super(message, cause);
-    }
 }
