@@ -72,7 +72,7 @@ public class UserSpecifications {
 
     public static Specification<User> hasbirthDate(String birthDate){
         //String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format(birthDate);
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("birthDate"), birthDate);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("birthDate"), birthDate);
     }
 
     public static Specification<User> hasPhoneNumber(String phoneNumber){
