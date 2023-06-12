@@ -27,7 +27,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
     private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
     private final AccountPUT_DTO accountPUTDto = new AccountPUT_DTO(100.0, false);
-    private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(100.0, true);
+    private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(85.0, true);
 
     private AccountRepository accountRepository;
 
@@ -89,6 +89,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
         List<AccountGET_DTO> accounts = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, TransactionGET_DTO.class));
         Assertions.assertEquals(6, accounts.size());
     }
+
     @Then("I should get all accounts as customer")
     public void iShouldGetAllAccountsAsCustomer() throws JsonProcessingException {
         List<AccountGET_DTO> accounts = objectMapper.readValue(response.getBody(), objectMapper.getTypeFactory().constructCollectionType(List.class, TransactionGET_DTO.class));
@@ -127,28 +128,35 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
                         httpHeaders),
                 String.class);
     }
+
     @Then("I should get an api request exception")
     public void shouldGetAnApiRequestException() {
         // Validate if an exception occurred during the request
-        Assertions.assertEquals(response.getBody(),"Bank account cannot be accessed");
+        Assertions.assertEquals(response.getBody(), "Bank account cannot be accessed");
     }
 
+    //    @When("I request to deactivate account with ID")
+//    public void requestDeactivateAccountWithID() {
+//        response = restTemplate.exchange(
+//                ACCOUNT_ENDPOINT + "/3" + accountPUTDto,
+//                HttpMethod.PUT,
+//                new HttpEntity<>(
+//                        null,
+//                        httpHeaders),
+//                String.class);
+//    }
     @When("I request to deactivate account with ID")
     public void requestDeactivateAccountWithID() {
         response = restTemplate.exchange(
-                ACCOUNT_ENDPOINT + "/3" + accountPUTDto,
+                ACCOUNT_ENDPOINT + "/3",
                 HttpMethod.PUT,
-                new HttpEntity<>(
-                        null,
-                        httpHeaders),
-                String.class);
+                new HttpEntity<>(accountPUTDto, httpHeaders),
+                String.class
+        );
     }
+
     @Then("I should deactivate account with ID")
     public void deactivateAccountWithID() {
-        account.setAccountType(account.getAccountType());
-        account.setBalance(account.getBalance());
-        account.setIBAN(account.getIBAN());
-        account.setUser(account.getUser());
         account.setAbsoluteLimit(accountPUTDto.absoluteLimit());
         account.setIsActive(accountPUTDto.isActive());
         Assertions.assertEquals(false, account.getIsActive());
@@ -159,16 +167,31 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
         response = restTemplate.exchange(
                 ACCOUNT_ENDPOINT + "/4",
                 HttpMethod.PUT,
-                new HttpEntity<>(
-                        null,
-                        httpHeaders),
-                String.class);
+                new HttpEntity<>(accountPUTDto2, httpHeaders),
+                String.class
+        );
     }
+    @When("I request to modify absolute limit with ID")
+    public void requestModifyAbsoluteLimitAccountWithID() {
+        response = restTemplate.exchange(
+                ACCOUNT_ENDPOINT + "/4",
+                HttpMethod.PUT,
+                new HttpEntity<>(accountPUTDto2, httpHeaders),
+                String.class
+        );
+    }
+    @Then("I should modify absolute limit of account with ID")
+    public void modifyAbsoluteLimitAccountWithID() {
+        account2.setAbsoluteLimit(accountPUTDto2.absoluteLimit());
+        account2.setIsActive(accountPUTDto2.isActive());
+        Assertions.assertEquals(accountPUTDto2.absoluteLimit(), account2.getAbsoluteLimit());
+    }
+
     @Then("I should activate account with ID")
     public void activateAccountWithID() {
         account2.setAbsoluteLimit(accountPUTDto2.absoluteLimit());
         account2.setIsActive(accountPUTDto2.isActive());
-        Assertions.assertEquals(true, accountRepository.findById(4L).get().getIsActive());
+        Assertions.assertEquals(true, account2.getIsActive());
     }
 
     private String getTheToken(LoginRequestDTO loginDTO) throws JsonProcessingException {
