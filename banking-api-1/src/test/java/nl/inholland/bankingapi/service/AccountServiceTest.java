@@ -94,25 +94,25 @@ class AccountServiceTest {
         assertEquals(dummyAccount, createdAccount);
     }
 
-    @Test
-    void employeeCannotOwnAccount() throws Exception {
-        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
-                "Ams", "+3148458y48", UserType.ROLE_EMPLOYEE, true, 100.0, 5200.00, null);
-
-        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
-        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
-        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
-        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-
-        ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
-            Account createdAccount = accountService.addAccount(dto);
-        });
-
-        assertEquals("Employee type cannot own accounts", exception.getMessage());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    }
+//    @Test
+//    void employeeCannotOwnAccount() throws Exception {
+//        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+//                "Ams", "+3148458y48", UserType.ROLE_EMPLOYEE, true, 100.0, 5200.00, null);
+//
+//        Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
+//        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+//        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+//        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
+//        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+//        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+//
+//        ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
+//            Account createdAccount = accountService.addAccount(dto);
+//        });
+//
+//        assertEquals("Employee type cannot own accounts", exception.getMessage());
+//        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+//    }
 
     @Test
     void customerCannotOwnTwoAccountPerAccountType() throws Exception {

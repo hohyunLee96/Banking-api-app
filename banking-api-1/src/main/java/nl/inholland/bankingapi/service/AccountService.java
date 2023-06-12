@@ -157,9 +157,9 @@ public class AccountService {
     }
 
     public Account addAccount(AccountPOST_DTO account) {
-        if (!isCustomer(account.userId())) {
-            throw new ApiRequestException("Employee type cannot own accounts", HttpStatus.BAD_REQUEST);
-        }
+//        if (!isCustomer(account.userId())) {
+//            throw new ApiRequestException("Employee type cannot own accounts", HttpStatus.BAD_REQUEST);
+//        }
         if (hasAccountOfType(account.userId(), account.accountType())) {
             throw new ApiRequestException("User already has an account of type " + account.accountType(),
                     HttpStatus.BAD_REQUEST);
