@@ -37,6 +37,6 @@ Feature: Getting all accounts
 
   Scenario: modify absoluteLimit with ID
     Given employee logs in
-    When I request to modify absolute limit with ID
+    When I request to modify absolute limit with IDap
     Then I should modify absolute limit of account with ID
     Then getting a status code of 200
