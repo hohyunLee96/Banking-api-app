@@ -124,7 +124,7 @@ class AccountControllerTest {
         String accountId = "2";
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/accounts/" + accountId)
-                                .with(user("customer@email.com").password("1234").roles("EMPLOYEE"))) // Use a wrong role
+                                .with(user("customer@email.com").password("1234").roles("EMPLOYEE")))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
