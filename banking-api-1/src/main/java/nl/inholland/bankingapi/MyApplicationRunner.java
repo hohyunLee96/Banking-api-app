@@ -68,6 +68,8 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         Transaction transaction = new Transaction(account1, account2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, customer);
         Transaction transaction2 = new Transaction(savings, savings2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, employee);
+
+        //Save to DB
         transactionRepository.save(transaction);
         transactionRepository.save(transaction2);
         accountRepository.save(account1);
