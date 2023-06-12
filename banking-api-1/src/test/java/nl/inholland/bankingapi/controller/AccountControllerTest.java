@@ -61,7 +61,7 @@ class AccountControllerTest {
     void getAllAccounts() throws Exception {
         when(accountService.getAllAccounts(null, null, null, null, null, null, null, null))
                 .thenReturn(List.of(
-                        new AccountGET_DTO(1, 1, "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1,"NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         this.mockMvc.perform(MockMvcRequestBuilders.get("/accounts")
                         .with(user("employee@email.com").password("1234").roles("EMPLOYEE"))) // Provide authentication details
@@ -160,7 +160,7 @@ class AccountControllerTest {
         AccountPUT_DTO account = new AccountPUT_DTO(300.00, true);
         Account modifiedAccount = new Account(new User(), "NL21INHO0123400081", 300.00, account.absoluteLimit(), AccountType.SAVINGS, true);
 
-        when(accountService.disableAccount(1, account)).thenReturn(modifiedAccount);
+        when(accountService.modifyAccount(1, account)).thenReturn(modifiedAccount);
 
         String accountId = "1";
 
@@ -178,7 +178,7 @@ class AccountControllerTest {
         AccountPUT_DTO account = new AccountPUT_DTO(300.00, true);
         Account modifiedAccount = new Account(new User(), "NL21INHO0123400081", 300.00, account.absoluteLimit(), AccountType.SAVINGS, true);
 
-        when(accountService.disableAccount(1, account)).thenReturn(modifiedAccount);
+        when(accountService.modifyAccount(1, account)).thenReturn(modifiedAccount);
 
         String accountId = "1";
 

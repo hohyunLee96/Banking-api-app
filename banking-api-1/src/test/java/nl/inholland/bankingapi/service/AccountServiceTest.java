@@ -131,7 +131,7 @@ class AccountServiceTest {
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        Account modifiedAccount = accountService.modifyAccount(1L, dto);
         assertEquals(8.0, modifiedAccount.getAbsoluteLimit());
     }
     @Test
@@ -147,7 +147,7 @@ class AccountServiceTest {
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
 
         ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
-            Account modifiedAccount = accountService.disableAccount(1L, dto);
+            Account modifiedAccount = accountService.modifyAccount(1L, dto);
         });
 
         assertEquals("Absolute limit cannot be higher than account balance", exception.getMessage());
@@ -171,7 +171,7 @@ class AccountServiceTest {
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        Account modifiedAccount = accountService.modifyAccount(1L, dto);
         assertEquals(false, modifiedAccount.getIsActive());
     }
 
