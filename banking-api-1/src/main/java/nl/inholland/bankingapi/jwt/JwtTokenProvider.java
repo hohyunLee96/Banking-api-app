@@ -12,11 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class JwtTokenProvider {
-
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
@@ -28,28 +26,34 @@ public class JwtTokenProvider {
     }
 
     public String createToken(String username, UserType roles) {
-        Claims claims = Jwts.claims().setSubject(username);
+        Claims tokenClaims = Jwts.claims().setSubject(username);
 
-        // And we add an array of the roles to the auth element of the Claims
         // Note that we only provide the role as information to the frontend
-        // The actual role based authorization should always be done in the backend code
-        claims.put("auth", roles.name());
+        tokenClaims.put("auth", roles.name());
 
         // We decide on an expiration date
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + validityInMicroseconds);
+        Date expiration = calculateExpirationDate(now, validityInMicroseconds);
+
+        if (expiration.getTime() - now.getTime() < 60000) {
+            System.out.println("Warning: Token expired in less than 1 minute!");
+        }
 
         // And finally, generate the token and sign it. .compact() then turns it into a string that we can return.
         return Jwts.builder()
-                .setClaims(claims)
+                .setClaims(tokenClaims)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
                 .signWith(jwtKeyProvider.getPrivateKey())
                 .compact();
     }
 
+    public Date calculateExpirationDate(Date currentDate, long validityInMicroseconds) {
+        long expirationTimeInMilliseconds = currentDate.getTime() + validityInMicroseconds;
+        return new Date(expirationTimeInMilliseconds);
+    }
+
     public Authentication getAuthentication(String token) {
-        // We will get the email from the token
         // And then get the UserDetails for this user from our service
         // We can then pass the UserDetails back to the caller
         try {
@@ -68,4 +72,5 @@ public class JwtTokenProvider {
             throw new ResponseStatusException( HttpStatus.INTERNAL_SERVER_ERROR, "Expired or invalid JWT token");
         }
     }
+
 }

@@ -9,9 +9,6 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -45,20 +42,25 @@ public class AuthenticationService {
         }
     }
 
-
     public LoginResponseDTO login(String email, String password) throws javax.naming.AuthenticationException {
 
         User user = this.userRepository
                 .findUserByEmail(email)
                 .orElseThrow(() -> new javax.naming.AuthenticationException("User not found"));
-        //Check if the password hash matches
-        if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
-            //Return a JWT to the client
-            String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
-            return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
+        if (!user.getPassword().isEmpty()) {
+            //Check if the password hash matches
+            if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
+                //Return a JWT to the client
+                String jwt = jwtTokenProvider.createToken(user.getEmail(), user.getUserType());
+                return new LoginResponseDTO(jwt, user.getEmail(), user.getId());
+            } else {
+                throw new javax.naming.AuthenticationException("Incorrect email/password");
+            }
+
         } else {
-            throw new javax.naming.AuthenticationException("Incorrect email/password");
+            throw new javax.naming.AuthenticationException("Password is empty");
         }
+
     }
 
 }

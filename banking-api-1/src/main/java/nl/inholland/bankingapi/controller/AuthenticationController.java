@@ -33,9 +33,4 @@ public class AuthenticationController {
        return authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password());
     }
 
-    @GetMapping("/hello")
-    public String Hello() {
-        return "Connection Established.";
-    }
-
 }
