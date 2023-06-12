@@ -96,9 +96,9 @@ class AuthenticationServiceTest {
     @Test
     void login_WithUserTypeUser_ShouldReturnUserLoginResponseDTO() throws javax.naming.AuthenticationException {
         // Arrange
+        String userEmail = "user@email.com";
         String password = "user123";
         UserType userType = UserType.ROLE_USER;
-        String userEmail = "user@email.com";
         User normalUser = createUser(userType, userEmail);
         normalUser.setId(9012L);
         normalUser.setUserType(UserType.ROLE_USER);

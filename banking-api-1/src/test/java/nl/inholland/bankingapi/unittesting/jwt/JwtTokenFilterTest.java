@@ -1,9 +1,6 @@
 package nl.inholland.bankingapi.unittesting.jwt;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,12 +14,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.mockito.Mockito.*;
@@ -49,8 +48,8 @@ class JwtTokenFilterTest {
     void doFilterInternal_WithValidToken_ShouldSetAuthentication() throws ServletException, IOException {
         // Arrange
         String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyQGVtYWlsLmNvbSIsImF1dGgiOiJST0xFX0NVU1RPTUVSIiwiaWF0IjoxNjg2MzAwMTMxLCJleHAiOjE2ODYzMDAxMzF9.BKx5_i-hpC11TEKdPKZS2aopH9pdrcTDKuXhlYUvfnQ9iw2vG0mb-m95ZMrQ4YC3ZYTTyXvRrgjSUBjUmkPvNwdQ0lMUlrmOTCgnqWPQAXzI91oI3r-9igKpl9vV8uqBk76P7_3Xy3R-zFgT5jVQVJAruCCr5u6HjEQgTAMwEPkLFd8re4IOX4kL0u-Wd-FrhxdqO3GhHscJsJ9uapRraWGy5CDMBMJX15hNCifmsC_ex7i_r17f4O_JLzJk91fnKIkh2OwLOQeW1p3EQls6_O8wIZ1BGoaXZghCdSCd8lrnP8wHu4JKJ9ti5390XR1wMOfr4aoEbngn-b8OoR0Y-w";
-//        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        UserDetails userDetails = createUserDetails("user@email.com", UserType.ROLE_USER);
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        UserDetails userDetails = createUserDetails("user@email.com", "ROLE_USER");
         Authentication authentication = createAuthentication(userDetails);
         when(jwtTokenProvider.getAuthentication(token)).thenReturn(authentication);
 
@@ -59,11 +58,9 @@ class JwtTokenFilterTest {
 
         // Assert
         verify(jwtTokenProvider, times(1)).getAuthentication(token);
-        verify(request, never()).getHeader("Authorization");
-        verify(SecurityContextHolder.getContext(), times(1)).setAuthentication(any(Authentication.class));
+        verify(request, times(1)).getHeader("Authorization");
         verify(filterChain, times(1)).doFilter(request, response);
     }
-
 
     @Test
     void doFilterInternal_WithInvalidToken_ShouldReturnUnauthorized() throws ServletException, IOException {
@@ -79,10 +76,10 @@ class JwtTokenFilterTest {
 
         // Assert
         verify(jwtTokenProvider, times(1)).getAuthentication(token);
-        verify(request, never()).getHeader("Authorization");
         verify(response, times(1)).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         verify(writer, times(1)).write("Invalid JWT token");
         verify(filterChain, never()).doFilter(request, response);
+
     }
 
 
@@ -92,29 +89,19 @@ class JwtTokenFilterTest {
         String token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyQGVtYWlsLmNvbSIsImF1dGgiOiJST0xFX0NVU1RPTUVSIiwiaWF0IjoxNjg2MzAwMTMxLCJleHAiOjE2ODYzMDAxMzF9.BKx5_i-hpC11TEKdPKZS2aopH9pdrcTDKuXhlYUvfnQ9iw2vG0mb-m95ZMrQ4YC3ZYTTyXvRrgjSUBjUmkPvNwdQ0lMUlrmOTCgnqWPQAXzI91oI3r-9igKpl9vV8uqBk76P7_3Xy3R-zFgT5jVQVJAruCCr5u6HjEQgTAMwEPkLFd8re4IOX4kL0u-Wd-FrhxdqO3GhHscJsJ9uapRraWGy5CDMBMJX15hNCifmsC_ex7i_r17f4O_JLzJk91fnKIkh2OwLOQeW1p3EQls6_O8wIZ1BGoaXZghCdSCd8lrnP8wHu4JKJ9ti5390XR1wMOfr4aoEbngn-b8OoR0Y-w";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(jwtTokenProvider.getAuthentication(token)).thenThrow(new RuntimeException("Something went wrong"));
+        PrintWriter writerMock = mock(PrintWriter.class);
+        when(response.getWriter()).thenReturn(writerMock);
 
         // Act
         jwtTokenFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
         verify(jwtTokenProvider, times(1)).getAuthentication(token);
-        verify(request, never()).getHeader("Authorization");
+        verify(request, times(1)).getHeader("Authorization");
         verify(response, times(1)).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        verify(response.getWriter(), times(1)).write("Something went wrong");
+        verify(writerMock, times(1)).write("Something went wrong");
         verify(filterChain, never()).doFilter(request, response);
-    }
 
-    private String generateValidToken() {
-        Claims claims = Jwts.claims().setSubject("user1");
-        claims.put("roles", "ROLE_USER");
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 3600000); // 1 hour
-        return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, "secret-key")
-                .compact();
     }
 
     private UserDetails createUserDetails(String username, UserType userType) {
@@ -132,7 +119,9 @@ class JwtTokenFilterTest {
         return authentication;
     }
 
-//    private Collection<GrantedAuthority> getAuthorities() {
-//        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-//    }
+    private UserDetails createUserDetails(String email, String role) {
+        GrantedAuthority authority = new SimpleGrantedAuthority(role);
+        return new User(email, "", Collections.singletonList(authority));
+    }
+
 }

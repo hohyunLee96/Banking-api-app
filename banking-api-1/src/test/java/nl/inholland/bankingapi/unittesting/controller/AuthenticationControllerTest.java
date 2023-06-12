@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.naming.AuthenticationException;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,6 +63,19 @@ class AuthenticationControllerTest {
                         + "\"}"));
         verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
     }
+
+    @Test
+    void login_THROWS_FORBIDDEN_WHEN_AUTHENTICATION_FAILS() throws Exception {
+        when(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()))
+                .thenThrow(AuthenticationException.class);
+
+        mockMvc.perform(post("/auth/login")
+                        .contentType("application/json")
+                        .content("{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
 
     @Test
     void login_THROWS_NOTFOUND_WHEN_URL_IS_WRONG() throws Exception {

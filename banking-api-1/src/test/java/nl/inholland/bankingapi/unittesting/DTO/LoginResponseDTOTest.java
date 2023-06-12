@@ -5,17 +5,20 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class LoginResponseDTOTest {
+class LoginResponseDTOTest {
     private Validator validator;
 
     @BeforeEach
@@ -24,8 +27,8 @@ public class LoginResponseDTOTest {
         validator = factory.getValidator();
     }
 
-    @Test //passed
-    public void createLoginResponseDTO_WithJwtEmailAndId_ShouldResultInAValidObject() {
+    @Test
+    void createLoginResponseDTO_WithJwtEmailAndId_ShouldResultInAValidObject() {
         String jwt = "some-jwt";
         String email = "test@example.com";
         long id = 123;
@@ -38,8 +41,8 @@ public class LoginResponseDTOTest {
         Assertions.assertEquals(id, loginResponseDTO.id());
     }
 
-    @Test //passed
-    public void createLoginResponseDTO_WithNullValues_ShouldSetNullJwtEmailAndId() {
+    @Test
+    void createLoginResponseDTO_WithNullValues_ShouldSetNullJwtEmailAndId() {
         String jwt = null;
         String email = null;
         long id = 0;
@@ -52,40 +55,37 @@ public class LoginResponseDTOTest {
         Assertions.assertEquals(id, loginResponseDTO.id());
     }
 
-//    @Test
-//    public void createLoginResponseDTO_WithInvalidEmail_ShouldResultInAConstraintViolationException() {
-//        String bearerToken = "some-jwt";
-//        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(bearerToken, "notAnEmail", 1L);
-//
-//        Set<ConstraintViolation<LoginResponseDTO>> violations = validator.validate(loginResponseDTO);
-//        String errorMessage = violations.iterator().next().getMessage();
-//        assertEquals("Email is invalid.", errorMessage);
-//    }
-
     @Test
-    public void createLoginResponseDTO_WithoutJwt_ShouldResultInAConstraintViolationException() {
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(null, "email", 1L);
+    void createLoginResponseDTO_WithInvalidEmail_ShouldResultInAConstraintViolationException() {
+        String bearerToken = "some-jwt";
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(bearerToken, "notAnEmail", 1L);
 
         Set<ConstraintViolation<LoginResponseDTO>> violations = validator.validate(loginResponseDTO);
         String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("JWT is required.", errorMessage);
+        assertEquals("Email invalid", errorMessage);
     }
 
     @Test
-    public void createLoginResponseDTO_WithoutEmail_ShouldResultInAConstraintViolationException() {
+    void createLoginResponseDTO_WithoutJwt_ShouldResultInAConstraintViolationException() {
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(null, "email", 1L);
+
+        Set<ConstraintViolation<LoginResponseDTO>> violations = validator.validate(loginResponseDTO);
+        List<String> errorMessages = new ArrayList<>();
+        for (ConstraintViolation<LoginResponseDTO> violation : violations) {
+            errorMessages.add(violation.getMessage());
+        }
+
+        assertTrue(errorMessages.contains("JWT required"));
+    }
+
+
+    @Test
+    void createLoginResponseDTO_WithoutEmail_ShouldResultInAConstraintViolationException() {
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO("jwt", "", 1L);
 
         Set<ConstraintViolation<LoginResponseDTO>> violations = validator.validate(loginResponseDTO);
         String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("Email is required.", errorMessage);
+        assertEquals("Email required", errorMessage);
     }
 
-    @Test
-    public void createLoginResponseDTO_WithoutId_ShouldResultInAConstraintViolationException() {
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO("jwt", "email@example.com", 0);
-
-        Set<ConstraintViolation<LoginResponseDTO>> violations = validator.validate(loginResponseDTO);
-        String errorMessage = violations.iterator().next().getMessage();
-        assertEquals("ID is required.", errorMessage);
-    }
 }

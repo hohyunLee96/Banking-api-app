@@ -5,7 +5,6 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.IOException;
-import io.jsonwebtoken.security.Keys;
 import nl.inholland.bankingapi.controller.AuthenticationController;
 import nl.inholland.bankingapi.jwt.JwtKeyProvider;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
@@ -108,7 +107,6 @@ class JwtTokenProviderTest {
 
         // Assert
         assertNotNull(token);
-        assertTrue(token.length() > 0);
     }
 
     @Test

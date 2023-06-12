@@ -34,7 +34,7 @@ class JwtKeyProviderTest {
     }
 
     @Test
-    public void testGetPrivateKey() throws Exception {
+    void testGetPrivateKey() throws Exception {
         when(resource.getInputStream()).thenReturn(getClass().getResourceAsStream("/inholland.p12"));
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
         keyStore.load(resource.getInputStream(), jwtKeyProvider.getKeystorePassword().toCharArray());
@@ -46,28 +46,28 @@ class JwtKeyProviderTest {
     }
 
     @Test
-    public void testSetAndGetKeystore() {
+    void testSetAndGetKeystore() {
         String newKeystorePath = "newKeystore.p12";
         jwtKeyProvider.setKeystore(newKeystorePath);
         assertEquals(newKeystorePath, jwtKeyProvider.getKeystore());
     }
 
     @Test
-    public void testSetAndGetKeystorePassword() {
+    void testSetAndGetKeystorePassword() {
         String newKeystorePassword = "newPassword";
         jwtKeyProvider.setKeystorePassword(newKeystorePassword);
         assertEquals(newKeystorePassword, jwtKeyProvider.getKeystorePassword());
     }
 
     @Test
-    public void testSetAndGetKeyAlias() {
+    void testSetAndGetKeyAlias() {
         String newKeyAlias = "newAlias";
         jwtKeyProvider.setKeyAlias(newKeyAlias);
         assertEquals(newKeyAlias, jwtKeyProvider.getKeyAlias());
     }
 
     @Test
-    public void testInvalidKeystorePath() {
+    void testInvalidKeystorePath() {
         String invalidKeystorePath = "invalid.p12";
         ReflectionTestUtils.setField(jwtKeyProvider, "keystore", invalidKeystorePath);
 
@@ -78,7 +78,7 @@ class JwtKeyProviderTest {
     }
 
     @Test
-    public void testInvalidKeystorePassword() {
+    void testInvalidKeystorePassword() {
         String invalidKeystorePassword = "invalidPassword";
         ReflectionTestUtils.setField(jwtKeyProvider, "keystorePassword", invalidKeystorePassword);
 
@@ -86,7 +86,7 @@ class JwtKeyProviderTest {
     }
 
     @Test
-    public void testInitMethodBehavior() throws Exception {
+    void testInitMethodBehavior() throws Exception {
         ReflectionTestUtils.invokeMethod(jwtKeyProvider, "init");
 
         assertNotNull(jwtKeyProvider.getPrivateKey());

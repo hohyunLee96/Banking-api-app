@@ -25,7 +25,7 @@ import java.util.Optional;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertFalse;
 
-public class LoginStepDefinition {
+public class LoginSteps extends BaseStepDefinitions{
     private LoginRequestDTO loginRequestDTO;
     private LoginResponseDTO loginResponseDTO;
     private JwtKeyProvider jwtKeyProvider = new JwtKeyProvider();
@@ -163,23 +163,68 @@ public class LoginStepDefinition {
         assertFalse(token.isEmpty());
     }
 
-//    @Given("^I have a valid username but invalid password$")
-//    public void givenIHaveValidUsernameInvalidPassword() {
-//        // Implementation logic for setting up a valid username and invalid password
-//    }
-//
-//    @Then("^I receive http status 401$")
-//    public void thenIReceiveHttpStatus401() {
-//        // Implementation logic to assert the HTTP status code 401
-//    }
-//
-//    @Given("^I have an invalid email and valid password$")
-//    public void givenIHaveInvalidEmailValidPassword() {
-//        // Implementation logic for setting up an invalid email and valid password
-//    }
-//
-//    @Then("^I receive http status 401$")
-//    public void thenIReceiveHttpStatus401Again() {
-//        // Implementation logic to assert the HTTP status code 401
-//    }
+    @Given("^I have a valid username but invalid password$")
+    public void givenIHaveValidUsernameInvalidPassword() {
+        // Implementation logic for setting up a valid username and invalid password
+    }
+
+    @When("^I call the application login endpoint$")
+    public void whenICallLoginEndpointWithValidEmailButInvalidPassword() {
+        // Set the request headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Create the request body
+        String requestBody = "{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}";
+
+        // Create the HTTP entity with headers and body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Make the POST request to the login endpoint
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8080/auth/login", requestEntity, String.class);
+
+        // Handle the response as needed
+        // For example, you can retrieve the response body and perform assertions
+        String responseBody = responseEntity.getBody();
+
+    }
+
+    @Then("^I receive http status 401$")
+    public void thenIReceiveHttpStatus401() {
+        // Implementation logic to assert the HTTP status code 401
+    }
+
+    @Given("^I have an invalid email and valid password$")
+    public void givenIHaveInvalidEmailValidPassword() {
+        // Implementation logic for setting up an invalid email and valid password
+    }
+
+    @When("^I call the application login endpoint$")
+    public void whenICallLoginEndpointWithInvalidEmailButValidPassword() {
+        // Set the request headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Create the request body
+        String requestBody = "{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}";
+
+        // Create the HTTP entity with headers and body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Make the POST request to the login endpoint
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("http://localhost:8080/auth/login", requestEntity, String.class);
+
+        // Handle the response as needed
+        // For example, you can retrieve the response body and perform assertions
+        String responseBody = responseEntity.getBody();
+
+    }
+
+    @Then("^I receive http status 401$")
+    public void thenIReceiveHttpStatus401Again() {
+        // Implementation logic to assert the HTTP status code 401
+    }
+
 }
