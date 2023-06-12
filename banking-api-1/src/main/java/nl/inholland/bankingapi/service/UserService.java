@@ -129,7 +129,7 @@ public class UserService {
         return userRepository.save(this.mapDtoToUser(dto));
     }
 
-    public User updateUser(long id, UserPUT_DTO dto) {
+    public User updateUser(long id, UserPOST_DTO dto) {
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -143,6 +143,15 @@ public class UserService {
         userToUpdate.setEmail(dto.email());
         userToUpdate.setUserType(dto.userType());
         userToUpdate.setHasAccount(dto.hasAccount());
+
+        if(dto.password() != null && !dto.password().equals("") && !dto.passwordConfirm().equals(" ")) {
+            try {
+                isPasswordValid(dto.password(), dto.passwordConfirm());
+            } catch (IllegalArgumentException e) {
+                throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+            userToUpdate.setPassword(bCryptPasswordEncoder.encode(dto.password()));
+        }
 
         return userRepository.save(userToUpdate);
     }

@@ -8,6 +8,10 @@ import nl.inholland.bankingapi.model.UserType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 @Component
 public class UserSpecifications {
     private UserSpecifications() {
@@ -67,7 +71,8 @@ public class UserSpecifications {
     }
 
     public static Specification<User> hasbirthDate(String birthDate){
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("birthDate"), birthDate);
+        //String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format(birthDate);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("birthDate"), birthDate);
     }
 
     public static Specification<User> hasPhoneNumber(String phoneNumber){
