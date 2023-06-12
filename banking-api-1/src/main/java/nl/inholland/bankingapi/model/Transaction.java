@@ -1,14 +1,17 @@
 package nl.inholland.bankingapi.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
 
     @Id
@@ -30,7 +33,7 @@ public class Transaction {
         this.toIban = toIban;
         this.amount = amount;
         this.type = type;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = timestamp;
         this.performingUser = performingUser;
     }
 }

@@ -24,14 +24,12 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
-
         authenticationService.register(registerRequestDTO);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
     public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO) throws AuthenticationException {
-
        return authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password());
     }
 

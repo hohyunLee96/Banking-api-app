@@ -37,7 +37,6 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
     private final UserSpecifications userSpecifications;
-
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -45,7 +44,6 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.userSpecifications = userSpecifications;
-
     }
 
     public User getUserById(Long id) {
