@@ -163,12 +163,10 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(performingUser, toAccount) && transaction.type() == TransactionType.DEPOSIT) {
-            throw new ApiRequestException("Savings account does not belong to the user performing the transaction", HttpStatus.FORBIDDEN);
+        if (accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(performingUser, fromAccount) && transaction.type() == TransactionType.WITHDRAWAL) {
+            throw new ApiRequestException("You do not own the savings account you are trying to withdraw from", HttpStatus.FORBIDDEN);
         }
-//        if (!userIsEmployee(senderUser) && accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
-//            throw new ApiRequestException("Savings account does not belong to the recipient user", HttpStatus.FORBIDDEN);
-//        }
+        
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
 
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
