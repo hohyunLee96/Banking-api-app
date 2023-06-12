@@ -61,7 +61,7 @@ class AccountControllerTest {
     void getAllAccounts() throws Exception {
         when(accountService.getAllAccounts(null, null, null, null, null, null, null, null))
                 .thenReturn(List.of(
-                        new AccountGET_DTO(1, 1,"NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1,"first" ,"last","NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         this.mockMvc.perform(MockMvcRequestBuilders.get("/accounts")
                         .with(user("employee@email.com").password("1234").roles("EMPLOYEE"))) // Provide authentication details
@@ -75,7 +75,7 @@ class AccountControllerTest {
     void shouldReturnUnauthorizedWithInvalidTokenForGetAccountById() throws Exception {
         when(accountService.getAccountById(1))
                 .thenReturn((
-                        new AccountGET_DTO(1, 1, "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1,"first" ,"last", "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         String accountId = "1";
         mockMvc.perform(
@@ -88,7 +88,7 @@ class AccountControllerTest {
     void shouldReturnForbiddenToGetAccountByIdWithNotEmployeeRoleForGetAccountById() throws Exception {
         when(accountService.getAccountById(1))
                 .thenReturn((
-                        new AccountGET_DTO(1, 1, "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1, "first" ,"last","NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         String accountId = "1";
         mockMvc.perform(
@@ -102,7 +102,7 @@ class AccountControllerTest {
     void shouldReturnOkToGetAccountByIdWithEmployeeRoleForGetAccountById() throws Exception {
         when(accountService.getAccountById(1))
                 .thenReturn((
-                        new AccountGET_DTO(1, 1, "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1,"first" ,"last", "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         String accountId = "1";
         mockMvc.perform(
@@ -117,7 +117,7 @@ class AccountControllerTest {
     void shouldReturnNotFoundToGetAccountByIdWithEmployeeRoleForGetAccountById() throws Exception {
         when(accountService.getAccountById(1))
                 .thenReturn((
-                        new AccountGET_DTO(1, 1, "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
+                        new AccountGET_DTO(1, 1,"first" ,"last", "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));
         when(accountService.getAccountById(2))
                 .thenThrow(new EntityNotFoundException("Account not found"));

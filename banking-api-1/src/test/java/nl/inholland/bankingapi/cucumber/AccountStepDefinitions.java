@@ -24,8 +24,8 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     private static final String ACCOUNT_ENDPOINT = "/accounts";
     private final Account account = new Account(3L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
     private final Account account2 = new Account(4L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, false);
-    private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
-    private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
+    private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "first" ,"last","NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
+    private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "first" ,"last","NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
     private final AccountPUT_DTO accountPUTDto = new AccountPUT_DTO(100.0, false);
     private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(85.0, true);
 

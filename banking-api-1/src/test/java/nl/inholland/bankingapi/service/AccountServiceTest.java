@@ -186,7 +186,7 @@ class AccountServiceTest {
 
     @Test
     public void testGetAccountById_ExistingId_ReturnsAccountDTO() {
-        Account dummyAccount = new Account(1L, new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+        Account dummyAccount = new Account(1L, new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
         // Arrange
         long accountId = 1L;
