@@ -26,8 +26,6 @@ public interface AccountRepository extends CrudRepository<Account,Long> {
     @Query("SELECT SUM(account.balance) AS totalBalance FROM Account account WHERE account.user.id = :user")
     Double getTotalBalanceByUserId(@Param("user") long id);
 
-    AccountGET_DTO getAccountByUserId(long id);
-
     boolean existsByUserIdAndAccountType(Long userId, AccountType accountType);
 
 }

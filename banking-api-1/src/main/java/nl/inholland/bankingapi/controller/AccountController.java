@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/accounts")
 @Log
@@ -50,22 +50,18 @@ public class AccountController {
             @RequestParam(required = false) Long user) {
         return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-//    @PreAuthorize("hasRole('CUSTOMER')")
-//    @GetMapping("/user/{id}")
-//    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
-//        List<AccountGET_DTO> accounts = accountService.getAllAccountsByUserId(id);
-//        Double totalBalance = accountService.getTotalBalanceByUserId(id);
-//        if(totalBalance == null){
-//            totalBalance = 0.0;
-//        }
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("accounts", accounts);
-//        response.put("totalBalance", totalBalance);
-//
-//        return ResponseEntity.ok().body(response);
-//    }
 
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/search")
+    public ResponseEntity<Object>getIbanWithFirstAndLastNameForCustomer(
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName
+    ){
+        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(offset, limit, firstName, lastName));
+    }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}")
@@ -82,7 +78,7 @@ public class AccountController {
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
         try{
-            return ResponseEntity.ok().body(accountService.disableAccount(id, accountPUT_dto));
+            return ResponseEntity.ok().body(accountService.modifyAccount(id, accountPUT_dto));
         }
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
