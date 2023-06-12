@@ -23,5 +23,19 @@ Feature: Getting all accounts
     Then I should get all accounts as customer
     Then getting a status code of 200
 
+  Scenario: deactivate account with ID
+    Given employee logs in
+    When I request to deactivate account with ID
+    Then I should deactivate account with ID
+    Then getting a status code of 200
 
+  Scenario: activate account with ID
+    Given employee logs in
+    When I request to activate account with ID
+    Then I should activate account with ID
+    Then getting a status code of 200
 
+  Scenario: modify absoluteLimit with ID
+    Given employee logs in
+    When I request to modify absoluteLimit with ID
+    Then getting a status code of 200
