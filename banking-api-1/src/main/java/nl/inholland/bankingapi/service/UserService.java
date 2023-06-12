@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static java.lang.Long.parseLong;
 
@@ -50,6 +51,7 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
     }
+
     public List<User>getUsersWithoutAccount(Boolean hasAccount){
         return userRepository.findAllByHasAccount(hasAccount);
     }
@@ -117,19 +119,12 @@ public class UserService {
     }
 
     public User registerUser(UserPOST_DTO dto) {
-        // Check if the user already exists
-        if (userRepository.findUserByEmail(dto.email()).isPresent()) {
-            throw new ApiRequestException("User with the same email address already exists", HttpStatus.CONFLICT);
-        }
-        try {
-            isPasswordValid(dto.password(), dto.passwordConfirm());
-        } catch (IllegalArgumentException e) {
-            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+        validatePostParams(dto);
         return userRepository.save(this.mapDtoToUser(dto));
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
+        validatePostParams(dto);
         User userToUpdate = userRepository
                 .findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -143,15 +138,6 @@ public class UserService {
         userToUpdate.setEmail(dto.email());
         userToUpdate.setUserType(dto.userType());
         userToUpdate.setHasAccount(dto.hasAccount());
-
-        if(dto.password() != null && !dto.password().equals("") && !dto.passwordConfirm().equals(" ")) {
-            try {
-                isPasswordValid(dto.password(), dto.passwordConfirm());
-            } catch (IllegalArgumentException e) {
-                throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
-            }
-            userToUpdate.setPassword(bCryptPasswordEncoder.encode(dto.password()));
-        }
 
         return userRepository.save(userToUpdate);
     }
@@ -184,6 +170,13 @@ public class UserService {
             throw new IllegalArgumentException("Password must contain at least one number and one special character");
         }
     }
+    private static boolean isValidEmail(String email) {
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        Pattern pattern = Pattern.compile(regex);
+
+        return pattern.matcher(email).matches();
+    }
+
     public User getLoggedInUser(HttpServletRequest request) {
         // Get JWT token and the information of the authenticated user
         String receivedToken = jwtTokenFilter.getToken(request);
@@ -193,5 +186,40 @@ public class UserService {
         return userRepository.findUserByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
     }
 
+    private void validatePostParams(UserPOST_DTO dto){
+        // Check if the user already exists
+        if (userRepository.findUserByEmail(dto.email()).isPresent()) {
+            throw new ApiRequestException("User with the same email address already exists", HttpStatus.CONFLICT);
+        }
+        //check if any of the required fields are empty
+        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.password().isEmpty() || dto.passwordConfirm().isEmpty()) {
+            throw new ApiRequestException("Please fill in all of the form fields.", HttpStatus.BAD_REQUEST);
+        }
+        //check if the first name, last name and city contain any special characters
+        Pattern pattern = Pattern.compile("[^a-zA-Z ]");
+        if (pattern.matcher(dto.firstName()).find()){
+            throw new IllegalArgumentException("First name cannot contain any special characters or numbers.");
+        }
+        else if (pattern.matcher(dto.lastName()).find()){
+            throw new IllegalArgumentException("Last name cannot contain any special characters or numbers.");
+        }
+        else if (pattern.matcher(dto.city()).find()){
+            throw new IllegalArgumentException("City cannot contain any special characters or numbers.");
+        }
+        //check if the email address is valid
+        if(!isValidEmail(dto.email())){
+            throw new ApiRequestException("Email address provided is invalid.", HttpStatus.BAD_REQUEST);
+        }
+        //check if the phone number contains any letters or special characters
+        if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
+            throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
+        }
+
+        try {
+            isPasswordValid(dto.password(), dto.passwordConfirm());
+        } catch (IllegalArgumentException e) {
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
 
