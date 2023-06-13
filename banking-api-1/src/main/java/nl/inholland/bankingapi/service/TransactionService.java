@@ -163,11 +163,11 @@ public class TransactionService {
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
-        if (accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(performingUser, fromAccount) && transaction.type() == TransactionType.WITHDRAWAL) {
+        if (accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(senderUser, fromAccount) && transaction.type() == TransactionType.WITHDRAWAL) {
             throw new ApiRequestException("You do not own the savings account you are trying to withdraw from", HttpStatus.FORBIDDEN);
         }
-        if (accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(receiverUser, toAccount)) {
-            throw new ApiRequestException("You are not the owner of the savings account you are trying to transfer money to", HttpStatus.FORBIDDEN);
+        if(accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(senderUser, toAccount) && transaction.type() == TransactionType.TRANSFER) {
+            throw new ApiRequestException("You do not own the savings account you are trying to transfer to", HttpStatus.FORBIDDEN);
         }
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money from", HttpStatus.FORBIDDEN);
@@ -175,10 +175,10 @@ public class TransactionService {
         if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
         }
-        if (performingUser.getTransactionLimit() < transaction.amount()) {
+        if (senderUser.getTransactionLimit() < transaction.amount()) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByAccount(request) + transaction.amount() > performingUser.getDailyLimit())) {
+        if ((getSumOfAllTransactionsFromTodayByAccount(request) + transaction.amount() > senderUser.getDailyLimit())) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
@@ -189,7 +189,6 @@ public class TransactionService {
         }
         if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
             throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
-
     }
 
     public Transaction withdraw(TransactionWithdrawDTO dto) {
