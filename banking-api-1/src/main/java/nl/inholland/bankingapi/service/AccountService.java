@@ -52,8 +52,6 @@ public class AccountService {
         this.request = request;
     }
 
-
-
     public void userHasAccount(User user) {
         user.setHasAccount(true);
         user.setUserType(UserType.ROLE_CUSTOMER);
