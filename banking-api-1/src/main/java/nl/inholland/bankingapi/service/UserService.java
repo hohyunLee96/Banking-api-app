@@ -236,7 +236,7 @@ public class UserService {
             throw new ApiRequestException("User with the same email address already exists", HttpStatus.CONFLICT);
         }
         //check if any of the required fields are empty
-        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.password().isEmpty() || dto.passwordConfirm().isEmpty()) {
+        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty() || dto.dailyLimit() == null || dto.transactionLimit() == null) {
             throw new ApiRequestException("Please fill in all of the form fields.", HttpStatus.BAD_REQUEST);
         }
         //check if the first name, last name and city contain any special characters
@@ -258,7 +258,9 @@ public class UserService {
         if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
             throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
         }
-
+        if (dto.dailyLimit() <= 0 || dto.transactionLimit() <= 0){
+            throw new IllegalArgumentException("Daily limit and transaction limit cannot be negative or zero.");
+        }
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());
         } catch (IllegalArgumentException e) {
@@ -289,9 +291,8 @@ public class UserService {
         if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
             throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
         }
-
-        if (dto.dailyLimit() < 0 || dto.transactionLimit() < 0){
-            throw new IllegalArgumentException("Daily limit and transaction limit cannot be negative.");
+        if (dto.dailyLimit() <= 0 || dto.transactionLimit() <= 0){
+            throw new IllegalArgumentException("Daily limit and transaction limit cannot be negative or zero.");
         }
 
         try {
