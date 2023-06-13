@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.unittesting.jwt;
+package nl.inholland.bankingapi.jwt;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;

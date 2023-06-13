@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.unittesting.jwt;
+package nl.inholland.bankingapi.jwt;
 
 import nl.inholland.bankingapi.jwt.JwtKeyProvider;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.unittesting.service;
+package nl.inholland.bankingapi.service;
 
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.User;
@@ -6,7 +6,6 @@ import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.repository.UserRepository;
-import nl.inholland.bankingapi.service.AuthenticationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

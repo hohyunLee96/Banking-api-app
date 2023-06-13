@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.unittesting.jwt;
+package nl.inholland.bankingapi.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
@@ -6,8 +6,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.IOException;
 import nl.inholland.bankingapi.controller.AuthenticationController;
-import nl.inholland.bankingapi.jwt.JwtKeyProvider;
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.repository.UserRepository;
