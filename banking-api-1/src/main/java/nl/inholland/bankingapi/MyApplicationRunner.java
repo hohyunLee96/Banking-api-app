@@ -58,7 +58,8 @@ public class MyApplicationRunner implements ApplicationRunner {
 
         //Load Accounts
         Account account1 = new Account(customer, "NL21INHO0123400081", 900.00, 0.00, AccountType.CURRENT, true);
-        Account closedAccount= new Account(customer, "NL21INHO0123400085", 90000.00, 0.00, AccountType.SAVINGS, false);
+        Account closedAccount= new Account(user1, "NL21INHO0123400085", 90000.00, 0.00, AccountType.SAVINGS, false);
+        Account openSavingsAcc= new Account(customer, "NL21INHO0123400086", 500.00, 0.00, AccountType.SAVINGS, true);
         Account savings = new Account(user1, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account account2 = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
         Account savings2 = new Account(employee, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
@@ -74,6 +75,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transactionRepository.save(transaction2);
         accountRepository.save(account1);
         accountRepository.save(account2);
+        accountRepository.save(openSavingsAcc);
         accountRepository.save(savings);
         accountRepository.save(closedAccount);
         accountRepository.save(savings2);
