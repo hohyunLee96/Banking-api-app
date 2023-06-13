@@ -74,7 +74,7 @@ public class MyApplicationRunner implements ApplicationRunner {
         transactionRepository.save(transaction2);
         accountRepository.save(account1);
         accountRepository.save(account2);
-        accountRepository.save(openSavingsAcc);
+//        accountRepository.save(openSavingsAcc);
         accountRepository.save(savings);
         accountRepository.save(closedAccount);
         accountRepository.save(savings2);
