@@ -38,6 +38,8 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
     private final UserSpecifications userSpecifications;
+    private final  Double DEFAULTDAILYLIMIT = 100.0;
+    private final Double DEFAULTTRANSACTIONLIMIT = 500.0;
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -45,6 +47,7 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.userSpecifications = userSpecifications;
+
     }
 
     public User getUserById(Long id) {
@@ -87,6 +90,8 @@ public class UserService {
         user.setUserType(dto.userType());
         user.setHasAccount(false);
         user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
+        user.setDailyLimit(DEFAULTDAILYLIMIT);
+        user.setTransactionLimit(DEFAULTTRANSACTIONLIMIT);
         return user;
     }
 
