@@ -51,14 +51,14 @@ Feature: Getting all accounts
   Scenario: open an account for user or customer
     Given employee logs in
     When I request to open an account
-    Then I get an api exception for opening account type that customer already has
-#    Then I get a status code of 400
+    Then getting a status code of 400
+    And I get an api exception for opening account type that customer already has
 
   Scenario: open an account for user or customer
     Given employee logs in
     When request to open an account
     Then Employee can open an account
-#    Then I get a status code of 201
+    Then getting a status code of 201
 
 
 

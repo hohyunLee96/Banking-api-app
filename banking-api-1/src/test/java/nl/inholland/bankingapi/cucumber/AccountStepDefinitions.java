@@ -2,14 +2,12 @@ package nl.inholland.bankingapi.cucumber;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.model.Account;
-import nl.inholland.bankingapi.model.AccountType;
-import nl.inholland.bankingapi.model.TransactionType;
-import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import org.junit.jupiter.api.Assertions;
@@ -31,7 +29,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     private final AccountPUT_DTO accountPUTDto3 = new AccountPUT_DTO(850000000.0, true);
 
     private final AccountPOST_DTO accountPOSTDto = new AccountPOST_DTO(1L, 0.0, 100.0, AccountType.CURRENT, true);
-    private final AccountPOST_DTO accountPOSTDto2 = new AccountPOST_DTO(7L, 0.0, 100.0, AccountType.CURRENT, true);
+    private final AccountPOST_DTO accountPOSTDto2 = new AccountPOST_DTO(3L, 0.0, 100.0, AccountType.CURRENT, true);
 
     private AccountRepository accountRepository;
 
@@ -216,7 +214,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
         );
     }
 
-    @Then("I get an api exception for opening account type that customer already has")
+    @And("I get an api exception for opening account type that customer already has")
     public void returnResponseForOpeningAnAccount() {
         AccountType accountType = accountPOSTDto.accountType();
         Assertions.assertEquals(response.getBody(), "User already has an account of type " + accountType);
@@ -236,7 +234,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @Then("Employee can open an account")
     public void ReturnOpenAnAccount() throws JsonProcessingException {
 //        AccountGET_DTO accountGET_dto = objectMapper.readValue(response.getBody(), AccountGET_DTO.class);
-        Assertions.assertEquals(7L,accountPOSTDto2.userId() );
+        Assertions.assertEquals(3L,accountPOSTDto2.userId() );
         Assertions.assertEquals(AccountType.CURRENT,accountPOSTDto2.accountType() );
     }
 
