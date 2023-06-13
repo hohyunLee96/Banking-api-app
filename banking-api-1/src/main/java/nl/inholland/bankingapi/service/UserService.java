@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.lang.Long.parseLong;
@@ -124,20 +125,52 @@ public class UserService {
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
-        validatePostParams(dto);
-        User userToUpdate = userRepository
-                .findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        userToUpdate.setFirstName(dto.firstName());
-        userToUpdate.setLastName(dto.lastName());
-        userToUpdate.setBirthDate(dto.birthDate());
-        userToUpdate.setAddress(dto.address());
-        userToUpdate.setPostalCode(dto.postalCode());
-        userToUpdate.setCity(dto.city());
-        userToUpdate.setPhoneNumber(dto.phoneNumber());
-        userToUpdate.setEmail(dto.email());
-        userToUpdate.setUserType(dto.userType());
-        userToUpdate.setHasAccount(dto.hasAccount());
+
+        String password;
+        String passwordConfirm;
+        User userToUpdate = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        //if the user didn't create a new password, get the password from the database
+        if((dto.password() == null || Objects.equals(dto.password(), ""))&& dto.passwordConfirm() == null || Objects.equals(dto.passwordConfirm(), "")){
+            password = (userRepository.findById(id).get().getPassword());
+            passwordConfirm = (userRepository.findById(id).get().getPassword());
+
+            //validate the rest of the parameters
+            validateUpdateParams(dto, password, passwordConfirm);
+
+            userToUpdate.setFirstName(dto.firstName());
+            userToUpdate.setPassword(password);
+            userToUpdate.setLastName(dto.lastName());
+            userToUpdate.setBirthDate(dto.birthDate());
+            userToUpdate.setAddress(dto.address());
+            userToUpdate.setPostalCode(dto.postalCode());
+            userToUpdate.setCity(dto.city());
+            userToUpdate.setPhoneNumber(dto.phoneNumber());
+            userToUpdate.setEmail(dto.email());
+            userToUpdate.setUserType(dto.userType());
+            userToUpdate.setHasAccount(dto.hasAccount());
+        }
+        else
+        {
+            //if the user created a new password, encode it and save it
+            password = dto.password();
+            passwordConfirm = dto.passwordConfirm();
+
+            //validate the rest of the parameters
+            validateUpdateParams(dto, password, passwordConfirm);
+
+            userToUpdate.setFirstName(dto.firstName());
+            userToUpdate.setPassword(bCryptPasswordEncoder.encode(password));
+            userToUpdate.setLastName(dto.lastName());
+            userToUpdate.setBirthDate(dto.birthDate());
+            userToUpdate.setAddress(dto.address());
+            userToUpdate.setPostalCode(dto.postalCode());
+            userToUpdate.setCity(dto.city());
+            userToUpdate.setPhoneNumber(dto.phoneNumber());
+            userToUpdate.setEmail(dto.email());
+            userToUpdate.setUserType(dto.userType());
+            userToUpdate.setHasAccount(dto.hasAccount());
+        }
 
         return userRepository.save(userToUpdate);
     }
@@ -217,6 +250,37 @@ public class UserService {
 
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());
+        } catch (IllegalArgumentException e) {
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+    private void validateUpdateParams(UserPOST_DTO dto, String password, String passwordConfirm){
+        //check if any of the required fields are empty
+        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty()) {
+            throw new ApiRequestException("Please fill in all of the form fields.", HttpStatus.BAD_REQUEST);
+        }
+        //check if the first name, last name and city contain any special characters
+        Pattern pattern = Pattern.compile("[^a-zA-Z ]");
+        if (pattern.matcher(dto.firstName()).find()){
+            throw new IllegalArgumentException("First name cannot contain any special characters or numbers.");
+        }
+        else if (pattern.matcher(dto.lastName()).find()){
+            throw new IllegalArgumentException("Last name cannot contain any special characters or numbers.");
+        }
+        else if (pattern.matcher(dto.city()).find()){
+            throw new IllegalArgumentException("City cannot contain any special characters or numbers.");
+        }
+        //check if the email address is valid
+        if(!isValidEmail(dto.email())){
+            throw new ApiRequestException("Email address provided is invalid.", HttpStatus.BAD_REQUEST);
+        }
+        //check if the phone number contains any letters or special characters
+        if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
+            throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
+        }
+
+        try {
+            isPasswordValid(password, passwordConfirm);
         } catch (IllegalArgumentException e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
