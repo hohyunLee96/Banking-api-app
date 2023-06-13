@@ -52,8 +52,6 @@ public class AccountService {
         this.request = request;
     }
 
-
-
     public void userHasAccount(User user) {
         user.setHasAccount(true);
         user.setUserType(UserType.ROLE_CUSTOMER);
@@ -140,7 +138,9 @@ public class AccountService {
 
         List<AccountIbanGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification,pageable)) {
-            accounts.add(accountIbanGET_DTO(account));
+            if(!account.getAccountType().equals(AccountType.BANK)){
+                accounts.add(accountIbanGET_DTO(account));
+            }
         }
         return accounts;
     }

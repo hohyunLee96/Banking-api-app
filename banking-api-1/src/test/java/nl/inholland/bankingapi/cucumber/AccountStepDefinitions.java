@@ -2,14 +2,12 @@ package nl.inholland.bankingapi.cucumber;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.model.Account;
-import nl.inholland.bankingapi.model.AccountType;
-import nl.inholland.bankingapi.model.TransactionType;
-import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import org.junit.jupiter.api.Assertions;
@@ -24,10 +22,14 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     private static final String ACCOUNT_ENDPOINT = "/accounts";
     private final Account account = new Account(3L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
     private final Account account2 = new Account(4L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, false);
-    private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "first" ,"last","NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
-    private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "first" ,"last","NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
+    private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "first", "last", "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
+    private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "first", "last", "NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
     private final AccountPUT_DTO accountPUTDto = new AccountPUT_DTO(100.0, false);
     private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(85.0, true);
+    private final AccountPUT_DTO accountPUTDto3 = new AccountPUT_DTO(850000000.0, true);
+
+    private final AccountPOST_DTO accountPOSTDto = new AccountPOST_DTO(1L, 0.0, 100.0, AccountType.CURRENT, true);
+    private final AccountPOST_DTO accountPOSTDto2 = new AccountPOST_DTO(3L, 0.0, 100.0, AccountType.CURRENT, true);
 
     private AccountRepository accountRepository;
 
@@ -135,16 +137,6 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
         Assertions.assertEquals(response.getBody(), "Bank account cannot be accessed");
     }
 
-    //    @When("I request to deactivate account with ID")
-//    public void requestDeactivateAccountWithID() {
-//        response = restTemplate.exchange(
-//                ACCOUNT_ENDPOINT + "/3" + accountPUTDto,
-//                HttpMethod.PUT,
-//                new HttpEntity<>(
-//                        null,
-//                        httpHeaders),
-//                String.class);
-//    }
     @When("I request to deactivate account with ID")
     public void requestDeactivateAccountWithID() {
         response = restTemplate.exchange(
@@ -171,6 +163,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
                 String.class
         );
     }
+
     @When("I request to modify absolute limit with ID")
     public void requestModifyAbsoluteLimitAccountWithID() {
         response = restTemplate.exchange(
@@ -180,6 +173,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
                 String.class
         );
     }
+
     @Then("I should modify absolute limit of account with ID")
     public void modifyAbsoluteLimitAccountWithID() {
         account2.setAbsoluteLimit(accountPUTDto2.absoluteLimit());
@@ -187,11 +181,61 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
         Assertions.assertEquals(accountPUTDto2.absoluteLimit(), account2.getAbsoluteLimit());
     }
 
+    @When("I request to modify absolute limit with ID Expecting Error")
+    public void requestModifyAbsoluteLimitAccountWithIDExpectingError() {
+        response = restTemplate.exchange(
+                ACCOUNT_ENDPOINT + "/4",
+                HttpMethod.PUT,
+                new HttpEntity<>(accountPUTDto3, httpHeaders),
+                String.class
+        );
+    }
+
+    @Then("I should not modify absolute limit of account with ID with exception")
+    public void shouldGetAnApiRequestExceptionForAbsoluteLimit() {
+        // Validate if an exception occurred during the request
+        Assertions.assertEquals(response.getBody(), "Absolute limit cannot be higher than account balance");
+    }
+
     @Then("I should activate account with ID")
     public void activateAccountWithID() {
         account2.setAbsoluteLimit(accountPUTDto2.absoluteLimit());
         account2.setIsActive(accountPUTDto2.isActive());
         Assertions.assertEquals(true, account2.getIsActive());
+    }
+
+    @When("I request to open an account")
+    public void openAnAccount() {
+        response = restTemplate.exchange(
+                ACCOUNT_ENDPOINT,
+                HttpMethod.POST,
+                new HttpEntity<>(accountPOSTDto, httpHeaders),
+                String.class
+        );
+    }
+
+    @And("I get an api exception for opening account type that customer already has")
+    public void returnResponseForOpeningAnAccount() {
+        AccountType accountType = accountPOSTDto.accountType();
+        Assertions.assertEquals(response.getBody(), "User already has an account of type " + accountType);
+    }
+
+
+    @When("request to open an account")
+    public void openAccount() {
+        response = restTemplate.exchange(
+                ACCOUNT_ENDPOINT,
+                HttpMethod.POST,
+                new HttpEntity<>(accountPOSTDto2, httpHeaders),
+                String.class
+        );
+    }
+
+    @Then("Employee can open an account")
+    public void ReturnOpenAnAccount() throws JsonProcessingException {
+//        AccountGET_DTO accountGET_dto = objectMapper.readValue(response.getBody(), AccountGET_DTO.class);
+        Assertions.assertEquals(3L,accountPOSTDto2.userId() );
+        Assertions.assertEquals(AccountType.CURRENT,accountPOSTDto2.accountType() );
     }
 
     private String getTheToken(LoginRequestDTO loginDTO) throws JsonProcessingException {
