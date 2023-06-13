@@ -46,10 +46,6 @@ class AccountServiceTest {
     @InjectMocks
     AccountService accountService;
 
-    //    @Autowired
-//    public Boolean isCustomer(Long userId) {
-//        return true;
-//    }
     public
     JwtTokenProvider jwtTokenProvider;
 
@@ -135,8 +131,27 @@ class AccountServiceTest {
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        Account modifiedAccount = accountService.modifyAccount(1L, dto);
         assertEquals(8.0, modifiedAccount.getAbsoluteLimit());
+    }
+    @Test
+    void returnErrorWhenAbsoluteLimitIsHigherThanBalance() throws Exception {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
+
+        Account dummyAccount = new Account(user, "NL21INHO0123400081", 0.0, 10.00, AccountType.CURRENT, true);
+        AccountPUT_DTO dto = new AccountPUT_DTO(800000.0, dummyAccount.getIsActive());
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(dummyAccount));
+        when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
+        when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
+        when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
+
+        ApiRequestException exception = assertThrows(ApiRequestException.class, () -> {
+            Account modifiedAccount = accountService.modifyAccount(1L, dto);
+        });
+
+        assertEquals("Absolute limit cannot be higher than account balance", exception.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
     @Test
@@ -156,7 +171,7 @@ class AccountServiceTest {
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
-        Account modifiedAccount = accountService.disableAccount(1L, dto);
+        Account modifiedAccount = accountService.modifyAccount(1L, dto);
         assertEquals(false, modifiedAccount.getIsActive());
     }
 
@@ -171,11 +186,14 @@ class AccountServiceTest {
 
     @Test
     public void testGetAccountById_ExistingId_ReturnsAccountDTO() {
-        Account dummyAccount = new Account(1L, new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
+        Account dummyAccount = new Account(1L, new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
         // Arrange
         long accountId = 1L;
         when(accountRepository.findById(dummyAccount.getAccountId())).thenReturn(Optional.of(dummyAccount));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         AccountGET_DTO get_dto = accountService.accountGETDto(dummyAccount);
         assertEquals(dummyAccount.getIBAN(), get_dto.IBAN());
         // Set up account object with test data
@@ -245,97 +263,4 @@ class AccountServiceTest {
 //        // ...
 //    }
 
-
-    @Test
-    void userHasAccount() {
-    }
-
-    @Test
-    void disableAccount() {
-    }
-
-    @Test
-    void getAllAccountsByUserId() {
-    }
-
-//    @Test
-//    void getAllAccounts() {
-//        when(accountRepository.findAll()).thenReturn(
-//                Stream.of(
-//                        new AccountGET_DTO(2L, 1L, "NL01INHO0000000001", 1000.00, 0.0, AccountType.SAVINGS, true),
-//                        new AccountGET_DTO(2L, 2L, "NL01INHO0000000002", 1000.00, 0.0,AccountType.SAVINGS, true),
-//                        new AccountGET_DTO(3L, 3L, "NL01INHO0000000003", 1000.00, 0.0,AccountType.SAVINGS, true)).collect(Collectors.toList())));
-//                )
-//        );
-//    }
-
-    @Test
-    void getLoggedInUser() {
-    }
-
-    @Test
-    void getAccountById() {
-    }
-
-    @Test
-    void getIBANByUserFirstName() {
-    }
-
-    @Test
-    void addAccount() {
-    }
-
-    @Test
-    void getAccountByUserId() {
-    }
-
-    @Test
-    void isUserHasNoActiveAccounts() {
-    }
-
-    @Test
-    void createIBAN() {
-    }
-
-    @Test
-    void getTotalBalanceByUserId() {
-    }
-
-    @Test
-    void getAccountByIBAN() {
-    }
-
-    @Test
-    void isIbanPresent() {
-    }
-
-
-    @Test
-    public void testGetAccountById_ExistingAccount() {
-        // Arrange
-        Long accountId = 1L;
-        Account account = new Account(new User(), "NL01INHO0000000001", 0.0, 1000.00, AccountType.SAVINGS, true);
-
-        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
-
-        // Act
-//        AccountGET_DTO result = accountService.getAccountById(accountId);
-
-        // Assert
-//        assertEquals(accountId, result.accountId());
-        // Add additional assertions for other properties of the DTO if needed
-    }
-
-    @Test
-    public void testGetAccountById_NonExistingAccount() {
-        // Arrange
-        long nonExistingAccountId = 100L;
-
-        when(accountRepository.findById(nonExistingAccountId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(EntityNotFoundException.class, () -> {
-            accountService.getAccountById(nonExistingAccountId);
-        });
-    }
 }

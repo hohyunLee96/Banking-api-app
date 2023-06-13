@@ -7,6 +7,7 @@ import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.*;
+import nl.inholland.bankingapi.model.specifications.AccountCustomerSpecifications;
 import nl.inholland.bankingapi.model.specifications.AccountSpecifications;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
@@ -51,8 +52,6 @@ public class AccountService {
         this.request = request;
     }
 
-
-
     public void userHasAccount(User user) {
         user.setHasAccount(true);
         user.setUserType(UserType.ROLE_CUSTOMER);
@@ -60,7 +59,7 @@ public class AccountService {
     }
 
 
-    public Account disableAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
+    public Account modifyAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
         Account account = mapDtoToAccountPut(id, accountPUT_dto);
         account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
         userRepository.save(account.getUser());
@@ -82,9 +81,12 @@ public class AccountService {
     }
 
     protected AccountGET_DTO accountGETDto(Account account) {
+        User user = userRepository.findById(account.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new AccountGET_DTO(
                 account.getAccountId(),
                 account.getUser().getId(),
+                user.getFirstName(),
+                user.getLastName(),
                 account.getIBAN(),
                 account.getBalance(),
                 account.getAbsoluteLimit(),
@@ -94,9 +96,11 @@ public class AccountService {
     }
 
     private AccountIbanGET_DTO accountIbanGET_DTO(Account account) {
+        User user = userRepository.findById(account.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new AccountIbanGET_DTO(
-                account.getUser().getFirstName(),
-                account.getUser().getLastName(),
+                account.getUser().getId(),
+                user.getFirstName(),
+                user.getLastName(),
                 account.getIBAN()
         );
     }
@@ -128,6 +132,16 @@ public class AccountService {
         }
         return accounts;
     }
+    public List<AccountIbanGET_DTO> getIbanWithFirstAndLastNameForCustomer(Integer offset,Integer limit,String firstName, String lastName) {
+        Pageable pageable = PageRequest.of(0, 10);
+        Specification<Account> accountSpecification = AccountCustomerSpecifications.getSpecificationsForCustomer(firstName, lastName);
+
+        List<AccountIbanGET_DTO> accounts = new ArrayList<>();
+        for (Account account : accountRepository.findAll(accountSpecification,pageable)) {
+            accounts.add(accountIbanGET_DTO(account));
+        }
+        return accounts;
+    }
 
     public User getLoggedInUser(HttpServletRequest request) {
         // Get JWT token and the information of the authenticated user
@@ -148,13 +162,13 @@ public class AccountService {
     }
 
 
-    public List<AccountIbanGET_DTO> getIBANByUserFirstName(String firstName) {
-        List<AccountIbanGET_DTO> accounts = new ArrayList<>();
-        for (Account account : accountRepository.getIBANByUserFirstName(firstName)) {
-            accounts.add(accountIbanGET_DTO(account));
-        }
-        return accounts;
-    }
+//    public List<AccountIbanGET_DTO> getIBANByUserFirstName(String firstName) {
+//        List<AccountIbanGET_DTO> accounts = new ArrayList<>();
+//        for (Account account : accountRepository.getIBANByUserFirstName(firstName)) {
+//            accounts.add(accountIbanGET_DTO(account));
+//        }
+//        return accounts;
+//    }
 
     public Account addAccount(AccountPOST_DTO account) {
 //        if (!isCustomer(account.userId())) {
@@ -198,9 +212,6 @@ public class AccountService {
         return true;
     }
 
-    public AccountGET_DTO getAccountByUserId(long id) {
-        return accountRepository.getAccountByUserId(id);
-    }
 
 
     public boolean isUserHasNoActiveAccounts(long id) {

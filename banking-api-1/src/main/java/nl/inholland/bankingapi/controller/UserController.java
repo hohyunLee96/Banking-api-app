@@ -76,13 +76,13 @@ public class UserController {
 
     //PUT Updates an existing user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPUT_DTO dto) {
+    public ResponseEntity updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
         try {
-            return ResponseEntity.ok().body(userService.updateUser(id, dto));
+            return ResponseEntity.status(201).body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
