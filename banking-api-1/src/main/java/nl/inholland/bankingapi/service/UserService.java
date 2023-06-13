@@ -91,8 +91,8 @@ public class UserService {
         user.setUserType(dto.userType());
         user.setHasAccount(false);
         user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
-        user.setDailyLimit(DEFAULTDAILYLIMIT);
-        user.setTransactionLimit(DEFAULTTRANSACTIONLIMIT);
+        user.setDailyLimit(dto.dailyLimit());
+        user.setTransactionLimit(dto.transactionLimit());
         return user;
     }
 
@@ -120,7 +120,9 @@ public class UserService {
                 user.getCity(),
                 user.getPhoneNumber(),
                 user.getUserType(),
-                user.getHasAccount()
+                user.getHasAccount(),
+                user.getDailyLimit(),
+                user.getTransactionLimit()
         );
     }
 
@@ -154,6 +156,8 @@ public class UserService {
             userToUpdate.setEmail(dto.email());
             userToUpdate.setUserType(dto.userType());
             userToUpdate.setHasAccount(dto.hasAccount());
+            userToUpdate.setDailyLimit(dto.dailyLimit());
+            userToUpdate.setTransactionLimit(dto.transactionLimit());
         }
         else
         {
@@ -175,6 +179,8 @@ public class UserService {
             userToUpdate.setEmail(dto.email());
             userToUpdate.setUserType(dto.userType());
             userToUpdate.setHasAccount(dto.hasAccount());
+            userToUpdate.setDailyLimit(dto.dailyLimit());
+            userToUpdate.setTransactionLimit(dto.transactionLimit());
         }
 
         return userRepository.save(userToUpdate);
@@ -261,7 +267,7 @@ public class UserService {
     }
     private void validateUpdateParams(UserPOST_DTO dto, String password, String passwordConfirm){
         //check if any of the required fields are empty
-        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty()) {
+        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty() || dto.dailyLimit() == null || dto.transactionLimit() == null) {
             throw new ApiRequestException("Please fill in all of the form fields.", HttpStatus.BAD_REQUEST);
         }
         //check if the first name, last name and city contain any special characters
@@ -282,6 +288,10 @@ public class UserService {
         //check if the phone number contains any letters or special characters
         if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
             throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
+        }
+
+        if (dto.dailyLimit() < 0 || dto.transactionLimit() < 0){
+            throw new IllegalArgumentException("Daily limit and transaction limit cannot be negative.");
         }
 
         try {
