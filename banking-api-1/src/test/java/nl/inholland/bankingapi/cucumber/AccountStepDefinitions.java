@@ -134,7 +134,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @Then("I should get an api request exception")
     public void shouldGetAnApiRequestException() {
         // Validate if an exception occurred during the request
-        Assertions.assertEquals(response.getBody(), "Bank account cannot be accessed");
+        Assertions.assertEquals("{\"status\":400,\"message\":\"Bank account cannot be accessed\",\"exception\":\"nl.inholland.bankingapi.exception.ApiRequestException\"}",response.getBody());
     }
 
     @When("I request to deactivate account with ID")
@@ -194,7 +194,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @Then("I should not modify absolute limit of account with ID with exception")
     public void shouldGetAnApiRequestExceptionForAbsoluteLimit() {
         // Validate if an exception occurred during the request
-        Assertions.assertEquals(response.getBody(), "Absolute limit cannot be higher than account balance");
+        Assertions.assertEquals("{\"status\":400,\"message\":\"Absolute limit cannot be higher than account balance\",\"exception\":\"nl.inholland.bankingapi.exception.ApiRequestException\"}",response.getBody());
     }
 
     @Then("I should activate account with ID")
@@ -217,7 +217,7 @@ public class AccountStepDefinitions extends BaseStepDefinitions {
     @And("I get an api exception for opening account type that customer already has")
     public void returnResponseForOpeningAnAccount() {
         AccountType accountType = accountPOSTDto.accountType();
-        Assertions.assertEquals(response.getBody(), "User already has an account of type " + accountType);
+        Assertions.assertEquals("{\"status\":400,\"message\":\"User already has an account of type " + accountType + "\",\"exception\":\"nl.inholland.bankingapi.exception.ApiRequestException\"}",response.getBody());
     }
 
 
