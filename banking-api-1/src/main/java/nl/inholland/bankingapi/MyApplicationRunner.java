@@ -54,11 +54,11 @@ public class MyApplicationRunner implements ApplicationRunner {
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true);
 
         User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 50.00, 70.00, true);
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 5000.00, 7000.00, true);
 
         //Load Accounts
         Account account1 = new Account(customer, "NL21INHO0123400081", 500.00, 0.00, AccountType.CURRENT, true);
-        Account closedAccount= new Account(customer, "NL21INHO0123400085", 90000.00, 0.00, AccountType.CURRENT, false);
+        Account closedAccount= new Account(customer, "NL21INHO0123400085", 90000.00, 0.00, AccountType.SAVINGS, false);
         Account savings = new Account(customer, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account account2 = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
         Account savings2 = new Account(employee, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
