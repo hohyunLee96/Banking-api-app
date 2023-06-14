@@ -50,7 +50,13 @@ public class AccountController {
             @RequestParam(required = false) Long user) {
         return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-
+    @GetMapping(params = "totalBalance")
+    public ResponseEntity<Double> totalBalance(@RequestParam("totalBalance") Long id) {
+        Double totalBalance = accountService.getTotalBalanceByUserId(id);
+        // Use the totalBalance parameter in your logic
+        // For example, you can perform additional operations or validations
+        return ResponseEntity.ok(totalBalance);
+    }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/search")
