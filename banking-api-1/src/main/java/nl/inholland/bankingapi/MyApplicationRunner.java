@@ -61,9 +61,9 @@ public class MyApplicationRunner implements ApplicationRunner {
         Account closedAccount= new Account(customer, "NL21INHO0123400085", 90000.00, 0.00, AccountType.CURRENT, false);
         Account savings = new Account(customer, "NL21INHO0123400083", 9000.00, 0.00, AccountType.SAVINGS, true);
         Account account2 = new Account(employee, "NL21INHO0123400082", 9000.00, 0.00, AccountType.CURRENT, true);
-        Account savings2 = new Account(employee, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
+        Account savings2 = new Account(employee2, "NL21INHO0123400084", 9000.00, 0.00, AccountType.SAVINGS, true);
 
-        Account bank = new Account(null, "NL01INHO0000000001", 9000.00, 0.00, AccountType.BANK, true);
+        Account bank = new Account(employee, "NL01INHO0000000001", 9000.00, 0.00, AccountType.BANK, true);
         Account savings3 = new Account(employee, "NL01INHO0000000002", 9000.00, 0.00, AccountType.SAVINGS, true);
 
         Transaction transaction = new Transaction(account1, account2, 100.00, LocalDateTime.now(), TransactionType.TRANSFER, customer);
