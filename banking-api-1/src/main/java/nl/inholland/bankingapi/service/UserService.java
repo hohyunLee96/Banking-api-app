@@ -48,7 +48,6 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.userSpecifications = userSpecifications;
-
     }
 
     public User getUserById(Long id) {
