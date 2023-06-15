@@ -127,7 +127,7 @@ public class TransactionService {
         }
     }
 
-    public Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
+    private Transaction mapTransactionToPostDTO(TransactionPOST_DTO postDto) {
         Transaction transaction = new Transaction();
         transaction.setAmount(postDto.amount());
         transaction.setTimestamp(LocalDateTime.now());
@@ -229,7 +229,7 @@ public class TransactionService {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
 
-    public Double getSumOfAllTransactionsFromTodayByAccount(HttpServletRequest request) {
+    private Double getSumOfAllTransactionsFromTodayByAccount(HttpServletRequest request) {
         User user = userService.getLoggedInUser(request);
         List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
         double totalAmount = 0.0;
