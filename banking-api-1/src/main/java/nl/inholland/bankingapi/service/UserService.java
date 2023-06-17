@@ -23,13 +23,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.lang.Long.parseLong;
+import static javax.print.attribute.Size2DSyntax.MM;
 
 @Service
 public class UserService {
@@ -48,7 +48,6 @@ public class UserService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
         this.userSpecifications = userSpecifications;
-
     }
 
     public User getUserById(Long id) {
@@ -91,8 +90,8 @@ public class UserService {
         user.setUserType(dto.userType());
         user.setHasAccount(false);
         user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
-        user.setDailyLimit(dto.dailyLimit());
-        user.setTransactionLimit(dto.transactionLimit());
+        user.setDailyLimit(DEFAULTDAILYLIMIT);
+        user.setTransactionLimit(DEFAULTTRANSACTIONLIMIT);
         return user;
     }
 
@@ -236,9 +235,11 @@ public class UserService {
             throw new ApiRequestException("User with the same email address already exists", HttpStatus.CONFLICT);
         }
         //check if any of the required fields are empty
-        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty() || dto.dailyLimit() == null || dto.transactionLimit() == null) {
+        if (dto.firstName().isEmpty() || dto.lastName().isEmpty() || dto.email().isEmpty() || dto.city().isEmpty() || dto.phoneNumber().isEmpty() || dto.address().isEmpty() || dto.postalCode().isEmpty() || dto.birthDate().isEmpty()) {
             throw new ApiRequestException("Please fill in all of the form fields.", HttpStatus.BAD_REQUEST);
         }
+        //check if the birthdate is valid
+        isBirthdateValid(dto);
         //check if the first name, last name and city contain any special characters
         Pattern pattern = Pattern.compile("[^a-zA-Z ]");
         if (pattern.matcher(dto.firstName()).find()){
@@ -258,14 +259,48 @@ public class UserService {
         if (dto.phoneNumber().matches(".*[a-zA-Z].*") || dto.phoneNumber().matches(".*[!@#$%^&*].*")){
             throw new IllegalArgumentException("Phone number cannot contain any letters or special characters.");
         }
-        if (dto.dailyLimit() <= 0 || dto.transactionLimit() <= 0){
-            throw new IllegalArgumentException("Daily limit and transaction limit cannot be negative or zero.");
-        }
         try {
             isPasswordValid(dto.password(), dto.passwordConfirm());
         } catch (IllegalArgumentException e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+    private boolean isBirthdateValid(UserPOST_DTO dto){
+
+        // Get the current date
+        Date today = new Date();
+
+        // Convert dto.birthDate() string to a Date object called birthDate
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // Adjust the input date format as per your DTO
+        Date birthDate = null;
+        try {
+            birthDate = inputDateFormat.parse(dto.birthDate());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Check if the birthDate is in the future
+        if (birthDate.after(today)) {
+            throw new ApiRequestException("Birthdate cannot be in the future.", HttpStatus.BAD_REQUEST);
+        }
+        //check if the user is at least 18 years old
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(birthDate);
+        cal.add(Calendar.YEAR, 18);
+        Date dateOfBirthPlus18 = cal.getTime();
+        if (dateOfBirthPlus18.after(today)) {
+            throw new ApiRequestException("User must be at least 18 years old.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Check if the date is further than 150 years ago
+        cal.setTime(birthDate);
+        cal.add(Calendar.YEAR, 150);
+        Date dateOfBirthPlus150 = cal.getTime();
+        if (dateOfBirthPlus150.before(today)) {
+            throw new ApiRequestException("Birthdate cannot be further than 150 years ago.", HttpStatus.BAD_REQUEST);
+        }
+
+        return true;
     }
     private void validateUpdateParams(UserPOST_DTO dto, String password, String passwordConfirm){
         //check if any of the required fields are empty
@@ -301,5 +336,6 @@ public class UserService {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
 }
 
