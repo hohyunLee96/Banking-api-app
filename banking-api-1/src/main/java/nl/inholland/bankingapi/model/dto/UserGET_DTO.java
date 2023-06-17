@@ -8,6 +8,6 @@ import java.util.List;
 public record UserGET_DTO(long userId, String email, String firstName,
                           String lastName, String birthDate, String postalCode,
                           String address, String city, String phoneNumber,
-                          UserType userType, Boolean hasAccount) {
+                          UserType userType, Boolean hasAccount, Double dailyLimit, Double transactionLimit) {
 
 }
