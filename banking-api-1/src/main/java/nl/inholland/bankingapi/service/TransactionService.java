@@ -80,7 +80,7 @@ public class TransactionService {
             //if the transaction is performed by the logged-in user, add it to the userTransactions list
             if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
                 userTransactions.add(convertTransactionResponseToDTO(transaction));
-                getSumOfAllTransactionsFromTodayByAccount(request);
+                getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request);
             }
         }
 
@@ -107,6 +107,7 @@ public class TransactionService {
         } catch (DataIntegrityViolationException e) {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
         }
+
     }
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
@@ -175,10 +176,10 @@ public class TransactionService {
         if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
         }
-        if (senderUser.getTransactionLimit() < transaction.amount()) {
+        if (senderUser.getTransactionLimit() < transaction.amount()&&transaction.type()!=TransactionType.DEPOSIT) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByAccount(request) + transaction.amount() > senderUser.getDailyLimit())) {
+        if ((getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request) + transaction.amount() > senderUser.getDailyLimit()) && transaction.type()!=TransactionType.DEPOSIT) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
@@ -229,12 +230,14 @@ public class TransactionService {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
 
-    private Double getSumOfAllTransactionsFromTodayByAccount(HttpServletRequest request) {
+    private Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
         User user = userService.getLoggedInUser(request);
         List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
         double totalAmount = 0.0;
         for (Transaction transaction : transactions) {
-            totalAmount += transaction.getAmount();
+            if(transaction.getType() != TransactionType.DEPOSIT){
+                totalAmount += transaction.getAmount();
+            }
         }
         return totalAmount;
     }
