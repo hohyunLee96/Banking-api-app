@@ -28,7 +28,7 @@ public class Account {
 
     @Column(unique = true)
     private String IBAN;
-    private Double balance;
+    private Double balance; // disable setter for balance directly
     private Double absoluteLimit;
     private AccountType accountType;
     private Boolean isActive;

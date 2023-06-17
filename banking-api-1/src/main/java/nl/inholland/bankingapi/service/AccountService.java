@@ -52,11 +52,7 @@ public class AccountService {
         this.request = request;
     }
 
-    public void userHasAccount(User user) {
-        user.setHasAccount(true);
-        user.setUserType(UserType.ROLE_CUSTOMER);
-        userRepository.save(user);
-    }
+
 
 
     public Account modifyAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
@@ -196,9 +192,14 @@ public class AccountService {
         account.setAccountType(dto.accountType());
         account.setIsActive(true);
         if (!account.getUser().getHasAccount()) {
-            userHasAccount(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+            userHasAccount(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found"))); //change
         }
         return account;
+    }
+    public void userHasAccount(User user) {
+        user.setHasAccount(true);
+        user.setUserType(UserType.ROLE_CUSTOMER);
+        userRepository.save(user);
     }
 
     protected boolean hasAccountOfType(Long userId, AccountType accountType) {
