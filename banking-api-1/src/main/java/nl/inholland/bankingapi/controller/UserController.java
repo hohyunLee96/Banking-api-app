@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
@@ -53,7 +54,7 @@ public class UserController {
             return ResponseEntity.status(201).body(
                     userService.registerUser(dto));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(e.getMessage());
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -64,7 +65,7 @@ public class UserController {
             userService.deleteUserById(id);
             return ResponseEntity.status(204).body(null);
         } catch (Exception e) {
-            throw e;
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -80,9 +81,9 @@ public class UserController {
         try {
             return ResponseEntity.status(201).body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            throw new ApiRequestException(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            throw new ApiRequestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

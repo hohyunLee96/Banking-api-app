@@ -69,8 +69,8 @@ Feature: Getting all transactions
     Then I get a status code of 400
     And I get an error message of "You cannot transfer money to the same account"
 
-  Scenario: Customer tries to deposit to a someone else's savings account
+  Scenario: Customer has exceeded transaction limit
     Given I login as a customer
-    And I request to deposit to savings account with Iban "NL21INHO0123400084" amount 200.0
+    And I request to deposit to savings account with Iban "NL01INHO0000000002" amount 200.0
     Then I get a status code of 400
-    And I get an error message of "Savings account does not belong to the user performing the transaction"
+    And I get an error message of "You have exceeded your transaction limit"

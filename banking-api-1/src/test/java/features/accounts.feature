@@ -2,7 +2,7 @@ Feature: Getting all accounts
 
   Scenario: Getting all accounts
     Given employee logs in
-    When I request to get all accounts
+    When I request to get all actcounts
     Then I should get all accounts
     Then getting a status code of 200
 

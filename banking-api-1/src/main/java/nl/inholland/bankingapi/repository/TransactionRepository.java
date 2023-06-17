@@ -14,11 +14,8 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    List<Transaction> findAllByFromIban(Account fromIban);
 
     List<Transaction> findAll(Specification<Transaction> specification, Pageable pageable);
-
-    List<Transaction> findAllTransactionsByFromIbanAndTimestamp(Account fromIban, LocalDateTime fromTimestamp);
 
     List<Transaction> findAllByPerformingUserAndTimestampBetween(User user, LocalDateTime start, LocalDateTime end);
 }
