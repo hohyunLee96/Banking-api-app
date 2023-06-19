@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.jwt;
 
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,16 +15,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
     @Value("${application.token.validity}")
     private long validityInMicroseconds;
     private  final UserDetailsServiceImpl userDetailsServiceImpl;
     private final JwtKeyProvider jwtKeyProvider;
-
-    public JwtTokenProvider(UserDetailsServiceImpl userDetailsServiceImpl, JwtKeyProvider jwtKeyProvider) {
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
-        this.jwtKeyProvider = jwtKeyProvider;
-    }
 
     // takes username, roles, and validity period as inputs and creates a token
     // with necessary claims and expiration time and signs it with the private key

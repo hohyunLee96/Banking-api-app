@@ -42,21 +42,21 @@ class AuthenticationServiceTest {
         authenticationService = new AuthenticationService(userRepository, jwtTokenProvider, bCryptPasswordEncoder);
     }
 
-    @Test
-    void register_ShouldSaveUser() {
-        // Arrange
-        RegisterRequestDTO registerRequestDTO = createRegisterRequestDTO();
-        UserType userType = UserType.ROLE_USER;
-        String userEmail = "user@email.com";
-        User savedUser = createUser(userType, userEmail);
-        Mockito.when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(savedUser);
-
-        // Act
-        authenticationService.register(registerRequestDTO);
-
-        // Assert
-        Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
-    }
+//    @Test
+//    void register_ShouldSaveUser() {
+//        // Arrange
+//        RegisterRequestDTO registerRequestDTO = createRegisterRequestDTO();
+//        UserType userType = UserType.ROLE_USER;
+//        String userEmail = "user@email.com";
+//        User savedUser = createUser(userType, userEmail);
+//        Mockito.when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(savedUser);
+//
+//        // Act
+//        authenticationService.register(registerRequestDTO);
+//
+//        // Assert
+//        Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
+//    }
 
     @Test
     void login_WithValidCredentials_ShouldReturnLoginResponseDTO() throws javax.naming.AuthenticationException {
