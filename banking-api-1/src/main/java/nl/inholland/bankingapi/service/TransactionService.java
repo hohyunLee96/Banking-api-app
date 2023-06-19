@@ -158,16 +158,17 @@ public class TransactionService {
         if (transaction.amount() <= 0) {
             throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
-        if (fromAccount.getBalance() < transaction.amount()) {
-            throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
-        }
+//        if (fromAccount.getBalance() < transaction.amount()
+//                && transaction.type() != TransactionType.WITHDRAWAL) {
+//            throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
+//        }
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
         if (accountIsSavingsAccount(fromAccount) && !userIsOwnerOfAccount(senderUser, fromAccount) && transaction.type() == TransactionType.WITHDRAWAL) {
             throw new ApiRequestException("You do not own the savings account you are trying to withdraw from", HttpStatus.FORBIDDEN);
         }
-        if(accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(senderUser, toAccount) && transaction.type() == TransactionType.TRANSFER) {
+        if (accountIsSavingsAccount(toAccount) && !userIsOwnerOfAccount(senderUser, toAccount) && transaction.type() == TransactionType.TRANSFER) {
             throw new ApiRequestException("You do not own the savings account you are trying to transfer to", HttpStatus.FORBIDDEN);
         }
         if (!userIsOwnerOfAccount(senderUser, fromAccount) && (!userIsEmployee(senderUser)) && (!transactionIsWithdrawalOrDeposit(transaction))) {
@@ -176,10 +177,17 @@ public class TransactionService {
         if (!userIsOwnerOfAccount(receiverUser, toAccount) && (!userIsEmployee(senderUser)) && !transactionIsWithdrawalOrDeposit(transaction)) {
             throw new ApiRequestException("You are not the owner of the account you are trying to transfer money to", HttpStatus.FORBIDDEN);
         }
-        if (senderUser.getTransactionLimit() < transaction.amount()&&transaction.type()!=TransactionType.DEPOSIT) {
+        if (senderUser.getTransactionLimit() < transaction.amount()
+                && transaction.type() != TransactionType.DEPOSIT
+                && !accountIsSavingsAccount(toAccount)
+                && !userIsOwnerOfAccount(senderUser, toAccount)
+        ) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request) + transaction.amount() > senderUser.getDailyLimit()) && transaction.type()!=TransactionType.DEPOSIT) {
+        if ((getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request) + transaction.amount() > senderUser.getDailyLimit())
+                && transaction.type() != TransactionType.DEPOSIT
+                && !accountIsSavingsAccount(toAccount)
+                && !userIsOwnerOfAccount(senderUser, toAccount)) {
             throw new ApiRequestException("You have exceeded your daily limit", HttpStatus.BAD_REQUEST);
         }
         if (!fromAccount.getIsActive()) {
@@ -188,8 +196,8 @@ public class TransactionService {
         if (!toAccount.getIsActive()) {
             throw new ApiRequestException("Receiving account cannot be a CLOSED account.", HttpStatus.BAD_REQUEST);
         }
-        if (((fromAccount.getBalance()) - transaction.amount()) < toAccount.getAbsoluteLimit())
-            throw new ApiRequestException("You can't have that little money in your account!", HttpStatus.BAD_REQUEST);
+        if ((fromAccount.getBalance() - transaction.amount()) < fromAccount.getAbsoluteLimit())
+            throw new ApiRequestException("You have exceeded the absolute limit", HttpStatus.BAD_REQUEST);
     }
 
     public Transaction withdraw(TransactionWithdrawDTO dto) {
@@ -230,12 +238,14 @@ public class TransactionService {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
 
-    private Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
+    public Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
         User user = userService.getLoggedInUser(request);
         List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
         double totalAmount = 0.0;
         for (Transaction transaction : transactions) {
-            if(transaction.getType() != TransactionType.DEPOSIT){
+            if (transaction.getType() != TransactionType.DEPOSIT
+                    && transaction.getToIban().getAccountType() != AccountType.SAVINGS
+            ) {
                 totalAmount += transaction.getAmount();
             }
         }

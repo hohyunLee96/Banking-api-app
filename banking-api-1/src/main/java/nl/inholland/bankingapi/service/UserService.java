@@ -10,7 +10,6 @@ import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
-import nl.inholland.bankingapi.model.dto.UserPUT_DTO;
 import nl.inholland.bankingapi.model.specifications.UserSpecifications;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -29,7 +28,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static java.lang.Long.parseLong;
-import static javax.print.attribute.Size2DSyntax.MM;
 
 @Service
 public class UserService {
@@ -38,15 +36,17 @@ public class UserService {
     private final ModelMapper modelMapper;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtTokenFilter jwtTokenFilter;
+    private final HttpServletRequest request;
     private final UserSpecifications userSpecifications;
     private final  Double DEFAULTDAILYLIMIT = 100.0;
     private final Double DEFAULTTRANSACTIONLIMIT = 500.0;
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, UserSpecifications userSpecifications) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, HttpServletRequest request, UserSpecifications userSpecifications) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.modelMapper = modelMapper;
         this.jwtTokenProvider = jwtTokenProvider;
         this.jwtTokenFilter = jwtTokenFilter;
+        this.request = request;
         this.userSpecifications = userSpecifications;
     }
 

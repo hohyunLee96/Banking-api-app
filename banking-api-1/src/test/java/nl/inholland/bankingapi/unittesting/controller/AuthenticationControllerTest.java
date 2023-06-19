@@ -122,6 +122,4 @@ class AuthenticationControllerTest {
 
         verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
     }
-
-
 }
