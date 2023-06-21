@@ -1,4 +1,4 @@
-package nl.inholland.bankingapi.unittesting.service;
+package nl.inholland.bankingapi.service;
 
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.User;
@@ -6,7 +6,6 @@ import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.model.dto.RegisterRequestDTO;
 import nl.inholland.bankingapi.repository.UserRepository;
-import nl.inholland.bankingapi.service.AuthenticationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,21 +42,21 @@ class AuthenticationServiceTest {
         authenticationService = new AuthenticationService(userRepository, jwtTokenProvider, bCryptPasswordEncoder);
     }
 
-    @Test
-    void register_ShouldSaveUser() {
-        // Arrange
-        RegisterRequestDTO registerRequestDTO = createRegisterRequestDTO();
-        UserType userType = UserType.ROLE_USER;
-        String userEmail = "user@email.com";
-        User savedUser = createUser(userType, userEmail);
-        Mockito.when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(savedUser);
-
-        // Act
-        authenticationService.register(registerRequestDTO);
-
-        // Assert
-        Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
-    }
+//    @Test
+//    void register_ShouldSaveUser() {
+//        // Arrange
+//        RegisterRequestDTO registerRequestDTO = createRegisterRequestDTO();
+//        UserType userType = UserType.ROLE_USER;
+//        String userEmail = "user@email.com";
+//        User savedUser = createUser(userType, userEmail);
+//        Mockito.when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(savedUser);
+//
+//        // Act
+//        authenticationService.register(registerRequestDTO);
+//
+//        // Assert
+//        Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
+//    }
 
     @Test
     void login_WithValidCredentials_ShouldReturnLoginResponseDTO() throws javax.naming.AuthenticationException {

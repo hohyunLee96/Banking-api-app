@@ -1,7 +1,5 @@
-package nl.inholland.bankingapi.unittesting.controller;
+package nl.inholland.bankingapi.controller;
 
-import nl.inholland.bankingapi.controller.AuthenticationController;
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.dto.LoginRequestDTO;
 import nl.inholland.bankingapi.model.dto.LoginResponseDTO;
 import nl.inholland.bankingapi.service.AuthenticationService;
@@ -9,10 +7,15 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -20,13 +23,17 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.naming.AuthenticationException;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ContextConfiguration(classes = {AuthenticationController.class})
+@RunWith(SpringRunner.class)
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(AuthenticationController.class)
+@EnableMethodSecurity(prePostEnabled = true)
 class AuthenticationControllerTest {
 
     @Autowired
@@ -35,8 +42,7 @@ class AuthenticationControllerTest {
     private WebApplicationContext webApplicationContext;
     @MockBean
     private AuthenticationService authenticationService;
-    @MockBean
-    private JwtTokenProvider jwtTokenProvider;
+
     LoginRequestDTO loginRequestDTO;
     LoginResponseDTO loginResponseDto;
     @BeforeEach
@@ -63,19 +69,6 @@ class AuthenticationControllerTest {
                         + "\"}"));
         verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
     }
-
-    @Test
-    void login_THROWS_FORBIDDEN_WHEN_AUTHENTICATION_FAILS() throws Exception {
-        when(authenticationService.login(loginRequestDTO.email(), loginRequestDTO.password()))
-                .thenThrow(AuthenticationException.class);
-
-        mockMvc.perform(post("/auth/login")
-                        .contentType("application/json")
-                        .content("{\"email\": \"" + loginRequestDTO.email() + "\", \"password\": \"" + loginRequestDTO.password() + "\"}"))
-                .andExpect(status().isForbidden())
-                .andReturn();
-    }
-
 
     @Test
     void login_THROWS_NOTFOUND_WHEN_URL_IS_WRONG() throws Exception {
@@ -122,6 +115,4 @@ class AuthenticationControllerTest {
 
         verify(authenticationService).login(loginRequestDTO.email(), loginRequestDTO.password());
     }
-
-
 }

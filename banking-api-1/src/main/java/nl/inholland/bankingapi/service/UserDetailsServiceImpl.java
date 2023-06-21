@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+//responsible for loading user details and constructing the UserDetails object required by Spring Security
+//UserDetailsService interface is a part of Spring Security and provides a method for loading user-specific data
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
@@ -15,8 +17,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    //user details are loaded from the repository based on the provided email
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        //If a user with the given email is found, it will be wrapped in an Optional<User> object and returned
         final User user = userRepository.findUserByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException("User '" + email + "' not found"));
 

@@ -1,6 +1,7 @@
 package nl.inholland.bankingapi.jwt;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -15,7 +16,7 @@ import java.security.cert.CertificateException;
 
 import java.io.IOException;
 
-
+@Data
 @Component
 public class JwtKeyProvider {
 
@@ -42,27 +43,4 @@ public class JwtKeyProvider {
         return privateKey;
     }
 
-    public String getKeystore() {
-        return keystore;
-    }
-
-    public void setKeystore(String keystore) {
-        this.keystore = keystore;
-    }
-
-    public String getKeystorePassword() {
-        return keystorePassword;
-    }
-
-    public void setKeystorePassword(String keystorePassword) {
-        this.keystorePassword = keystorePassword;
-    }
-
-    public String getKeyAlias() {
-        return keyAlias;
-    }
-
-    public void setKeyAlias(String keyAlias) {
-        this.keyAlias = keyAlias;
-    }
 }
