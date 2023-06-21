@@ -73,9 +73,7 @@ public class AccountController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
-
             return ResponseEntity.ok().body(accountService.getAccountById(id));
-
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")

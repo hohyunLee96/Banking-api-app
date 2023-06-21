@@ -67,10 +67,12 @@ public class AccountService {
         if (account.getBalance() < dto.absoluteLimit()) {
             throw new ApiRequestException("Absolute limit cannot be higher than account balance", HttpStatus.BAD_REQUEST);
         }
-        if (dto.isActive() != null) {
-            account.setIsActive(dto.isActive());
+
+        if(dto.isActive() == null){
+            throw new ApiRequestException("please fill out active status to modify account details", HttpStatus.BAD_REQUEST);
         }
 
+        account.setIsActive(dto.isActive());
         account.setAbsoluteLimit(dto.absoluteLimit());
 
         return account;
@@ -180,19 +182,20 @@ public class AccountService {
     }
 
     protected Account mapDtoToAccount(AccountPOST_DTO dto) {
+        User user = userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         Account account = new Account();
         String iban = createIBAN();
         while (isIbanPresent(iban)) {
             iban = createIBAN();
         }
-        account.setUser(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found")));
+        account.setUser(user);
         account.setIBAN(iban);
         account.setBalance(dto.balance());
         account.setAbsoluteLimit(dto.absoluteLimit());
         account.setAccountType(dto.accountType());
         account.setIsActive(true);
         if (!account.getUser().getHasAccount()) {
-            userHasAccount(userRepository.findById(dto.userId()).orElseThrow(() -> new EntityNotFoundException("User not found"))); //change
+            userHasAccount(user); //change
         }
         return account;
     }
