@@ -59,7 +59,7 @@ class AccountControllerTest {
 
     @Test
     void getAllAccounts() throws Exception {
-        when(accountService.getAllAccounts(null, null, null, null, null, null, null, null))
+        when(accountService.getAllAccounts(0, 10, null, null, null, null,null,null))
                 .thenReturn(List.of(
                         new AccountGET_DTO(1, 1,"first" ,"last","NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
                 ));

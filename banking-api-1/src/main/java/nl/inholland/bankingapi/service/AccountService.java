@@ -51,10 +51,6 @@ public class AccountService {
         this.jwtTokenFilter = jwtTokenFilter;
         this.request = request;
     }
-
-
-
-
     public Account modifyAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
         Account account = mapDtoToAccountPut(id, accountPUT_dto);
         account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
@@ -111,8 +107,8 @@ public class AccountService {
         return accountsOwnedBySpecificUser;
     }
 
-    public List<AccountGET_DTO> getAllAccounts(Integer offset, Integer limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
-        Pageable pageable = PageRequest.of(0, 10);
+    public List<AccountGET_DTO> getAllAccounts(int page,int limit,String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
+        Pageable pageable = PageRequest.of( page, limit);
         Specification<Account> accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
 
         List<AccountGET_DTO> userAccounts = new ArrayList<>();
@@ -130,7 +126,7 @@ public class AccountService {
         }
         return accounts;
     }
-    public List<AccountIbanGET_DTO> getIbanWithFirstAndLastNameForCustomer(Integer offset,Integer limit,String firstName, String lastName) {
+    public List<AccountIbanGET_DTO> getIbanWithFirstAndLastNameForCustomer(String firstName, String lastName) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<Account> accountSpecification = AccountCustomerSpecifications.getSpecificationsForCustomer(firstName, lastName);
 
@@ -161,19 +157,7 @@ public class AccountService {
         return accountGETDto(account);
     }
 
-
-//    public List<AccountIbanGET_DTO> getIBANByUserFirstName(String firstName) {
-//        List<AccountIbanGET_DTO> accounts = new ArrayList<>();
-//        for (Account account : accountRepository.getIBANByUserFirstName(firstName)) {
-//            accounts.add(accountIbanGET_DTO(account));
-//        }
-//        return accounts;
-//    }
-
     public Account addAccount(AccountPOST_DTO account) {
-//        if (!isCustomer(account.userId())) {
-//            throw new ApiRequestException("Employee type cannot own accounts", HttpStatus.BAD_REQUEST);
-//        }
         if (hasAccountOfType(account.userId(), account.accountType())) {
             throw new ApiRequestException("User already has an account of type " + account.accountType(),
                     HttpStatus.BAD_REQUEST);
@@ -190,7 +174,7 @@ public class AccountService {
         }
         account.setUser(user);
         account.setIBAN(iban);
-        account.setBalance(dto.balance());
+        account.addBalanceWithNewAccount();
         account.setAbsoluteLimit(dto.absoluteLimit());
         account.setAccountType(dto.accountType());
         account.setIsActive(true);
@@ -217,8 +201,6 @@ public class AccountService {
         }
         return true;
     }
-
-
 
     public boolean isUserHasNoActiveAccounts(long id) {
         List<Account> accounts = accountRepository.getAllAccountsByUserId(id);

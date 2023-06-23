@@ -28,5 +28,5 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     void deleteUserById(long id);
 
-    List<User> findAllByHasAccount(boolean hasAccount);
+//    List<User> findAllByHasAccount(boolean hasAccount);
 }

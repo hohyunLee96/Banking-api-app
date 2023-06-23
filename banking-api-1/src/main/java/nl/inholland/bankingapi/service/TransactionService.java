@@ -112,8 +112,8 @@ public class TransactionService {
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
         //subtract money from the sender and save
-        senderAccount.setBalance(senderAccount.getBalance() - amount);
-        receiverAccount.setBalance(receiverAccount.getBalance() + amount);
+        senderAccount.decreaseBalance(amount);
+        receiverAccount.increaseBalance(amount);
         // Save the updated receiver account
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);

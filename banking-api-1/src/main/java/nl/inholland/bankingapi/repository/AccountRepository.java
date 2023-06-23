@@ -15,7 +15,6 @@ import java.util.List;
 
 @Repository
 public interface AccountRepository extends CrudRepository<Account,Long> {
-    List<Account> getIBANByUserFirstName(String firstname);
 
     List<Account> getAllAccountsByUserId(long id);
 
