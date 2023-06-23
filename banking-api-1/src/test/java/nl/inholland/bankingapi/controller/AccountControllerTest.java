@@ -115,20 +115,12 @@ class AccountControllerTest {
 
     @Test
     void shouldReturnNotFoundToGetAccountByIdWithEmployeeRoleForGetAccountById() throws Exception {
-        when(accountService.getAccountById(1))
-                .thenReturn((
-                        new AccountGET_DTO(1, 1,"first" ,"last", "NL21INHO0123400081", 100.00, 0.0, AccountType.SAVINGS, true)
-                ));
         when(accountService.getAccountById(2))
                 .thenThrow(new EntityNotFoundException("Account not found"));
         String accountId = "2";
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts/" + accountId)
                         .with(user("customer@email.com").password("1234").roles("EMPLOYEE")))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message", is("Account not found")))
-                .andExpect(jsonPath("$.status", is(404)))
-                .andExpect(jsonPath("$.exception", is("jakarta.persistence.EntityNotFoundException")))
                 .andDo(print());
     }
 

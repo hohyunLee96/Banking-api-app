@@ -37,7 +37,6 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    //    @PreAuthorize("hasRole('EMPLOYEE')")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
