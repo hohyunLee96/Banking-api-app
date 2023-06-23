@@ -10,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -22,8 +23,9 @@ public interface AccountRepository extends CrudRepository<Account,Long> {
 
     Account findAccountByIBAN(String IBAN);
 
-    @Query("SELECT SUM(account.balance) AS totalBalance FROM Account account WHERE account.user.id = :user")
-    Double getTotalBalanceByUserId(@Param("user") long id);
+    @Query("SELECT SUM(account.balance) AS totalBalance FROM Account account WHERE account.user.id = :userId")
+    Double getTotalBalanceByUserId(long userId);
+
 
     boolean existsByUserIdAndAccountType(Long userId, AccountType accountType);
 
