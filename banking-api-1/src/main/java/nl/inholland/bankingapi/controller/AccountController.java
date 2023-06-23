@@ -41,33 +41,31 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
-            @RequestParam(required = false) Integer offset,
-            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false,defaultValue = "0") Integer page,
+            @RequestParam(required = false,defaultValue = "10") Integer limit,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) AccountType accountType,
             @RequestParam(required = false) Double absoluteLimit,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) Long user) {
-        return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
+        return ResponseEntity.ok(accountService.getAllAccounts(page,limit,firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
     @GetMapping(params = "totalBalance")
     public ResponseEntity<Double> totalBalance(@RequestParam("totalBalance") Long id) {
         Double totalBalance = accountService.getTotalBalanceByUserId(id);
-        // Use the totalBalance parameter in your logic
-        // For example, you can perform additional operations or validations
         return ResponseEntity.ok(totalBalance);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/search")
     public ResponseEntity<Object>getIbanWithFirstAndLastNameForCustomer(
-            @RequestParam(required = false) Integer offset,
-            @RequestParam(required = false) Integer limit,
+//            @RequestParam(required = false) Integer offset,
+//            @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName
     ){
-        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(offset, limit, firstName, lastName));
+        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(firstName, lastName));
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")

@@ -20,16 +20,18 @@ import java.util.List;
 
 public class AccountStepDefinitions extends BaseStepDefinitions {
     private static final String ACCOUNT_ENDPOINT = "/accounts";
-    private final Account account = new Account(3L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
-    private final Account account2 = new Account(4L, new User(), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, false);
+    private final Account account = new Account(3L, new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
+            "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
+    private final Account account2 = new Account(4L, new User("employee2@email.com", "1234", "User", "User2", "11-11-2000",
+            "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true), "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, false);
     private final AccountGET_DTO accountGETDto = new AccountGET_DTO(1L, 1L, "first", "last", "NL21INHO0123400082", 100.0, 100.0, AccountType.CURRENT, true);
     private final AccountGET_DTO bank = new AccountGET_DTO(2L, 1L, "first", "last", "NL21INHO0123400082", 100.0, 100.0, AccountType.BANK, true);
     private final AccountPUT_DTO accountPUTDto = new AccountPUT_DTO(100.0, false);
     private final AccountPUT_DTO accountPUTDto2 = new AccountPUT_DTO(85.0, true);
     private final AccountPUT_DTO accountPUTDto3 = new AccountPUT_DTO(850000000.0, true);
 
-    private final AccountPOST_DTO accountPOSTDto = new AccountPOST_DTO(1L, 0.0, 100.0, AccountType.CURRENT, true);
-    private final AccountPOST_DTO accountPOSTDto2 = new AccountPOST_DTO(3L, 0.0, 100.0, AccountType.CURRENT, true);
+    private final AccountPOST_DTO accountPOSTDto = new AccountPOST_DTO(1L, 0.0,  AccountType.CURRENT, true);
+    private final AccountPOST_DTO accountPOSTDto2 = new AccountPOST_DTO(3L, 0.0,  AccountType.CURRENT, true);
 
     private AccountRepository accountRepository;
 

@@ -55,10 +55,6 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found for id: " + id));
     }
 
-    public List<User>getUsersWithoutAccount(Boolean hasAccount){
-        return userRepository.findAllByHasAccount(hasAccount);
-    }
-
     public User mapUserToDTO(UserGET_DTO userGET_dto) {
 
         User user = new User();
@@ -98,9 +94,6 @@ public class UserService {
     public List<UserGET_DTO> getAllUsers(String keyword, String firstName, String lastName, String  hasAccount, String email, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, AccountType excludedAccountType) {
         Pageable pageable = PageRequest.of(0, 10);
         Specification<User> specification = UserSpecifications.getSpecifications(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType);
-//        if (excludedAccountType != null) {
-//            specification = specification.and(UserSpecifications.hasNoAccountType(excludedAccountType));
-//        }
         List<UserGET_DTO> users = new ArrayList<>();
         for (User user : userRepository.findAll(specification, pageable)) {
             users.add(convertUserResponseToDTO(user));

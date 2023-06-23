@@ -65,7 +65,7 @@ class AccountServiceTest {
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
 
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
-        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
@@ -100,7 +100,7 @@ class AccountServiceTest {
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, true, 100.0, 5200.00, null);
 
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
-        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getBalance(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+        AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(true);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
