@@ -117,7 +117,7 @@ class AccountControllerTest {
     void shouldReturnNotFoundToGetAccountByIdWithEmployeeRoleForGetAccountById() throws Exception {
         when(accountService.getAccountById(2))
                 .thenThrow(new EntityNotFoundException("Account not found"));
-        String accountId = "2";
+        long accountId = 2;
         mockMvc.perform(MockMvcRequestBuilders.get("/accounts/" + accountId)
                         .with(user("customer@email.com").password("1234").roles("EMPLOYEE")))
                 .andExpect(status().isNotFound())
