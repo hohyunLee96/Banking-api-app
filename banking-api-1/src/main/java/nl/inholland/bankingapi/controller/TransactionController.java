@@ -96,7 +96,7 @@ public class TransactionController {
 
 //get daily transactions left for logged in user
     @GetMapping("/dailyTransactionsLeft" )
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getDailyTransactionsLeft(HttpServletRequest request) {
         try {
             return ResponseEntity.ok(transactionService.convertAmountLeftToDailyTransaction(request));
