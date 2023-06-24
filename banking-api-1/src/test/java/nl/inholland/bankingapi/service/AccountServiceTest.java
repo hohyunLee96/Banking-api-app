@@ -124,10 +124,6 @@ class AccountServiceTest {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(dummyAccount));
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(accountRepository.getAllAccountsByUserId(user.getId())).thenReturn(List.of(
-                        new Account(user, "NL21INHO0123400081", 90000.00, 5.00, AccountType.CURRENT, true)
-                )
-        );
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
@@ -164,10 +160,6 @@ class AccountServiceTest {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(dummyAccount));
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(accountRepository.getAllAccountsByUserId(user.getId())).thenReturn(List.of(
-                        new Account(user, "NL21INHO0123400081", 90000.00, 5.00, AccountType.CURRENT, true)
-                )
-        );
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(false);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
         when(accountRepository.save(Mockito.any(Account.class))).thenReturn(dummyAccount);
