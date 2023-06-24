@@ -75,5 +75,82 @@ class TransactionTest {
         assertNotNull(transaction.getPerformingUser());
     }
 
-    // Add more test methods as needed
+    @Test
+    void testConstructor() {
+        Transaction transaction = new Transaction(fromAccount, toAccount, 100.0, LocalDateTime.now(), TransactionType.DEPOSIT, user);
+        assertEquals(fromAccount, transaction.getFromIban());
+        assertEquals(toAccount, transaction.getToIban());
+        assertEquals(100.0, transaction.getAmount());
+        assertEquals(TransactionType.DEPOSIT, transaction.getType());
+        assertNotNull(transaction.getTimestamp());
+        assertEquals(user, transaction.getPerformingUser());
+    }
+    @Test
+    void testSetAmount() {
+        Transaction transaction= new Transaction();
+        transaction.setAmount(100.0);
+        assertEquals(100.0, transaction.getAmount());
+    }
+    @Test
+    void testSetType() {
+        Transaction transaction= new Transaction();
+        transaction.setType(TransactionType.DEPOSIT);
+        assertEquals(TransactionType.DEPOSIT, transaction.getType());
+    }
+    @Test
+    void testSetPerformingUser() {
+        Transaction transaction= new Transaction();
+        transaction.setPerformingUser(user);
+        assertEquals(user, transaction.getPerformingUser());
+    }
+    @Test
+    void testSetFromIban() {
+        Transaction transaction= new Transaction();
+        Account fromAccount = new Account();
+        transaction.setFromIban(fromAccount);
+        assertEquals(fromAccount, transaction.getFromIban());
+    }
+    @Test
+    void testSetToIban() {
+        Transaction transaction= new Transaction();
+        Account toAccount = new Account();
+        transaction.setToIban(toAccount);
+        assertEquals(toAccount, transaction.getToIban());
+    }
+    @Test
+    void testSetFromIbanNullThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setFromIban(null));
+    }
+    @Test
+    void testSetToIbanNullThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setToIban(null));
+    }
+    @Test
+    void testSetAmountNegativeThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setAmount(-100.0));
+    }
+    @Test
+    void testSetAmountZeroThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setAmount(0.0));
+    }
+    @Test
+    void testSetTypeNullThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setType(null));
+    }
+    @Test
+    void testSetPerformingUserNullThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setPerformingUser(null));
+    }
+    @Test
+    void testSetTimestampNullThrowsException() {
+        Transaction transaction= new Transaction();
+        assertThrows(IllegalArgumentException.class, () -> transaction.setTimestamp(null));
+    }
+
 }

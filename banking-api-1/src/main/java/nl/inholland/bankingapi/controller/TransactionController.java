@@ -31,7 +31,7 @@ public class TransactionController {
     @GetMapping
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getAllTransactions(
-//            @RequestParam(required = false) Integer offset,
+//            @RequestParam(required = false) Integer  ,
 //            @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) String fromIban,
             @RequestParam(required = false) String toIban,
