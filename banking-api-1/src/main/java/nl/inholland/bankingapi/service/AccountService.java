@@ -54,8 +54,6 @@ public class AccountService {
 
     public Account modifyAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
         Account account = mapDtoToAccountPut(id, accountPUT_dto);
-        account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
-        userRepository.save(account.getUser());
         return accountRepository.save(account);
     }
 
@@ -98,14 +96,6 @@ public class AccountService {
                 user.getLastName(),
                 account.getIBAN()
         );
-    }
-
-    public List<AccountGET_DTO> getAllAccountsByUserId(long id) {
-        List<AccountGET_DTO> accountsOwnedBySpecificUser = new ArrayList<>();
-        for (Account account : accountRepository.getAllAccountsByUserId(id)) {
-            accountsOwnedBySpecificUser.add(accountGETDto(account));
-        }
-        return accountsOwnedBySpecificUser;
     }
 
     public List<AccountGET_DTO> getAllAccounts(int page, int limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
@@ -196,23 +186,6 @@ public class AccountService {
         // Implement the logic to check if the user already has an account of the specified type
         // You can query the account repository or perform any other necessary checks
         return accountRepository.existsByUserIdAndAccountType(userId, accountType);
-    }
-
-    protected Boolean isCustomer(Long userId) {
-        if (userRepository.findById(userId).get().getUserType().equals(UserType.ROLE_EMPLOYEE)) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isUserHasNoActiveAccounts(long id) {
-        List<Account> accounts = accountRepository.getAllAccountsByUserId(id);
-        for (Account account : accounts) {
-            if (account.getIsActive()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public String createIBAN() {

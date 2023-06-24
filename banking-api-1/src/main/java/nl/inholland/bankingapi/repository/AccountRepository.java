@@ -17,16 +17,12 @@ import java.util.List;
 @Repository
 public interface AccountRepository extends CrudRepository<Account,Long> {
 
-    List<Account> getAllAccountsByUserId(long id);
-
     List<Account> findAll(Specification<Account> specification, Pageable pageable);
 
     Account findAccountByIBAN(String IBAN);
 
     @Query("SELECT SUM(account.balance) AS totalBalance FROM Account account WHERE account.user.id = :userId")
     Double getTotalBalanceByUserId(long userId);
-
-
     boolean existsByUserIdAndAccountType(Long userId, AccountType accountType);
 
 }
