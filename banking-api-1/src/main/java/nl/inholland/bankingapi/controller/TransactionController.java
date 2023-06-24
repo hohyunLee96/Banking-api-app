@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.TransactionType;
@@ -7,6 +8,7 @@ import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
 import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
 import nl.inholland.bankingapi.service.TransactionService;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -91,4 +93,16 @@ public class TransactionController {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+//get daily transactions left for logged in user
+    @GetMapping("/dailyTransactionsLeft" )
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<Object> getDailyTransactionsLeft(HttpServletRequest request) {
+        try {
+            return ResponseEntity.ok(transactionService.convertAmountLeftToDailyTransaction(request));
+        } catch (ApiRequestException e) {
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

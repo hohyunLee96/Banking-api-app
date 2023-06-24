@@ -7,10 +7,7 @@ import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
-import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
-import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
@@ -238,6 +235,7 @@ public class TransactionService {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
     }
 
+
     public Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
         User user = userService.getLoggedInUser(request);
         List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
@@ -250,5 +248,12 @@ public class TransactionService {
             }
         }
         return totalAmount;
+    }
+    public Double getDailyTransactionLimitLeft(HttpServletRequest request) {
+        User user = userService.getLoggedInUser(request);
+        return user.getDailyLimit() - getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request);
+    }
+    public DailyTransactionDto convertAmountLeftToDailyTransaction(HttpServletRequest request) {
+        return new DailyTransactionDto(getDailyTransactionLimitLeft(request));
     }
 }
