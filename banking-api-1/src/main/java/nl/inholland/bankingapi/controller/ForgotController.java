@@ -1,5 +1,6 @@
 package nl.inholland.bankingapi.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.dto.EmailRequestDTO;
 import nl.inholland.bankingapi.model.dto.ResetPasswordRequestDTO;
@@ -35,6 +36,9 @@ public class ForgotController {
     public ResponseEntity<String> checkSendEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
 
         User user = userRepository.findByEmail(emailRequestDTO.emailTo());
+        if(user == null) {
+            throw new EntityNotFoundException("User with email " + emailRequestDTO.emailTo() + " not found.");
+        }
         emailSenderService.sendPasswordResetEmailWithLink(user);
         return ResponseEntity.ok("Email sent successfully.");
     }
