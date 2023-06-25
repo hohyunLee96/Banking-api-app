@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -328,6 +329,28 @@ public class UserService {
         } catch (IllegalArgumentException e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+    public String resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            return "Oops, User does not exist.";
+        }
+
+        String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
+
+        if (!encodedPassword.equals(user.getPassword())) {
+            user.setPassword(encodedPassword);
+            userRepository.save(user);
+
+        } else if (encodedPassword == null) {
+            return "Password could not be encoded";
+
+        } else {
+            return "You already have this password, please go to Log in.";
+        }
+
+        return "Password reset successfully";
     }
 
 }

@@ -37,6 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfiguration {
                 .requestMatchers(("/users")).permitAll()
                 .requestMatchers(("/auth/**")).permitAll()
                 .requestMatchers(("/transactions")).permitAll()
+                .requestMatchers(("/forgot/**")).permitAll()
                 .anyRequest().authenticated();
 
         httpSecurity.headers().frameOptions().disable();
