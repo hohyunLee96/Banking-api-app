@@ -29,8 +29,8 @@ public class TransactionController {
     @GetMapping
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getAllTransactions(
-//            @RequestParam(required = false) Integer  ,
-//            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
             @RequestParam(required = false) String fromIban,
             @RequestParam(required = false) String toIban,
             @RequestParam(required = false) Double lessThanAmount,
@@ -39,10 +39,9 @@ public class TransactionController {
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate,
             @RequestParam(required = false) TransactionType type,
-            @RequestParam(required = false) Long performingUser,
-            @RequestParam(required = false) Date searchDate
+            @RequestParam(required = false) Long performingUser
     ) {
-        return ResponseEntity.ok(transactionService.getAllTransactions(fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser, searchDate));
+        return ResponseEntity.ok(transactionService.getAllTransactions(page,limit,fromIban, toIban, fromDate, toDate, lessThanAmount, greaterThanAmount, equalToAmount, type, performingUser));
     }
 
     @PostMapping
@@ -69,7 +68,6 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 
-    //get daily transactions left for logged in user
     @GetMapping("/dailyTransactionsLeft")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<Object> getDailyTransactionsLeft(HttpServletRequest request) {
