@@ -14,7 +14,6 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-
     List<Transaction> findAll(Specification<Transaction> specification, Pageable pageable);
 
     List<Transaction> findAllByPerformingUserAndTimestampBetween(User user, LocalDateTime start, LocalDateTime end);

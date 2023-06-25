@@ -16,9 +16,7 @@ public class AuthenticationService {
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    //retrieves user from repository based on the provided email
-    //verifies the password, generates a JWT,
-    //returns a LoginResponseDTO object with the JWT and user information
+
     public LoginResponseDTO login(String email, String password) throws javax.naming.AuthenticationException {
 
         User user = this.userRepository
