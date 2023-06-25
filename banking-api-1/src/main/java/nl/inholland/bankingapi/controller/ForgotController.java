@@ -32,7 +32,6 @@ public class ForgotController {
 
     // method for Email Enter Send
     @PostMapping("/sendEmail")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<String> checkSendEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
 
         User user = userRepository.findByEmail(emailRequestDTO.emailTo());
@@ -42,7 +41,6 @@ public class ForgotController {
 
     // method for New Password
     @PostMapping("/resetPassword")
-    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<String> checkResetPassword(@RequestBody EmailRequestDTO emailRequestDTO, BCryptPasswordEncoder password) {
         String resetResult = userService.resetPassword(emailRequestDTO.emailTo(), password.toString());
 
