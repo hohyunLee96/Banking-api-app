@@ -31,7 +31,7 @@ public class EmailService {
     public void sendPasswordResetEmailWithLink(User user) {
         String recipientAddress = user.getEmail();
         String subject = "Password Reset";
-        String resetLink = "http://localhost:8080/forgot/resetPassword" ;
+        String resetLink = "http://localhost:5173/resetPassword" ;
         String body = "Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n"
                 + "Please click the following link to reset your password:\n\n"
                 + resetLink + "\n\n"

@@ -23,7 +23,7 @@ public class AuthenticationService {
 
         User user = this.userRepository
                 .findUserByEmail(email)
-                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " +email));
+                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " + email));
         if (!user.getPassword().isEmpty()) {
             //Check if the password hash matches the provided password
             if (bCryptPasswordEncoder.matches(password, user.getPassword())) {

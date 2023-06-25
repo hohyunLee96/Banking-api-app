@@ -339,14 +339,16 @@ public class UserService {
 
         String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
 
+        if (encodedPassword == null) {
+        }
+
         if (!encodedPassword.equals(user.getPassword())) {
             user.setPassword(encodedPassword);
             userRepository.save(user);
-
         } else if (encodedPassword == null) {
             return "Password could not be encoded";
-
-        } else {
+        }
+        else {
             return "You already have this password, please go to Log in.";
         }
 
