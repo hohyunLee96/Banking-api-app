@@ -330,27 +330,18 @@ public class UserService {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
     public String resetPassword(String email, String newPassword) {
         User user = userRepository.findByEmail(email);
-
-        if (user == null) {
-            return "Oops, User does not exist.";
-        }
 
         String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
 
         if (encodedPassword == null) {
+            throw new ApiRequestException("Failed to encode the password.", HttpStatus.BAD_REQUEST);
         }
 
-        if (!encodedPassword.equals(user.getPassword())) {
-            user.setPassword(encodedPassword);
-            userRepository.save(user);
-        } else if (encodedPassword == null) {
-            return "Password could not be encoded";
-        }
-        else {
-            return "You already have this password, please go to Log in.";
-        }
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
 
         return "Password reset successfully";
     }
