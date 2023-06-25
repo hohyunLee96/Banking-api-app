@@ -1,20 +1,14 @@
 package nl.inholland.bankingapi.service;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.filter.JwtTokenFilter;
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
-import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
-import nl.inholland.bankingapi.repository.UserRepository;
 import org.jetbrains.annotations.NotNull;
-import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +33,9 @@ public class TransactionService {
     private static final String BANK_IBAN = "NL01INHO0000000001";
 
     public TransactionService(TransactionRepository transactionRepository
-                              , AccountService accountService,
+            , AccountService accountService,
                               HttpServletRequest request, AccountRepository accountRepository1,
-                              UserService userService)
-    {
+                              UserService userService) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
         this.request = request;
@@ -208,6 +201,7 @@ public class TransactionService {
         for (Transaction transaction : transactions) {
             if (transaction.getType() != TransactionType.DEPOSIT
                     && transaction.getToIban().getAccountType() != AccountType.SAVINGS
+                    && transaction.getFromIban().getAccountType() != AccountType.SAVINGS
             ) {
                 totalAmount += transaction.getAmount();
             }
