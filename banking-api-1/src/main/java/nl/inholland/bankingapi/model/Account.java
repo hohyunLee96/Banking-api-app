@@ -54,32 +54,4 @@ public class Account {
     public void setBalance(Double amount) {
         throw new ApiRequestException("Balance cannot be set directly", HttpStatus.BAD_REQUEST);
     }
-
-//    public Double getBalance() {
-//        return balance;
-//    }
-//
-//    public void setBalance(Double amount) {
-//        Double minusAmount = getBalance() - amount;
-//        Double plusAmount = getBalance() + amount;
-//        if (minusAmount.equals(getBalance() - amount)) {
-//            this.balance = minusAmount;
-//        } else if (plusAmount.equals(getBalance() + amount)) {
-//            this.balance = plusAmount;
-//        } else if (amount == 0) {
-//            this.balance = 0.0;
-//        } else {
-//            throw new ApiRequestException("Balance cannot be set directly", HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//    public void setBalance(Double amount) {
-//        Double newBalance = getBalance() + amount;
-//        if (newBalance.equals(amount)) {
-//            this.balance = newBalance;
-//        } else if (amount == 0) {
-//            this.balance = 0.0;
-//        } else {
-//            throw new ApiRequestException("Balance cannot be set directly", HttpStatus.BAD_REQUEST);
-//        }
-//    }
 }
