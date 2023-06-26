@@ -101,7 +101,7 @@ class TransactionControllerTest {
     void getAllTransactions() throws Exception {
         List<TransactionGET_DTO> transactionGETDtoList = new ArrayList<>(Collections.singletonList(transactionGETDto));
         transactionGETDtoList.add(transactionGETDto);
-        when(transactionService.getAllTransactions(null, null, null, null, null, null, null, null, null, null)).thenReturn((transactionGETDtoList));
+        when(transactionService.getAllTransactions( null,null, null, null, null, null, null, null, null,null,null)).thenReturn((transactionGETDtoList));
 
         MockHttpServletResponse response = mockMvc.perform(get("/transactions")
                         .contentType(MediaType.APPLICATION_JSON))

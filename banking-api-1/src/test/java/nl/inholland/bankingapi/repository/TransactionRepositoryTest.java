@@ -2,24 +2,20 @@ package nl.inholland.bankingapi.repository;
 
 import nl.inholland.bankingapi.ApiTestConfiguration;
 import nl.inholland.bankingapi.model.*;
-import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.service.TransactionService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -44,6 +40,15 @@ class TransactionRepositoryTests {
     @InjectMocks
     private TransactionService transactionService;
 
+
+    @BeforeEach
+    public void setUp() {
+        userRepository.save(customer);
+        userRepository.save(employee);
+        accountRepository.save(account1);
+        accountRepository.save(account2);
+        transactionRepository.save(transaction);
+    }
 
     @Test
     void savingTransactionShouldReturnSavedAccount() {
@@ -71,32 +76,30 @@ class TransactionRepositoryTests {
         assertEquals(transaction.getType(), savedTransaction.getType());
     }
 
+
     @Test
-    void findAllShouldReturnTransactionsWithSpecifications() {
-        userRepository.save(customer);
-        userRepository.save(employee);
-        accountRepository.save(account1);
-        accountRepository.save(account2);
+    void findTransactionByIdShouldReturnTransaction() {
         transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        Transaction foundTransaction = transactionRepository.findById(savedTransaction.getId()).orElse(null);
+        assertNotNull(foundTransaction);
+        assertEquals(transaction.getPerformingUser(), foundTransaction.getPerformingUser());
+        assertEquals(transaction.getFromIban(), foundTransaction.getFromIban());
+        assertEquals(transaction.getToIban(), foundTransaction.getToIban());
+        assertEquals(transaction.getType(), foundTransaction.getType());
+    }
 
-        Specification<Transaction> specification = TransactionSpecifications.getSpecifications(
-                transaction.getFromIban().toString(),
-                transaction.getToIban().toString(),
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                100.0, 100.0, 100.0
-        );
+    @Test
+    void findAllByPerformingUserAndTimestampBetween() {
+        //initialize user for transactions and start and end time
+        User user = new User();
+        userRepository.save(user);
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = LocalDateTime.now().plusDays(1);
 
-        Pageable pageable = Pageable.ofSize(10);
-
-        List<Transaction> expectedTransactions = List.of(transaction);
-
-        when(transactionRepository.findAll(specification, pageable))
-                .thenReturn(expectedTransactions);
-
-        List<Transaction> actualTransactions = transactionRepository.findAll(specification, pageable);
-
-        assertEquals(expectedTransactions, actualTransactions);
+        //create transaction and save it
+        transactionRepository.save(transaction);
+        assertDoesNotThrow(() -> transactionRepository.findAllByPerformingUserAndTimestampBetween(user, start, end));
     }
 
 

@@ -1,23 +1,14 @@
 package nl.inholland.bankingapi.service;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.exception.ApiRequestException;
-import nl.inholland.bankingapi.filter.JwtTokenFilter;
-import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
-import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
-import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.specifications.TransactionSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
-import nl.inholland.bankingapi.repository.TransactionCriteriaRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
-import nl.inholland.bankingapi.repository.UserRepository;
 import org.jetbrains.annotations.NotNull;
-import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,55 +18,43 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
-    private final EntityManager entityManager;
-    private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
     private final AccountService accountService;
-    private final TransactionCriteriaRepository transactionCriteriaRepository;
-    private final TransactionSpecifications transactionSpecifications;
     private final HttpServletRequest request;
-
     private final AccountRepository accountRepository;
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtTokenFilter jwtTokenFilter;
     private static final String BANK_IBAN = "NL01INHO0000000001";
 
-    public TransactionService(TransactionRepository transactionRepository,
-                              UserRepository userRepository,
-                              ModelMapper modelMapper,
-                              AccountRepository accountRepository,
-                              EntityManager entityManager, AccountService accountService,
-                              TransactionCriteriaRepository transactionCriteriaRepository,
-                              TransactionSpecifications transactionSpecifications, HttpServletRequest request, AccountRepository accountRepository1, UserService userService, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter) {
+    public TransactionService(TransactionRepository transactionRepository
+            , AccountService accountService,
+                              HttpServletRequest request, AccountRepository accountRepository1,
+                              UserService userService) {
         this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
-        this.modelMapper = modelMapper;
-        this.entityManager = entityManager;
         this.accountService = accountService;
-        this.transactionCriteriaRepository = transactionCriteriaRepository;
-        this.transactionSpecifications = transactionSpecifications;
         this.request = request;
         this.accountRepository = accountRepository1;
         this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.jwtTokenFilter = jwtTokenFilter;
     }
 
-    public List<TransactionGET_DTO> getAllTransactions(String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser, Date searchDate) {
-        Pageable pageable = PageRequest.of(0, 10);
+    public List<TransactionGET_DTO> getAllTransactions(Integer page, Integer limit, String fromIban, String toIban, String fromDate, String toDate, Double lessThanAmount, Double greaterThanAmount, Double equalToAmount, TransactionType type, Long performingUser) {
+        Pageable pageable = PageRequest.of(page, limit);
         Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate,
                 lessThanAmount, greaterThanAmount, equalToAmount);
 
+        //set all transactions
         List<TransactionGET_DTO> allTransactions = new ArrayList<>();
+        //set user transactions
         List<TransactionGET_DTO> userTransactions = new ArrayList<>();
-
+        //for all transactions in the repository
         for (Transaction transaction : transactionRepository.findAll(specification, pageable)) {
+            //add all transactions to the list
             allTransactions.add(convertTransactionResponseToDTO(transaction));
             //if the transaction is performed by the logged-in user, add it to the userTransactions list
             if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
@@ -98,8 +77,9 @@ public class TransactionService {
             Account senderAccount = accountService.getAccountByIBAN(transactionPOSTDto.fromIban());
             Account receiverAccount = accountService.getAccountByIBAN(transactionPOSTDto.toIban());
 
+            //check the transaction
+            processTransaction(transactionPOSTDto, senderAccount, receiverAccount);
             //transfer money from sender to receiver and update balances
-            checkTransaction(transactionPOSTDto, senderAccount, receiverAccount);
             transferMoney(senderAccount, receiverAccount, transactionPOSTDto.amount());
 
             //save transaction to transaction repository
@@ -151,17 +131,13 @@ public class TransactionService {
         );
     }
 
-    private void checkTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
+    private void processTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
         User performingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(performingUser.getId());
         if (transaction.amount() <= 0) {
             throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
         }
-//        if (fromAccount.getBalance() < transaction.amount()
-//                && transaction.type() != TransactionType.WITHDRAWAL) {
-//            throw new ApiRequestException("You do not have enough money to perform this transaction", HttpStatus.BAD_REQUEST);
-//        }
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
@@ -218,6 +194,30 @@ public class TransactionService {
                 userService.getLoggedInUser(request).getId()));
     }
 
+    public Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
+        User user = userService.getLoggedInUser(request);
+        List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
+        double totalAmount = 0.0;
+        for (Transaction transaction : transactions) {
+            if (transaction.getType() != TransactionType.DEPOSIT
+                    && transaction.getToIban().getAccountType() != AccountType.SAVINGS
+                    && transaction.getFromIban().getAccountType() != AccountType.SAVINGS
+            ) {
+                totalAmount += transaction.getAmount();
+            }
+        }
+        return totalAmount;
+    }
+
+    public Double getDailyTransactionLimitLeft(HttpServletRequest request) {
+        User user = userService.getLoggedInUser(request);
+        return user.getDailyLimit() - getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request);
+    }
+
+    public DailyTransactionDto convertAmountLeftToDailyTransaction(HttpServletRequest request) {
+        return new DailyTransactionDto(getDailyTransactionLimitLeft(request));
+    }
+
     private boolean accountIsSavingsAccount(Account account) {
         return account.getAccountType() == AccountType.SAVINGS;
     }
@@ -230,25 +230,7 @@ public class TransactionService {
         return Objects.equals(user.getId(), account.getUser().getId());
     }
 
-    private boolean accountIsBankAccount(Account account) {
-        return account.getIBAN().equals(BANK_IBAN);
-    }
-
     private boolean transactionIsWithdrawalOrDeposit(TransactionPOST_DTO transaction) {
         return transaction.type() == TransactionType.WITHDRAWAL || transaction.type() == TransactionType.DEPOSIT;
-    }
-
-    public Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
-        User user = userService.getLoggedInUser(request);
-        List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
-        double totalAmount = 0.0;
-        for (Transaction transaction : transactions) {
-            if (transaction.getType() != TransactionType.DEPOSIT
-                    && transaction.getToIban().getAccountType() != AccountType.SAVINGS
-            ) {
-                totalAmount += transaction.getAmount();
-            }
-        }
-        return totalAmount;
     }
 }
