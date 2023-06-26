@@ -1,21 +1,3 @@
 
-{
-Ksrc/main/java/nl/inholland/bankingapi/model/dto/TransactionWithdrawDTO.java,9\6\96c7779cae2294eb30294b76a813442b955b9df1
-t
-Dsrc/main/java/nl/inholland/bankingapi/controller/UserController.java,5\e\5eb628c8eb4df3faab84948448840e9525989f3e
-e
-5src/main/java/nl/inholland/bankingapi/model/User.java,6\0\60509bebe27de59d777f034174a6d4c6e8ad360a
-n
->src/main/java/nl/inholland/bankingapi/MyApplicationRunner.java,7\a\7a21040f87b8c6290b9e8ce2856d2386950cc785
-‚
-Rsrc/main/java/nl/inholland/bankingapi/model/specifications/UserSpecifications.java,3\e\3ef4fb61ede6a5504e7a3a28fa1504d51a9a7f66
-q
-Asrc/main/java/nl/inholland/bankingapi/service/AccountService.java,8\9\89181af2437ecac20b251c2633a6804b3836fdc4
-x
-Hsrc/main/java/nl/inholland/bankingapi/model/dto/TransactionPOST_DTO.java,b\5\b59119c86a2664c30d6ac84cfbf96da1662a98d9
-q
-Asrc/main/java/nl/inholland/bankingapi/model/dto/UserPOST_DTO.java,7\a\7a3d486cd5491503fc70f1a3735979580573c740
 p
 @src/main/java/nl/inholland/bankingapi/model/dto/UserGET_DTO.java,7\c\7c6217b4ff61cc03d9eb4d5fb0dffda0185f91d7
-n
->src/main/java/nl/inholland/bankingapi/service/UserService.java,e\0\e0f657e4041ff9fb97fa71bb675a95c5f0ab0b71
