@@ -2,6 +2,7 @@ package nl.inholland.bankingapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.*;
 import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
 import nl.inholland.bankingapi.model.dto.TransactionGET_DTO;
@@ -36,6 +37,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,7 +60,7 @@ class TransactionControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private WebApplicationContext webApplicationContext;
-    private TransactionGET_DTO transactionGETDto;
+    private TransactionGET_DTO transactionGETDto,transactionGETDto2;
 
     @MockBean
     private TransactionService transactionService;
@@ -68,6 +70,9 @@ class TransactionControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
 
     private Transaction transaction;
     @InjectMocks
@@ -83,6 +88,7 @@ class TransactionControllerTest {
         Account account1 = new Account(customer, "NL21INHO0123400081", 500.00, 0.00, AccountType.CURRENT, true);
         transactionController = new TransactionController(transactionService);
         transactionGETDto = new TransactionGET_DTO(1, "NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, LocalDateTime.now().toString(), 123L);
+         transactionGETDto2 = new TransactionGET_DTO(2, "NL21INHO0123400081", "NL21INHO0123400082", 120.0, TransactionType.TRANSFER, LocalDateTime.now().toString(), 123L);
         transaction = new Transaction(account2,account1, 120.0, LocalDateTime.now(), TransactionType.TRANSFER, customer);
     }
 
@@ -101,7 +107,10 @@ class TransactionControllerTest {
     void getAllTransactions() throws Exception {
         List<TransactionGET_DTO> transactionGETDtoList = new ArrayList<>(Collections.singletonList(transactionGETDto));
         transactionGETDtoList.add(transactionGETDto);
-        when(transactionService.getAllTransactions( null,null, null, null, null, null, null, null, null,null,null)).thenReturn((transactionGETDtoList));
+        transactionGETDtoList.add(transactionGETDto2);
+
+        when(transactionService.getAllTransactions( null,null, null, null, null, null, null, null, null,null,null))
+                .thenReturn((transactionGETDtoList));
 
         MockHttpServletResponse response = mockMvc.perform(get("/transactions")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -173,5 +182,16 @@ class TransactionControllerTest {
                         .content(asJsonString(transactionDepositDto)))
                 .andExpect(MockMvcResultMatchers.status().isCreated());
     }
-
+//    @Test
+//    void withdrawShouldReturnTransaction() throws Exception {
+//        // Mock the transactionService withdraw method
+//        when(transactionService.withdraw(any(TransactionWithdrawDTO.class))).thenReturn(transaction);
+//        // Create a sample TransactionWithdrawDTO object
+//        TransactionWithdrawDTO transactionWithdrawDto = new TransactionWithdrawDTO("NL21INHO0123400081", 120.0);
+//        // Perform the POST request
+//        mockMvc.perform(MockMvcRequestBuilders.post("/transactions/withdraw")
+//                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+//                        .content(asJsonString(transactionWithdrawDto)))
+//                .andExpect(MockMvcResultMatchers.status().isCreated());
+//    }
 }
