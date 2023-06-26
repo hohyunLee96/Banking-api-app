@@ -4,15 +4,20 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.AccountType;
+import nl.inholland.bankingapi.model.ConfirmationToken;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
-import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
+import nl.inholland.bankingapi.repository.ConfirmationTokenRepository;
+import nl.inholland.bankingapi.repository.UserRepository;
+import nl.inholland.bankingapi.service.EmailService;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -21,8 +26,11 @@ import org.springframework.web.bind.annotation.*;
 @Log
 public class UserController {
     private final UserService userService;
-    public UserController(UserService userService) {
+    private final ConfirmationTokenRepository confirmationTokenRepository;
+
+    public UserController(UserService userService, ConfirmationTokenRepository confirmationTokenRepository) {
         this.userService = userService;
+        this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
@@ -86,5 +94,25 @@ public class UserController {
             throw new ApiRequestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> registerUser(@RequestBody User user) {
+        String responseMessage = userService.registerUser(user);
+        return ResponseEntity.ok(responseMessage);
+    }
+    @GetMapping("/confirmAccount")
+    public ResponseEntity<String> confirmUserAccount(String confirmationToken) {
+        ConfirmationToken token = userService.getConfirmationToken(confirmationToken);
+        String responseMessage = userService.processConfirmationToken(token);
+
+        if (responseMessage.equals("Account verified successfully")) {
+            return ResponseEntity.ok(responseMessage);
+        } else if (responseMessage.equals("User not found!")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMessage);
+        }
+    }
+
 
 }

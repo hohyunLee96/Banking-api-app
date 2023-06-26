@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/forgot")
-public class ForgotController {
+public class EmailController {
 
     @Autowired
     private EmailService emailSenderService;

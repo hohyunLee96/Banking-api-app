@@ -36,7 +36,7 @@ public class User {
     private Boolean hasAccount;
     private Double dailyLimit;
     private Double transactionLimit;
-
+    private boolean isEnabled;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
@@ -56,5 +56,9 @@ public class User {
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
 
+    }
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 }
