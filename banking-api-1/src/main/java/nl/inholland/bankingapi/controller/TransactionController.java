@@ -70,7 +70,7 @@ public class TransactionController {
 
     @GetMapping("/dailyTransactionsLeft")
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
-    public ResponseEntity<Object> getDailyTransactionsLeft(HttpServletRequest request) {
-        return ResponseEntity.ok(transactionService.convertAmountLeftToDailyTransaction(request));
+    public ResponseEntity<Object> getDailyTransactionsLeft() {
+        return ResponseEntity.ok(transactionService.convertAmountLeftToDailyTransaction());
     }
 }

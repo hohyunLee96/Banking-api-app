@@ -48,6 +48,7 @@ public class TransactionService {
         Specification<Transaction> specification = TransactionSpecifications.getSpecifications(fromIban, toIban, fromDate, toDate,
                 lessThanAmount, greaterThanAmount, equalToAmount);
 
+        User loggedInUser= userService.getLoggedInUser(request);
         //set all transactions
         List<TransactionGET_DTO> allTransactions = new ArrayList<>();
         //set user transactions
@@ -57,9 +58,8 @@ public class TransactionService {
             //add all transactions to the list
             allTransactions.add(convertTransactionResponseToDTO(transaction));
             //if the transaction is performed by the logged-in user, add it to the userTransactions list
-            if (transaction.getPerformingUser().getId().equals(userService.getLoggedInUser(request).getId())) {
+            if (transaction.getPerformingUser().getId().equals(loggedInUser.getId())) {
                 userTransactions.add(convertTransactionResponseToDTO(transaction));
-                getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request);
             }
         }
 
@@ -87,7 +87,6 @@ public class TransactionService {
         } catch (DataIntegrityViolationException e) {
             throw new DataIntegrityViolationException("Transaction could not be completed " + e.getMessage());
         }
-
     }
 
     private void transferMoney(Account senderAccount, Account receiverAccount, Double amount) {
@@ -131,13 +130,11 @@ public class TransactionService {
         );
     }
 
-    private void processTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
+   private void processTransaction(TransactionPOST_DTO transaction, Account fromAccount, Account toAccount) {
         User performingUser = userService.getLoggedInUser(request);
         User receiverUser = userService.getUserById(toAccount.getUser().getId());
         User senderUser = userService.getUserById(performingUser.getId());
-        if (transaction.amount() <= 0) {
-            throw new ApiRequestException("Amounts cannot be 0 or less", HttpStatus.NOT_ACCEPTABLE);
-        }
+
         if (fromAccount.getIBAN().equals(toAccount.getIBAN())) {
             throw new ApiRequestException("You cannot transfer money to the same account", HttpStatus.BAD_REQUEST);
         }
@@ -160,7 +157,7 @@ public class TransactionService {
         ) {
             throw new ApiRequestException("You have exceeded your transaction limit", HttpStatus.FORBIDDEN);
         }
-        if ((getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request) + transaction.amount() > senderUser.getDailyLimit())
+        if ((getSumOfAllTransactionsFromTodayByLoggedInUserAccount() + transaction.amount() > senderUser.getDailyLimit())
                 && transaction.type() != TransactionType.DEPOSIT
                 && !accountIsSavingsAccount(toAccount)
                 && !userIsOwnerOfAccount(senderUser, toAccount)) {
@@ -194,7 +191,7 @@ public class TransactionService {
                 userService.getLoggedInUser(request).getId()));
     }
 
-    public Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount(HttpServletRequest request) {
+    private Double getSumOfAllTransactionsFromTodayByLoggedInUserAccount() {
         User user = userService.getLoggedInUser(request);
         List<Transaction> transactions = transactionRepository.findAllByPerformingUserAndTimestampBetween(user, LocalDate.now().atTime(0, 0), LocalDate.now().atTime(23, 59));
         double totalAmount = 0.0;
@@ -209,13 +206,13 @@ public class TransactionService {
         return totalAmount;
     }
 
-    public Double getDailyTransactionLimitLeft(HttpServletRequest request) {
+    public Double getDailyTransactionLimitLeft() {
         User user = userService.getLoggedInUser(request);
-        return user.getDailyLimit() - getSumOfAllTransactionsFromTodayByLoggedInUserAccount(request);
+        return user.getDailyLimit() - getSumOfAllTransactionsFromTodayByLoggedInUserAccount();
     }
 
-    public DailyTransactionDto convertAmountLeftToDailyTransaction(HttpServletRequest request) {
-        return new DailyTransactionDto(getDailyTransactionLimitLeft(request));
+    public DailyTransactionDto convertAmountLeftToDailyTransaction() {
+        return new DailyTransactionDto(getDailyTransactionLimitLeft());
     }
 
     private boolean accountIsSavingsAccount(Account account) {
