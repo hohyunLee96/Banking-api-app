@@ -117,7 +117,6 @@ class TransactionServiceTest {
 
     @Test
     void getTransactionByIdReturnsTransaction() {
-        transactionRepository.save(transaction);
         TransactionGET_DTO transactionGET_dto = new TransactionGET_DTO(1L, "NL21INHO0123400081", "NL21INHO0123400082", 100.00, TransactionType.TRANSFER, LocalDateTime.now().toString(), 1L);
         when(transactionService.getTransactionById(1L)).thenReturn(transactionGET_dto);
         Assertions.assertEquals(transactionGET_dto.fromIban(), transaction.getFromIban().getIBAN());
