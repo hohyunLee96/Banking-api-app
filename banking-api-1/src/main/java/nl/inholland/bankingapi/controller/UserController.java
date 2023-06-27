@@ -26,11 +26,9 @@ import java.util.Optional;
 @Log
 public class UserController {
     private final UserService userService;
-    private final ConfirmationTokenRepository confirmationTokenRepository;
 
-    public UserController(UserService userService, ConfirmationTokenRepository confirmationTokenRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
@@ -101,9 +99,8 @@ public class UserController {
         return ResponseEntity.ok(responseMessage);
     }
     @GetMapping("/confirmAccount")
-    public ResponseEntity<String> confirmUserAccount(String confirmationToken) {
-        ConfirmationToken token = userService.getConfirmationToken(confirmationToken);
-        String responseMessage = userService.processConfirmationToken(token);
+    public ResponseEntity<String> confirmUserAccount(@RequestParam("token") String confirmationToken) {
+        String responseMessage = userService.processConfirmationToken(confirmationToken);
 
         if (responseMessage.equals("Account verified successfully")) {
             return ResponseEntity.ok(responseMessage);
@@ -113,6 +110,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMessage);
         }
     }
-
 
 }

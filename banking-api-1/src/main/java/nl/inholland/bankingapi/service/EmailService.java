@@ -46,14 +46,14 @@ public class EmailService {
         sendEmail(recipientAddressPasswordReset, subject, body);
     }
 
-    public void sendEmailVerificationWithLink(User user, ConfirmationToken confirmationToken) {
-        String recipientAddress = user.getEmail();
+    public void sendEmailVerificationWithLink(ConfirmationToken confirmationToken) {
+        String recipientAddress = confirmationToken.getUser().getEmail();
 
         String subject = "Email Verification";
-        String resetLink = "http://localhost:5173/confirmAccount?token=" + confirmationToken.getConfirmationToken();
-        String body = "Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n"
+        String verifyEmailLink = "http://localhost:5173/confirmAccount?token=" + confirmationToken.getConfirmationToken();
+        String body = "Dear " + confirmationToken.getUser().getFirstName() + " " + confirmationToken.getUser().getLastName() + ",\n\n"
                 + "Please click the following link to verify your email:\n\n"
-                + resetLink + "\n\n"
+                + verifyEmailLink + "\n\n"
                 + "This step is necessary in order to be registered, to ensure user authenticity, " +
                 "prevent fake accounts, maintain data integrity, comply with regulations.\n\n"
                 + "Best regards,\n"

@@ -361,28 +361,35 @@ public class UserService {
 
             confirmationTokenRepository.save(confirmationToken);
 
-            emailService.sendEmailVerificationWithLink(user, confirmationToken);
+            emailService.sendEmailVerificationWithLink(confirmationToken);
 
             return "Registration successful. Please check your email to confirm your account.";
         }
     }
-    public String processConfirmationToken(ConfirmationToken token) {
-        if (token != null) {
-            User user = token.getUser();
+    public String processConfirmationToken(String token) {
+        ConfirmationToken confirmationToken = getConfirmationToken(token);
+
+        if (confirmationToken != null) {
+            // retrieve the user object associated with the given token
+            User user = confirmationToken.getUser();
 
             if (user != null) {
                 user.setEnabled(true);
                 userRepository.save(user);
                 return "Account verified successfully";
+
             } else {
                 return "User not found!";
             }
+
         } else {
             return "The link is invalid or broken!";
         }
     }
+
     public ConfirmationToken getConfirmationToken(String token) {
         return confirmationTokenRepository.findByConfirmationToken(token);
     }
+
 }
 
