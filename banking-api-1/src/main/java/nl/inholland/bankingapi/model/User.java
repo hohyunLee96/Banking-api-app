@@ -42,7 +42,7 @@ public class User {
     private List<Account> accounts = new ArrayList<>();
 
    public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
-        this.email = email;
+       this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -55,6 +55,8 @@ public class User {
         this.hasAccount = hasAccount;
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
-    }
+   }
 
+    public User(Long id,String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
+    }
 }
