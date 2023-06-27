@@ -66,22 +66,7 @@ class AccountServiceTest {
     void setUp() {
         MockitoAnnotations.initMocks(this);
     }
-//    public User(String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
-//        this.id = id;
-//        this.email = email;
-//        this.password = password;
-//        this.firstName = firstName;
-//        this.lastName = lastName;
-//        this.birthDate = birthDate;
-//        this.postalCode = postalCode;
-//        this.address = address;
-//        this.city = city;
-//        this.phoneNumber = phoneNumber;
-//        this.userType = userType;
-//        this.hasAccount = hasAccount;
-//        this.dailyLimit = dailyLimit;
-//        this.transactionLimit = transactionLimit;
-//    }
+
     @Test
     void saveAccount() throws Exception {
         User user = new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
