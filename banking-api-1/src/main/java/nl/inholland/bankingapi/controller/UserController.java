@@ -2,8 +2,10 @@ package nl.inholland.bankingapi.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
+import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
@@ -37,9 +39,9 @@ public class UserController {
             @RequestParam( required = false) String address,
             @RequestParam( required = false) String city,
             @RequestParam( required = false) String phoneNumber,
-            @RequestParam( required = false) String userType,
+            @RequestParam( required = false) UserType userType,
             @RequestParam( required = false) String keyword,
-            @RequestParam( required = false) boolean hasAccount,
+            @RequestParam( required = false) String hasAccount,
             @RequestParam( required = false) AccountType excludedAccountType
     ) {
         return ResponseEntity.ok(userService.getAllUsers(keyword, firstName, lastName, hasAccount, email, birthDate, postalCode, address, city, phoneNumber, userType, excludedAccountType));
@@ -52,7 +54,7 @@ public class UserController {
             return ResponseEntity.status(201).body(
                     userService.registerUser(dto));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(e.getMessage());
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -63,7 +65,7 @@ public class UserController {
             userService.deleteUserById(id);
             return ResponseEntity.status(204).body(null);
         } catch (Exception e) {
-            throw e;
+            throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -72,20 +74,16 @@ public class UserController {
     public ResponseEntity<Object> getUserById(@PathVariable long id) {
         return ResponseEntity.ok().body(userService.getUserById(id));
     }
-    @GetMapping(params = "hasAccount")
-    public ResponseEntity<Object> getUsersWithoutAccount(@RequestParam Boolean hasAccount) {
-        return ResponseEntity.ok().body(userService.getUsersWithoutAccount(hasAccount));
-    }
 
     //PUT Updates an existing user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserPUT_DTO dto) {
+    public ResponseEntity updateUser(@PathVariable Long id, @RequestBody UserPOST_DTO dto) {
         try {
-            return ResponseEntity.ok().body(userService.updateUser(id, dto));
+            return ResponseEntity.status(201).body(userService.updateUser(id, dto));
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            throw new ApiRequestException(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            throw new ApiRequestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

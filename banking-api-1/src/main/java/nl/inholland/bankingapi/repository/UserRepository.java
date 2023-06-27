@@ -21,11 +21,10 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     List<User> findUserByAccountsAccountId(long id);
 
+    //avoids potential null-related issues
     Optional<User> findUserByEmail(String email);
-
-    User findUserById(long id);
 
     void deleteUserById(long id);
 
-    List<User> findAllByHasAccount(boolean hasAccount);
+//    List<User> findAllByHasAccount(boolean hasAccount);
 }

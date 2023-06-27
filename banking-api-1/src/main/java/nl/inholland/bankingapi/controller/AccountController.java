@@ -6,6 +6,7 @@ import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.TransactionType;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
+import nl.inholland.bankingapi.model.dto.AccountPUT_DTO;
 import nl.inholland.bankingapi.service.AccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin
+@ControllerAdvice
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/accounts")
 @Log
@@ -35,36 +37,38 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-//    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
-            @RequestParam(required = false) Integer offset,
-            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) AccountType accountType,
             @RequestParam(required = false) Double absoluteLimit,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) Long user) {
-        return ResponseEntity.ok(accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
+        return ResponseEntity.ok(accountService.getAllAccounts(page, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-//    @PreAuthorize("hasRole('CUSTOMER')")
-//    @GetMapping("/user/{id}")
-//    public ResponseEntity<Object> getAllAccountsByUserId(@PathVariable Long id) {
-//        List<AccountGET_DTO> accounts = accountService.getAllAccountsByUserId(id);
-//        Double totalBalance = accountService.getTotalBalanceByUserId(id);
-//        if(totalBalance == null){
-//            totalBalance = 0.0;
-//        }
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("accounts", accounts);
-//        response.put("totalBalance", totalBalance);
-//
-//        return ResponseEntity.ok().body(response);
-//    }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Double> getTotalBalanceByUserId(@PathVariable("userId") long userId) {
+        Double totalBalance = accountService.getTotalBalanceByUserId(userId);
+        return ResponseEntity.ok(totalBalance);
+    }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/search")
+    public ResponseEntity<Object> getIbanWithFirstAndLastNameForCustomer(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName
+    ) {
+        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(page, limit, firstName, lastName));
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
         return ResponseEntity.ok().body(accountService.getAccountById(id));
@@ -72,9 +76,11 @@ public class AccountController {
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountGET_DTO accountGET_dto) {
-        return ResponseEntity.ok().body(accountService.disableAccount(id, accountGET_dto));
+    public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
+
+        return ResponseEntity.ok().body(accountService.modifyAccount(id, accountPUT_dto));
     }
+
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {

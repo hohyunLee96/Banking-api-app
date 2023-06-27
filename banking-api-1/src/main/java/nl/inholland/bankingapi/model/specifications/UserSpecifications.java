@@ -4,8 +4,13 @@ import jakarta.persistence.criteria.*;
 import nl.inholland.bankingapi.model.Account;
 import nl.inholland.bankingapi.model.AccountType;
 import nl.inholland.bankingapi.model.User;
+import nl.inholland.bankingapi.model.UserType;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Component
 public class UserSpecifications {
@@ -32,7 +37,7 @@ public class UserSpecifications {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("lastName"), lastName);
     }
 
-    public static Specification<User> hasHasAccount(boolean hasAccount) {
+    public static Specification<User> hasHasAccount(String hasAccount) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("hasAccount"), hasAccount);
     }
     public static Specification<User> hasNoAccountType(AccountType excludedAccountType) {
@@ -66,18 +71,19 @@ public class UserSpecifications {
     }
 
     public static Specification<User> hasbirthDate(String birthDate){
-        return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("birthDate"), birthDate);
+        //String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format(birthDate);
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("birthDate"), birthDate);
     }
 
     public static Specification<User> hasPhoneNumber(String phoneNumber){
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("phoneNumber"), phoneNumber);
     }
 
-    public static Specification<User> hasUserType(String userType){
+    public static Specification<User> hasUserType(UserType userType){
         return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("userType"), userType);
     }
 
-    public static Specification<User> getSpecifications(String keyword, String firstName, String lastName, boolean hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, String userType, AccountType excludedAccountType) {
+    public static Specification<User> getSpecifications(String keyword, String firstName, String lastName, String hasAccount, String email, String address, String city, String postalCode, String birthDate, String phoneNumber, UserType userType, AccountType excludedAccountType) {
         Specification<User> spec = null;
         Specification<User> temp = null;
 
@@ -93,7 +99,7 @@ public class UserSpecifications {
             temp = hasLastName(lastName);
             spec = spec == null ? temp : spec.and(temp);
         }
-        if (hasAccount) {
+        if (hasAccount != null) {
             temp = hasHasAccount(hasAccount);
             spec = spec == null ? temp : spec.and(temp);
         }
