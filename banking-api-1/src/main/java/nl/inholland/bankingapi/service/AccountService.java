@@ -91,7 +91,6 @@ public class AccountService {
     private AccountIbanGET_DTO accountIbanGET_DTO(Account account) {
         User user = userRepository.findById(account.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new AccountIbanGET_DTO(
-                account.getUser().getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 account.getIBAN()
