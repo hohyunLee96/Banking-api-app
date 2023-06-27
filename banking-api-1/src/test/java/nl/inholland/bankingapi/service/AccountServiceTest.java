@@ -172,12 +172,12 @@ class AccountServiceTest {
     @Test
     public void testGetAccountById_ExistingId_ReturnsAccountDTO() {
         User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
-                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, 5200.00, 100.0,true);
+                "Ams", "+3148458448", UserType.ROLE_CUSTOMER, 5200.00, 100.0,true);
         Account dummyAccount = new Account(1L, new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
-                "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, 5200.00, 100.0, true), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
+                "Ams", "+3148458448", UserType.ROLE_CUSTOMER, 5200.00, 100.0, true), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
         // Arrange
         dummyAccount.setAccountId(1L);
-        user.setId(9012L);
+        user.setId(1L);
         user.setHasAccount(true);
         when(accountRepository.findById(dummyAccount.getAccountId())).thenReturn(Optional.of(dummyAccount));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -203,6 +203,7 @@ class AccountServiceTest {
     public void accountSpecificationTest() {
         User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_EMPLOYEE, 5200.00, 100.0, true);
+        user.setId(1L);
         Account dummyAccount = new Account(1L, user, "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
         when(userRepository.findById(dummyAccount.getUser().getId())).thenReturn(Optional.of(user));
         accountRepository.save(dummyAccount);
