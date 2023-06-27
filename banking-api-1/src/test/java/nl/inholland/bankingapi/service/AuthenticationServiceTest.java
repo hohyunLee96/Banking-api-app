@@ -35,6 +35,8 @@ class AuthenticationServiceTest {
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private boolean isEmailVerified = true;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -54,6 +56,7 @@ class AuthenticationServiceTest {
         Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getUserType())).thenReturn("jwt-token");
 
         // Act
+        user.setEmailVerified(isEmailVerified);
         LoginResponseDTO loginResponseDTO = authenticationService.login(userEmail, password);
 
         // Assert
@@ -87,8 +90,10 @@ class AuthenticationServiceTest {
         Mockito.when(userRepository.findUserByEmail(userEmail)).thenReturn(Optional.of(normalUser));
         Mockito.when(bCryptPasswordEncoder.matches(password, normalUser.getPassword())).thenReturn(true);
         Mockito.when(jwtTokenProvider.createToken(normalUser.getEmail(), normalUser.getUserType())).thenReturn("user-jwt-token");
+        isEmailVerified = true;
 
         // Act
+        normalUser.setEmailVerified(isEmailVerified);
         LoginResponseDTO loginResponseDTO = authenticationService.login(userEmail, password);
 
         // Assert
