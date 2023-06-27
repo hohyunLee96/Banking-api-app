@@ -2,10 +2,7 @@ package nl.inholland.bankingapi.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import nl.inholland.bankingapi.model.*;
-import nl.inholland.bankingapi.model.dto.DailyTransactionDto;
-import nl.inholland.bankingapi.model.dto.TransactionDepositDTO;
-import nl.inholland.bankingapi.model.dto.TransactionPOST_DTO;
-import nl.inholland.bankingapi.model.dto.TransactionWithdrawDTO;
+import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.TransactionRepository;
 import org.junit.jupiter.api.Assertions;
@@ -47,6 +44,7 @@ class TransactionServiceTest {
     void setUp() {
         performinUser = new User("performingUser@email.com", "1234", "Performing", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
+        performinUser.setId(1L);
         customer = new User("customer@email.com", "1234", "Customer", "Customer", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 10000.00, 10000.00, true);
         senderAccount = new Account(performinUser, "NL21INHO0123400081", 1000.00, 0.00, AccountType.CURRENT, true);
@@ -115,6 +113,18 @@ class TransactionServiceTest {
         when(transactionService.deposit(depositDTO)).thenReturn(transaction);
         Assertions.assertEquals(transaction.getFromIban().getIBAN(), depositDTO.toIban());
         Assertions.assertEquals(transaction.getAmount(), depositDTO.amount(), 0.00);
+    }
+
+    @Test
+    void getTransactionByIdReturnsTransaction() {
+        transactionRepository.save(transaction);
+        TransactionGET_DTO transactionGET_dto = new TransactionGET_DTO(1L, "NL21INHO0123400081", "NL21INHO0123400082", 100.00, TransactionType.TRANSFER, LocalDateTime.now().toString(), 1L);
+        when(transactionService.getTransactionById(1L)).thenReturn(transactionGET_dto);
+        Assertions.assertEquals(transactionGET_dto.fromIban(), transaction.getFromIban().getIBAN());
+        Assertions.assertEquals(transactionGET_dto.toIban(), transaction.getToIban().getIBAN());
+        Assertions.assertEquals(transactionGET_dto.amount(), transaction.getAmount(), 0.00);
+        Assertions.assertEquals(transactionGET_dto.type(), transaction.getType());
+        Assertions.assertEquals(transactionGET_dto.performingUserId(), transaction.getPerformingUser().getId());
     }
 }
 
