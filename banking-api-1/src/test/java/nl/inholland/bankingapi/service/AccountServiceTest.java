@@ -72,7 +72,8 @@ class AccountServiceTest {
         User user = new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, 5200.00, 100.0, true);
         userRepository.save(user);
-
+        user.setId(9012L);
+        user.setHasAccount(true);
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -87,7 +88,8 @@ class AccountServiceTest {
     void customerCannotOwnTwoAccountPerAccountType() throws Exception {
         User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, 5200.00, 100.0, true);
-
+        user.setId(9012L);
+        user.setHasAccount(true);
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -174,12 +176,15 @@ class AccountServiceTest {
         Account dummyAccount = new Account(1L, new User(1L, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
                 "Ams", "+3148458y48", UserType.ROLE_CUSTOMER, 5200.00, 100.0, true), "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
         // Arrange
-        long accountId = 1L;
+        dummyAccount.setAccountId(1L);
+        user.setId(9012L);
+        user.setHasAccount(true);
         when(accountRepository.findById(dummyAccount.getAccountId())).thenReturn(Optional.of(dummyAccount));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         AccountGET_DTO get_dto = accountService.accountGETDto(dummyAccount);
         assertEquals(dummyAccount.getIBAN(), get_dto.IBAN());
         // Set up account object with test data
+
     }
 
     @Test
