@@ -44,16 +44,16 @@ public class MyApplicationRunner implements ApplicationRunner {
 
     public void loadInformationForDB() {
         //Load users
-        User employee = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
+        User employee = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "2000-11-11",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true);
 
-        User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, 0.0, 0.0, false);
-        User employee2 = new User("employee2@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
+        User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "2000-11-11",
+                "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, 100.0, 100.0, false);
+        User employee2 = new User("employee2@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "2000-11-11",
 
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true);
 
-        User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
+        User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "2000-11-11",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 5000.00, 7000.00, true);
 
         //Load Accounts
