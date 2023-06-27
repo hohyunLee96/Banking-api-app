@@ -12,6 +12,7 @@ import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.AccountGET_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPOST_DTO;
 import nl.inholland.bankingapi.model.dto.AccountPUT_DTO;
+import nl.inholland.bankingapi.model.specifications.AccountSpecifications;
 import nl.inholland.bankingapi.repository.AccountRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -63,30 +65,6 @@ class AccountServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
-        // Mock dependencies
-        JwtTokenFilter jwtTokenFilter = mock(JwtTokenFilter.class);
-        JwtTokenProvider jwtTokenProvider = mock(JwtTokenProvider.class);
-        UserRepository userRepository = mock(UserRepository.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
-
-        // Mock the behavior of JwtTokenFilter
-        String receivedToken = "your_mocked_token";
-        when(jwtTokenFilter.getToken(eq(request))).thenReturn(receivedToken);
-
-        // Mock the behavior of JwtTokenProvider
-        doNothing().when(jwtTokenProvider).validateToken(eq(receivedToken));
-        Authentication authenticatedUser = mock(Authentication.class);
-        when(authenticatedUser.getName()).thenReturn("employee@email.com");
-        when(jwtTokenProvider.getAuthentication(eq(receivedToken))).thenReturn(authenticatedUser);
-        User mockedUser = new User("employee@email.com", "1234", "User2", "User", "11-11-2000",
-                "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true);
-        when(userRepository.findUserByEmail(eq("employee@email.com"))).thenReturn(Optional.of(mockedUser));
-
-        // Create the AccountService instance with the mock dependencies
-        accountService = new AccountService(accountRepository, userRepository,jwtTokenProvider, jwtTokenFilter,request);
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(mockedUser));
-//        accountService = new AccountService(accountRepository, userRepository, jwtTokenProvider, jwtTokenFilter, request);
     }
 
     @Test
@@ -112,6 +90,7 @@ class AccountServiceTest {
 
         Account dummyAccount = new Account(user, "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
         AccountPOST_DTO dto = new AccountPOST_DTO(user.getId(), dummyAccount.getAbsoluteLimit(), dummyAccount.getAccountType(), dummyAccount.getIsActive());
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         accountService.mapDtoToAccount(dto);
         when(accountRepository.existsByUserIdAndAccountType(user.getId(), dummyAccount.getAccountType())).thenReturn(true);
         when(accountRepository.findAccountByIBAN(dummyAccount.getIBAN())).thenReturn(null);
@@ -124,28 +103,6 @@ class AccountServiceTest {
         assertEquals("User already has an account of type " + dummyAccount.getAccountType(), exception.getMessage());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
-
-//    @Test
-//    void getAllAccountsWithOutAccountTypeShouldReturnAllAccountsExceptBankAccount() {
-//        // Mock the behavior of accountRepository.findAll
-//        Pageable pageable = PageRequest.of(0, 2);
-//        Specification<Account> specification = Specification.where(null);
-//        Account account1 = new Account(1L, new User(), "NL21INHO0123400081", 90000.00, 0.00, AccountType.CURRENT, true);
-//        Account account2 = new Account(2L, new User(), "NL21INHO0123400082", 90000.00, 0.00, AccountType.SAVINGS, true);
-//        Page<Account> pageAccounts = new PageImpl<>(List.of(account1, account2));
-//
-//        when(accountRepository.findAll(specification, pageable)).thenReturn(pageAccounts.getContent());
-//
-//        // Call the method under test
-//        List<AccountGET_DTO> accounts = accountService.getAllAccounts(0, 2, null, null, null, null, null, null);
-//        when(accountService.getAllAccounts(0, 2, null, null, null, null, null, null)).thenReturn(accounts);
-//        // Perform assertions
-//        assertEquals(pageAccounts.getTotalElements(), accounts.size());
-//        // Additional assertions as needed
-//    }
-
-
-
 
     @Test
     void modifyAbsoluteLimitOfAccount() throws Exception {
@@ -163,6 +120,7 @@ class AccountServiceTest {
         Account modifiedAccount = accountService.modifyAccount(1L, dto);
         assertEquals(8.0, modifiedAccount.getAbsoluteLimit());
     }
+
     @Test
     void returnErrorWhenAbsoluteLimitIsHigherThanBalance() throws Exception {
         User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
@@ -236,56 +194,25 @@ class AccountServiceTest {
         });
     }
 
+    @Test
+    public void accountSpecificationTest() {
+        User user = new User(1l, "customer@email.com", "Bjds", "ddnf", "Lee", "2023-10-26", "1023TX", "Osdrop",
+                "Ams", "+3148458y48", UserType.ROLE_EMPLOYEE, true, 100.0, 5200.00, null);
+        Account dummyAccount = new Account(1L, user, "NL21INHO0123400081", 90000.00, 10.00, AccountType.CURRENT, true);
+        when(userRepository.findById(dummyAccount.getUser().getId())).thenReturn(Optional.of(user));
+        accountRepository.save(dummyAccount);
+        List<AccountGET_DTO> accounts = new ArrayList<>();
+        Specification<Account> accountSpecification = AccountSpecifications.getSpecifications("ddnf", null, null, null, null, null);
+        when(accountRepository.findAll(accountSpecification,PageRequest.of(0, 10))).thenReturn(List.of(dummyAccount));
+        for (Account account : accountRepository.findAll(accountSpecification, PageRequest.of(0, 10))) {
+            accounts.add(accountService.accountGETDto(account));
+        }
+        assertEquals(1, accounts.size());
+    }
 
-//    @Test
-//    void getAllAccounts_shouldReturnAccountDTOs() {
-//        // Prepare test data
-//        Integer offset = 0;
-//        Integer limit = 10;
-//        String firstName = "John";
-//        String lastName = "Doe";
-//        AccountType accountType = AccountType.SAVINGS;
-//        Double absoluteLimit = 1000.0;
-//        Boolean isActive = true;
-//        Long user = 1L;
-//
-//        User loggedInUser = new User();
-//        loggedInUser.setId(1L);
-//        loggedInUser.setUserType(UserType.ROLE_CUSTOMER);
-//
-//        Account account1 = new Account();
-//        account1.setAccountId(1L);
-//        account1.setUser(loggedInUser);
-//
-//        Account account2 = new Account();
-//        account2.setAccountId(2L);
-//        account2.setUser(new User());
-//
-//        List<Account> accountList = Arrays.asList(account1, account2);
-////        Page<Account> accountPage = new PageImpl<>(accountList);
-////
-////        when(accountRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(accountPage);
-//        when(accountService.getLoggedInUser(request)).thenReturn(loggedInUser);
-//
-//        // Call the method under test
-//        List<AccountGET_DTO> result = accountService.getAllAccounts(offset, limit, firstName, lastName, accountType, absoluteLimit, isActive, user);
-//
-//        // Assert the returned list of AccountGET_DTO
-//        assertEquals(1, result.size());
-//        assertEquals(account1.getAccountId(), result.get(0).accountId());
-//    }
-
-
-//    @Test
-//    void getLoggedInUser_shouldReturnLoggedInUser() {
-//        // Prepare test data
-//        HttpServletRequest request = mock(HttpServletRequest.class);
-//        String receivedToken = "your_received_token";
-//        // Mock the behavior of the jwtTokenFilter.getToken method
-//        when(jwtTokenFilter.getToken(request)).thenReturn(receivedToken);
-//
-//        // Continue with the rest of your test code
-//        // ...
-//    }
-
+    @Test
+    void getTotalBalanceByUserId() {
+        when(accountRepository.getTotalBalanceByUserId(1L)).thenReturn(100.0);
+        assertEquals(100.0, accountService.getTotalBalanceByUserId(1L));
+    }
 }
