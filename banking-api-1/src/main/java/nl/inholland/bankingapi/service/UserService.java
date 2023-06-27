@@ -6,11 +6,13 @@ import jakarta.persistence.EntityNotFoundException;
 import nl.inholland.bankingapi.filter.JwtTokenFilter;
 import nl.inholland.bankingapi.jwt.JwtTokenProvider;
 import nl.inholland.bankingapi.model.AccountType;
+import nl.inholland.bankingapi.model.ConfirmationToken;
 import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
 import nl.inholland.bankingapi.model.dto.UserGET_DTO;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.model.specifications.UserSpecifications;
+import nl.inholland.bankingapi.repository.ConfirmationTokenRepository;
 import nl.inholland.bankingapi.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +29,6 @@ import java.util.*;
 
 import java.util.regex.Pattern;
 
-import static java.lang.Long.parseLong;
 
 @Service
 public class UserService {
@@ -38,9 +39,11 @@ public class UserService {
     private final JwtTokenFilter jwtTokenFilter;
     private final HttpServletRequest request;
     private final UserSpecifications userSpecifications;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
+    private final EmailService emailService;
     private final  Double DEFAULTDAILYLIMIT = 100.0;
     private final Double DEFAULTTRANSACTIONLIMIT = 500.0;
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, HttpServletRequest request, UserSpecifications userSpecifications) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, ModelMapper modelMapper, JwtTokenProvider jwtTokenProvider, JwtTokenFilter jwtTokenFilter, HttpServletRequest request, UserSpecifications userSpecifications, ConfirmationTokenRepository confirmationTokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.modelMapper = modelMapper;
@@ -48,6 +51,8 @@ public class UserService {
         this.jwtTokenFilter = jwtTokenFilter;
         this.request = request;
         this.userSpecifications = userSpecifications;
+        this.confirmationTokenRepository = confirmationTokenRepository;
+        this.emailService = emailService;
     }
 
     public User getUserById(Long id) {
@@ -120,7 +125,13 @@ public class UserService {
 
     public User registerUser(UserPOST_DTO dto) {
         validatePostParams(dto);
-        return userRepository.save(this.mapDtoToUser(dto));
+
+        User savedUser = userRepository.save(this.mapDtoToUser(dto));
+        ConfirmationToken confirmationToken = new ConfirmationToken(savedUser);
+        confirmationTokenRepository.save(confirmationToken);
+        emailService.sendEmailVerificationWithLink(confirmationToken);
+
+        return savedUser;
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
@@ -328,6 +339,46 @@ public class UserService {
         } catch (IllegalArgumentException e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public String resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email);
+
+        String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
+
+        if (encodedPassword == null) {
+            throw new ApiRequestException("Failed to encode the password.", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+
+        return "Password reset successfully";
+    }
+
+    public String processConfirmationToken(String token) {
+        ConfirmationToken confirmationToken = getConfirmationToken(token);
+
+        if (confirmationToken != null) {
+            // retrieve the user object associated with the given token
+            User user = confirmationToken.getUser();
+
+            if (user != null) {
+                user.setEmailVerified(true);
+                userRepository.save(user);
+                return "Email verified successfully";
+
+            } else {
+                return "User not found!";
+            }
+
+        } else {
+            return "The link is invalid or broken!";
+        }
+    }
+
+    public ConfirmationToken getConfirmationToken(String token) {
+        return confirmationTokenRepository.findByConfirmationToken(token);
     }
 
 }

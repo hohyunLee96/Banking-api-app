@@ -36,7 +36,7 @@ public class User {
     private Boolean hasAccount;
     private Double dailyLimit;
     private Double transactionLimit;
-
+    private boolean isEmailVerified = false;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<Account> accounts = new ArrayList<>();
@@ -55,6 +55,6 @@ public class User {
         this.hasAccount = hasAccount;
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
-
     }
+
 }

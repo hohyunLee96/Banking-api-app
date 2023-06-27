@@ -8,8 +8,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-//responsible for loading user details and constructing the UserDetails object required by Spring Security
-//UserDetailsService interface is a part of Spring Security and provides a method for loading user-specific data
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
 
