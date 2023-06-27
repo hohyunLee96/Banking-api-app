@@ -8,6 +8,8 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -22,6 +24,10 @@ public class AuthenticationService {
         User user = this.userRepository
                 .findUserByEmail(email)
                 .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " + email));
+        if (!user.isEmailVerified()) {
+            throw new AuthenticationException("Email not verified");
+        }
+
         if (!user.getPassword().isEmpty()) {
             //Check if the password hash matches the provided password
             if (bCryptPasswordEncoder.matches(password, user.getPassword())) {

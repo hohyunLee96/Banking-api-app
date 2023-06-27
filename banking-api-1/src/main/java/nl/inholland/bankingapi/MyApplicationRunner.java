@@ -53,18 +53,24 @@ public class MyApplicationRunner implements ApplicationRunner {
         //Load users
         User employee = new User("employee@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true);
+        employee.setEmailVerified(true);
 
         User aizaz2 = new User("642701@student.inholland.nl", bCryptPasswordEncoder.encode("1234"), "Aizaz", "Ahsan", "24-11-1997",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 500.00, 10000.00, true);
+        aizaz2.setEmailVerified(true);
 
         User user1 = new User("user@email.com", bCryptPasswordEncoder.encode("1234"), "User1", "User", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_USER, 0.0, 0.0, false);
+        user1.setEmailVerified(true);
+
         User employee2 = new User("employee2@email.com", bCryptPasswordEncoder.encode("1234"), "User2", "User", "11-11-2000",
 
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_EMPLOYEE, 10000.00, 10000.00, true);
+        employee2.setEmailVerified(true);
 
         User customer = new User("customer@email.com", bCryptPasswordEncoder.encode("1234"), "Customer", "Customer", "11-11-2000",
                 "123456789", "Street", "1234AB", "City", UserType.ROLE_CUSTOMER, 5000.00, 7000.00, true);
+        customer.setEmailVerified(true);
 
         //Load Accounts
         Account account1 = new Account(customer, "NL21INHO0123400081", 500.00, 0.00, AccountType.CURRENT, true);

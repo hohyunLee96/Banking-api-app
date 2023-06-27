@@ -125,7 +125,13 @@ public class UserService {
 
     public User registerUser(UserPOST_DTO dto) {
         validatePostParams(dto);
-        return userRepository.save(this.mapDtoToUser(dto));
+
+        User savedUser = userRepository.save(this.mapDtoToUser(dto));
+        ConfirmationToken confirmationToken = new ConfirmationToken(savedUser);
+        confirmationTokenRepository.save(confirmationToken);
+        emailService.sendEmailVerificationWithLink(confirmationToken);
+
+        return savedUser;
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
@@ -374,7 +380,7 @@ public class UserService {
             User user = confirmationToken.getUser();
 
             if (user != null) {
-                user.setEnabled(true);
+                user.setEmailVerified(true);
                 userRepository.save(user);
                 return "Account verified successfully";
 

@@ -99,8 +99,8 @@ public class UserController {
         return ResponseEntity.ok(responseMessage);
     }
     @GetMapping("/confirmAccount")
-    public ResponseEntity<String> confirmUserAccount(@RequestParam("token") String confirmationToken) {
-        String responseMessage = userService.processConfirmationToken(confirmationToken);
+    public ResponseEntity<String> confirmUserAccount(@RequestParam String token) {
+        String responseMessage = userService.processConfirmationToken(token);
 
         if (responseMessage.equals("Account verified successfully")) {
             return ResponseEntity.ok(responseMessage);
