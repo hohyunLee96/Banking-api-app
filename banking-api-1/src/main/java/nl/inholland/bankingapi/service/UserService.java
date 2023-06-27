@@ -356,22 +356,6 @@ public class UserService {
         return "Password reset successfully";
     }
 
-    public String registerUser(User user) {
-        User existingUser = userRepository.findByEmail(user.getEmail());
-        if (existingUser != null) {
-            return "This email already exists!";
-        } else {
-            userRepository.save(user);
-
-            ConfirmationToken confirmationToken = new ConfirmationToken(user);
-
-            confirmationTokenRepository.save(confirmationToken);
-
-            emailService.sendEmailVerificationWithLink(confirmationToken);
-
-            return "Registration successful. Please check your email to confirm your account.";
-        }
-    }
     public String processConfirmationToken(String token) {
         ConfirmationToken confirmationToken = getConfirmationToken(token);
 

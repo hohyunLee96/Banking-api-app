@@ -93,11 +93,6 @@ public class UserController {
         }
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody User user) {
-        String responseMessage = userService.registerUser(user);
-        return ResponseEntity.ok(responseMessage);
-    }
     @GetMapping("/confirmAccount")
     public ResponseEntity<String> confirmUserAccount(@RequestParam String token) {
         String responseMessage = userService.processConfirmationToken(token);
