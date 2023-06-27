@@ -18,6 +18,7 @@ class JwtServiceTest {
         UserDetails userDetails = User.builder()
                 .username("john.doe")
                 .password("password")
+                .authorities("ROLE_USER")
                 .build();
 
         // Generate the token
