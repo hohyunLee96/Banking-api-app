@@ -382,7 +382,7 @@ public class UserService {
             if (user != null) {
                 user.setEmailVerified(true);
                 userRepository.save(user);
-                return "Account verified successfully";
+                return "Email verified successfully";
 
             } else {
                 return "User not found!";

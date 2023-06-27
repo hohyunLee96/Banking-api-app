@@ -102,7 +102,7 @@ public class UserController {
     public ResponseEntity<String> confirmUserAccount(@RequestParam String token) {
         String responseMessage = userService.processConfirmationToken(token);
 
-        if (responseMessage.equals("Account verified successfully")) {
+        if (responseMessage.equals("Email verified successfully")) {
             return ResponseEntity.ok(responseMessage);
         } else if (responseMessage.equals("User not found!")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage);
