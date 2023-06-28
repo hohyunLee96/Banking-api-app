@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -36,27 +35,13 @@ class AuthenticationServiceTest {
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private boolean isEmailVerified = true;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         authenticationService = new AuthenticationService(userRepository, jwtTokenProvider, bCryptPasswordEncoder);
     }
-
-//    @Test
-//    void register_ShouldSaveUser() {
-//        // Arrange
-//        RegisterRequestDTO registerRequestDTO = createRegisterRequestDTO();
-//        UserType userType = UserType.ROLE_USER;
-//        String userEmail = "user@email.com";
-//        User savedUser = createUser(userType, userEmail);
-//        Mockito.when(userRepository.save(ArgumentMatchers.any(User.class))).thenReturn(savedUser);
-//
-//        // Act
-//        authenticationService.register(registerRequestDTO);
-//
-//        // Assert
-//        Mockito.verify(userRepository).save(ArgumentMatchers.any(User.class));
-//    }
 
     @Test
     void login_WithValidCredentials_ShouldReturnLoginResponseDTO() throws javax.naming.AuthenticationException {
@@ -71,6 +56,7 @@ class AuthenticationServiceTest {
         Mockito.when(jwtTokenProvider.createToken(user.getEmail(), user.getUserType())).thenReturn("jwt-token");
 
         // Act
+        user.setEmailVerified(isEmailVerified);
         LoginResponseDTO loginResponseDTO = authenticationService.login(userEmail, password);
 
         // Assert
@@ -104,8 +90,10 @@ class AuthenticationServiceTest {
         Mockito.when(userRepository.findUserByEmail(userEmail)).thenReturn(Optional.of(normalUser));
         Mockito.when(bCryptPasswordEncoder.matches(password, normalUser.getPassword())).thenReturn(true);
         Mockito.when(jwtTokenProvider.createToken(normalUser.getEmail(), normalUser.getUserType())).thenReturn("user-jwt-token");
+        isEmailVerified = true;
 
         // Act
+        normalUser.setEmailVerified(isEmailVerified);
         LoginResponseDTO loginResponseDTO = authenticationService.login(userEmail, password);
 
         // Assert

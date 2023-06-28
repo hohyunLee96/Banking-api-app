@@ -8,6 +8,8 @@ import nl.inholland.bankingapi.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -16,14 +18,17 @@ public class AuthenticationService {
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    //retrieves user from repository based on the provided email
-    //verifies the password, generates a JWT,
-    //returns a LoginResponseDTO object with the JWT and user information
+
     public LoginResponseDTO login(String email, String password) throws javax.naming.AuthenticationException {
 
         User user = this.userRepository
                 .findUserByEmail(email)
-                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " +email));
+                .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " + email));
+
+        if (!user.isEmailVerified()) {
+            throw new AuthenticationException("Email not verified");
+        }
+
         if (!user.getPassword().isEmpty()) {
             //Check if the password hash matches the provided password
             if (bCryptPasswordEncoder.matches(password, user.getPassword())) {

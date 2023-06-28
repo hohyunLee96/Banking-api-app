@@ -4,15 +4,15 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.java.Log;
 import nl.inholland.bankingapi.exception.ApiRequestException;
 import nl.inholland.bankingapi.model.AccountType;
-import nl.inholland.bankingapi.model.User;
 import nl.inholland.bankingapi.model.UserType;
-import nl.inholland.bankingapi.model.dto.*;
 import nl.inholland.bankingapi.model.dto.UserPOST_DTO;
 import nl.inholland.bankingapi.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @CrossOrigin("*")
 @RestController
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Log
 public class UserController {
     private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -84,6 +85,19 @@ public class UserController {
             throw new ApiRequestException(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             throw new ApiRequestException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/confirmAccount")
+    public ResponseEntity<String> confirmUserAccount(@RequestParam String token) {
+        String responseMessage = userService.processConfirmationToken(token);
+
+        if (responseMessage.equals("Email verified successfully")) {
+            return ResponseEntity.status(201).body(responseMessage);
+        } else if (responseMessage.equals("User not found!")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMessage);
         }
     }
 
