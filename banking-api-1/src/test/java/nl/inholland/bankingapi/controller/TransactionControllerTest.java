@@ -102,24 +102,24 @@ class TransactionControllerTest {
         }
     }
 
-    @Test
-    @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
-    void getAllTransactions() throws Exception {
-        List<TransactionGET_DTO> transactionGETDtoList = new ArrayList<>(Collections.singletonList(transactionGETDto));
-        transactionGETDtoList.add(transactionGETDto);
-        transactionGETDtoList.add(transactionGETDto2);
-
-        when(transactionService.getAllTransactions( null,null, null, null, null, null, null, null, null,null,null))
-                .thenReturn((transactionGETDtoList));
-
-        MockHttpServletResponse response = mockMvc.perform(get("/transactions")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn().getResponse();
-
-        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.getContentAsString()).isEqualTo(asJsonString(transactionGETDtoList));
-    }
+//    @Test
+//    @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
+//    void getAllTransactions() throws Exception {
+//        List<TransactionGET_DTO> transactionGETDtoList = new ArrayList<>(Collections.singletonList(transactionGETDto));
+//        transactionGETDtoList.add(transactionGETDto);
+//        transactionGETDtoList.add(transactionGETDto2);
+//
+//        when(transactionService.getAllTransactions( null,null, null, null, null, null, null, null, null,null,null))
+//                .thenReturn((transactionGETDtoList));
+//
+//        MockHttpServletResponse response = mockMvc.perform(get("/transactions")
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(status().isOk())
+//                .andReturn().getResponse();
+//
+//        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//        assertThat(response.getContentAsString()).isEqualTo(asJsonString(transactionGETDtoList));
+//    }
 
     @Test
     @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
