@@ -28,14 +28,19 @@ public class EmailController {
     @PostMapping("/sendEmail")
     public ResponseEntity<String> checkSendEmail(@RequestBody EmailRequestDTO emailRequestDTO) {
 
+        // check if user exists
         User user = userRepository.findByEmail(emailRequestDTO.emailTo());
 
         if(user == null) {
             throw new EntityNotFoundException("User with email " + emailRequestDTO.emailTo() + " not found.");
         }
 
+        // send email with link to reset password
         emailSenderService.sendPasswordResetEmailWithLink(user);
+
+        // Go to frontend and show message that email is sent to reset password
         return ResponseEntity.ok(emailRequestDTO.emailTo());
+
     }
 
     // method for new password
