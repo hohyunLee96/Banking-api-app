@@ -40,50 +40,51 @@ public class AccountController {
     @PreAuthorize("hasAnyRole('EMPLOYEE', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<Object> getAllAccounts(
-            @RequestParam(required = false,defaultValue = "0") Integer page,
-            @RequestParam(required = false,defaultValue = "10") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) AccountType accountType,
             @RequestParam(required = false) Double absoluteLimit,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) Long user) {
-        return ResponseEntity.ok(accountService.getAllAccounts(page,limit,firstName, lastName, accountType, absoluteLimit, isActive, user));
+        return ResponseEntity.ok(accountService.getAllAccounts(page, limit, firstName, lastName, accountType, absoluteLimit, isActive, user));
     }
-    @GetMapping(params = "totalBalance")
-    public ResponseEntity<Double> totalBalance(@RequestParam("totalBalance") Long id) {
-        Double totalBalance = accountService.getTotalBalanceByUserId(id);
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Double> getTotalBalanceByUserId(@PathVariable("userId") long userId) {
+        Double totalBalance = accountService.getTotalBalanceByUserId(userId);
         return ResponseEntity.ok(totalBalance);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/search")
-    public ResponseEntity<Object>getIbanWithFirstAndLastNameForCustomer(
-//            @RequestParam(required = false) Integer offset,
-//            @RequestParam(required = false) Integer limit,
+    public ResponseEntity<Object> getIbanWithFirstAndLastNameForCustomer(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName
-    ){
-        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(firstName, lastName));
+    ) {
+        return ResponseEntity.ok(accountService.getIbanWithFirstAndLastNameForCustomer(page, limit, firstName, lastName));
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/{id}")
     public ResponseEntity<Object> getAccountById(@PathVariable long id) {
-            return ResponseEntity.ok().body(accountService.getAccountById(id));
+        return ResponseEntity.ok().body(accountService.getAccountById(id));
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PutMapping("/{id}")
     public ResponseEntity<Object> updateAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
 
-            return ResponseEntity.ok().body(accountService.modifyAccount(id, accountPUT_dto));
+        return ResponseEntity.ok().body(accountService.modifyAccount(id, accountPUT_dto));
     }
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @PostMapping
     public ResponseEntity<Object> addAccount(@RequestBody AccountPOST_DTO accountPOST_dto) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(accountService.addAccount(accountPOST_dto));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(accountService.addAccount(accountPOST_dto));
     }
 }

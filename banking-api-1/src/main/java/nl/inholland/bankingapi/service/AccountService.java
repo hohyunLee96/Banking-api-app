@@ -51,10 +51,9 @@ public class AccountService {
         this.jwtTokenFilter = jwtTokenFilter;
         this.request = request;
     }
+
     public Account modifyAccount(@PathVariable long id, @RequestBody AccountPUT_DTO accountPUT_dto) {
         Account account = mapDtoToAccountPut(id, accountPUT_dto);
-        account.getUser().setHasAccount(isUserHasNoActiveAccounts(account.getUser().getId()));
-        userRepository.save(account.getUser());
         return accountRepository.save(account);
     }
 
@@ -64,7 +63,7 @@ public class AccountService {
             throw new ApiRequestException("Absolute limit cannot be higher than account balance", HttpStatus.BAD_REQUEST);
         }
 
-        if(dto.isActive() == null){
+        if (dto.isActive() == null) {
             throw new ApiRequestException("please fill out active status to modify account details", HttpStatus.BAD_REQUEST);
         }
 
@@ -92,29 +91,20 @@ public class AccountService {
     private AccountIbanGET_DTO accountIbanGET_DTO(Account account) {
         User user = userRepository.findById(account.getUser().getId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new AccountIbanGET_DTO(
-                account.getUser().getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 account.getIBAN()
         );
     }
 
-    public List<AccountGET_DTO> getAllAccountsByUserId(long id) {
-        List<AccountGET_DTO> accountsOwnedBySpecificUser = new ArrayList<>();
-        for (Account account : accountRepository.getAllAccountsByUserId(id)) {
-            accountsOwnedBySpecificUser.add(accountGETDto(account));
-        }
-        return accountsOwnedBySpecificUser;
-    }
-
-    public List<AccountGET_DTO> getAllAccounts(int page,int limit,String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
-        Pageable pageable = PageRequest.of( page, limit);
+    public List<AccountGET_DTO> getAllAccounts(int page, int limit, String firstName, String lastName, AccountType accountType, Double absoluteLimit, Boolean isActive, Long user) {
+        Pageable pageable = PageRequest.of(page, limit);
         Specification<Account> accountSpecification = AccountSpecifications.getSpecifications(firstName, lastName, accountType, absoluteLimit, isActive, user);
 
         List<AccountGET_DTO> userAccounts = new ArrayList<>();
         List<AccountGET_DTO> accounts = new ArrayList<>();
         for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
-            if(!account.getAccountType().equals(AccountType.BANK)){
+            if (!account.getAccountType().equals(AccountType.BANK)) {
                 accounts.add(accountGETDto(account));
             }
             if (account.getUser().getId().equals(getLoggedInUser(request).getId())) {
@@ -126,13 +116,14 @@ public class AccountService {
         }
         return accounts;
     }
-    public List<AccountIbanGET_DTO> getIbanWithFirstAndLastNameForCustomer(String firstName, String lastName) {
-        Pageable pageable = PageRequest.of(0, 10);
+
+    public List<AccountIbanGET_DTO> getIbanWithFirstAndLastNameForCustomer(int page, int limit, String firstName, String lastName) {
+        Pageable pageable = PageRequest.of(page, limit);
         Specification<Account> accountSpecification = AccountCustomerSpecifications.getSpecificationsForCustomer(firstName, lastName);
 
         List<AccountIbanGET_DTO> accounts = new ArrayList<>();
-        for (Account account : accountRepository.findAll(accountSpecification,pageable)) {
-            if(!account.getAccountType().equals(AccountType.BANK)){
+        for (Account account : accountRepository.findAll(accountSpecification, pageable)) {
+            if (!account.getAccountType().equals(AccountType.BANK)) {
                 accounts.add(accountIbanGET_DTO(account));
             }
         }
@@ -151,7 +142,7 @@ public class AccountService {
     public AccountGET_DTO getAccountById(long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found"));
-        if(account.getAccountType() == AccountType.BANK){
+        if (account.getAccountType() == AccountType.BANK) {
             throw new ApiRequestException("Bank account cannot be accessed", HttpStatus.BAD_REQUEST);
         }
         return accountGETDto(account);
@@ -183,6 +174,7 @@ public class AccountService {
         }
         return account;
     }
+
     public void userHasAccount(User user) {
         user.setHasAccount(true);
         user.setUserType(UserType.ROLE_CUSTOMER);
@@ -193,23 +185,6 @@ public class AccountService {
         // Implement the logic to check if the user already has an account of the specified type
         // You can query the account repository or perform any other necessary checks
         return accountRepository.existsByUserIdAndAccountType(userId, accountType);
-    }
-
-    protected Boolean isCustomer(Long userId) {
-        if (userRepository.findById(userId).get().getUserType().equals(UserType.ROLE_EMPLOYEE)) {
-            return false;
-        }
-        return true;
-    }
-
-    public boolean isUserHasNoActiveAccounts(long id) {
-        List<Account> accounts = accountRepository.getAllAccountsByUserId(id);
-        for (Account account : accounts) {
-            if (account.getIsActive()) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public String createIBAN() {
@@ -226,8 +201,8 @@ public class AccountService {
         return iban;
     }
 
-    public Double getTotalBalanceByUserId(long id) {
-        return accountRepository.getTotalBalanceByUserId(id);
+    public Double getTotalBalanceByUserId(long userId) {
+        return accountRepository.getTotalBalanceByUserId(userId);
     }
 
 

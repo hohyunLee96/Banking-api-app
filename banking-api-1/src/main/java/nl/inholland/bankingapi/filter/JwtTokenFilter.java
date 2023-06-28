@@ -34,7 +34,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        else System.out.println("Token: " + token);
+
 
         try {
             // validate the token and set the security context
