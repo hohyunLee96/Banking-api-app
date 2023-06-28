@@ -57,6 +57,4 @@ public class User {
         this.transactionLimit = transactionLimit;
    }
 
-    public User(Long id,String email, String password, String firstName, String lastName, String birthDate, String postalCode, String address, String city, String phoneNumber, UserType userType, Double dailyLimit, Double transactionLimit, boolean hasAccount) {
-    }
 }

@@ -124,14 +124,47 @@ public class UserService {
     }
 
     public User registerUser(UserPOST_DTO dto) {
+        // validate the request body first
         validatePostParams(dto);
 
+        // save the user to the database
         User savedUser = userRepository.save(this.mapDtoToUser(dto));
+
+        // create a new token for the user saved to database
         ConfirmationToken confirmationToken = new ConfirmationToken(savedUser);
+
+        // save the token to the database
         confirmationTokenRepository.save(confirmationToken);
+
+        // send the email to the user with the token
         emailService.sendEmailVerificationWithLink(confirmationToken);
 
         return savedUser;
+    }
+
+    public String processConfirmationToken(String token) {
+        ConfirmationToken confirmationToken = getConfirmationToken(token);
+
+        if (confirmationToken != null) {
+            // retrieve the user object associated with the given token
+            User user = confirmationToken.getUser();
+
+            if (user != null) {
+                user.setEmailVerified(true);
+                userRepository.save(user);
+                return "Email verified successfully";
+
+            } else {
+                return "User not found!";
+            }
+
+        } else {
+            return "The link is invalid or broken!";
+        }
+    }
+
+    public ConfirmationToken getConfirmationToken(String token) {
+        return confirmationTokenRepository.findByConfirmationToken(token);
     }
 
     public User updateUser(long id, UserPOST_DTO dto) {
@@ -342,43 +375,23 @@ public class UserService {
     }
 
     public String resetPassword(String email, String newPassword) {
+        //find user by email
         User user = userRepository.findByEmail(email);
 
+        // encode the password
         String encodedPassword = bCryptPasswordEncoder.encode(newPassword);
 
         if (encodedPassword == null) {
             throw new ApiRequestException("Failed to encode the password.", HttpStatus.BAD_REQUEST);
         }
 
+        // set new password
         user.setPassword(encodedPassword);
+
+        // save the user object to the database
         userRepository.save(user);
 
         return "Password reset successfully";
-    }
-
-    public String processConfirmationToken(String token) {
-        ConfirmationToken confirmationToken = getConfirmationToken(token);
-
-        if (confirmationToken != null) {
-            // retrieve the user object associated with the given token
-            User user = confirmationToken.getUser();
-
-            if (user != null) {
-                user.setEmailVerified(true);
-                userRepository.save(user);
-                return "Email verified successfully";
-
-            } else {
-                return "User not found!";
-            }
-
-        } else {
-            return "The link is invalid or broken!";
-        }
-    }
-
-    public ConfirmationToken getConfirmationToken(String token) {
-        return confirmationTokenRepository.findByConfirmationToken(token);
     }
 
 }
