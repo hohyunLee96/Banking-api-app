@@ -35,7 +35,7 @@ public class EmailController {
         }
 
         emailSenderService.sendPasswordResetEmailWithLink(user);
-        return ResponseEntity.ok(emailRequestDTO.emailTo());
+        return ResponseEntity.status(201).body(emailRequestDTO.emailTo());
     }
 
     // method for new password
@@ -45,7 +45,7 @@ public class EmailController {
 
         if (resetResult != null && !resetResult.isEmpty()) {
             String successMessage = "Password changed successfully";
-            return ResponseEntity.ok(successMessage);
+            return ResponseEntity.status(201).body(successMessage);
         } else {
             String errorMessage = "Failed to reset password";
             throw new ApiRequestException(errorMessage, HttpStatus.BAD_REQUEST);
