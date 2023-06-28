@@ -55,6 +55,5 @@ public class User {
         this.hasAccount = hasAccount;
         this.dailyLimit = dailyLimit;
         this.transactionLimit = transactionLimit;
-
     }
 }
