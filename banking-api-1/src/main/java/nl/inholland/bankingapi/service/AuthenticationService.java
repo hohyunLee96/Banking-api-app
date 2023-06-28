@@ -24,6 +24,7 @@ public class AuthenticationService {
         User user = this.userRepository
                 .findUserByEmail(email)
                 .orElseThrow(() -> new javax.naming.AuthenticationException("User not found with email: " + email));
+
         if (!user.isEmailVerified()) {
             throw new AuthenticationException("Email not verified");
         }
